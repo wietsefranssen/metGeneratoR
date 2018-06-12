@@ -1,4 +1,4 @@
-source("./constants.R")
+source("./R/constants.R")
 
 shortwave <- function(sw_rad, daylength, day_of_year,
                       tiny_rad_fract, params) {
@@ -129,6 +129,24 @@ tiny_rad_fract_chunk <- function(daylength, tiny_rad_fract, params) {
   }
 
   return (rad_chunk)
+}
+
+rad_fract_chunk_small <- function(dayLength, RadFractions, params) {
+  
+  ########## Calculate Rad_chunk
+  ts <- params$time_step
+  ts_per_day <- (cnst$HOURS_PER_DAY * cnst$MIN_PER_HOUR / ts)
+  
+  ny <- dim(outRadFractions)[1]
+  
+  rad_chunk <- array(0, dim = c(ny, 366, ts_per_day) )
+  
+  for (iy in 1:ny) {
+    rad_chunk[iy,,] <- tiny_rad_fract_chunk(outDaylength[iy, ], outRadFractions[iy,,], params)
+  }
+  rad_chunk[is.na(rad_chunk)] <- 0
+  # plot(rad_chunk[,1 ,3 ])
+  return(rad_chunk)
 }
 
 shortwave_day_fast <- function(sw_rad, rad_chunk, daylength) {

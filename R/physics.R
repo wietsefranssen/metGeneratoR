@@ -1,6 +1,6 @@
 require(compiler)
 
-source("./constants.R")
+source("./R/constants.R")
 
 cnst$SW_RAD_DT<-30
 #cnst$SW_RAD_DT<-30*10

@@ -43,3 +43,7 @@ for (iy in 1:ny) {
 }
 
 ncWrite("out.nc", outRsds)
+
+######################
+settings <- mtclim_getSettings()
+mtclim_run(settings)

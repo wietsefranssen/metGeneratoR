@@ -4,7 +4,7 @@ initSettings <- function(startdate = NULL,
                          lonlatbox = NULL,
                          outfile = "output.nc",
                          outperyear = FALSE,
-                         chunksizes = c(40,40,256)) {
+                         chunksizes = c(720,360,1)) {
 
   system <- list (
     nCores = 2,
@@ -28,11 +28,13 @@ initSettings <- function(startdate = NULL,
     forcingIds = NULL,
     alma_input = FALSE
   )
+  
   settings <- list(
     lonlatbox = lonlatbox,
     startdate = as.Date(startdate),
     enddate = as.Date(enddate),
-    outstep = outstep,
+    outstep = NULL,
+    outstep_per_day = NULL,
     outfile = outfile,
     outperyear = outperyear,
     chunksizes = chunksizes,
@@ -40,7 +42,9 @@ initSettings <- function(startdate = NULL,
     intern = intern,
     system = system
   )
-
+  
+  settings <- setOutstep(outstep, settings)
+  
   settings$intern$nrec_in = as.numeric((settings$enddate - settings$startdate) +1)
   settings$intern$nrec_out = settings$intern$nrec_in * (24/outstep)
 
@@ -66,6 +70,12 @@ initSettings <- function(startdate = NULL,
   ## make possible for splitup per year
   settings <- setNcOutInfo(settings)
 
+  return(settings)
+}
+
+setOutstep <- function(outstep, settings = settings) {
+  settings$outstep <- outstep
+  settings$outstep_per_day <- 24 / outstep
   return(settings)
 }
 
@@ -155,11 +165,13 @@ makeNetcdfOut <- function(settings, mask, ncOut) {
   dimsizes<-c(length(mask$xyCoords$x),length(mask$xyCoords$y),ncOut$nrec_out)
   chunksizes<- pmin(chunksizes_preffered,dimsizes)
   ################
+  # data <- ncvar_def(name=names(settings$outputVars[1]), units='', dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
   data <- ncvar_def(name=names(settings$outputVars[1]), units='', compression = 7, chunksizes=chunksizes, dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
   dataAllVars <- list(data)[rep(1,length(settings$outputVars))]
   for (iVar in 1:length(settings$outputVars))
   {
     dataAllVars[[iVar]] <- ncvar_def(name=names(settings$outputVars[iVar]), units='', compression = 7, chunksizes=chunksizes, dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
+    # dataAllVars[[iVar]] <- ncvar_def(name=names(settings$outputVars[iVar]), units='', dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
   }
 
   ## SAVE AS NC-DATA
@@ -343,14 +355,14 @@ readForcingAll <- function(part, settings, mask) {
   return(forcing_dataR)
 }
 
-readAllForcing <- function(settings, mask) {
+readAllForcing <- function(settings, mask, timestep) {
   # mask<-elevation
   nx <- length(mask$xyCoords$x)
   ny <- length(mask$xyCoords$y)
   
   forcing_dataR <- list()
   for (i in 1:length(settings$inputVars)) {
-    forcing_dataR[[i]]<- array(0, dim=c(settings$intern$nrec_in,  ny,  nx))
+    forcing_dataR[[i]]<- array(0, dim=c(nx, ny, 1))
   }
   ## Read data
   for (iVar in 1:length(settings$inputVars)) {
@@ -361,7 +373,7 @@ readAllForcing <- function(settings, mask) {
                                       #               settings$lonlatbox[3],
                                       #               settings$lonlatbox[4]),
                                       lonlatbox = settings$lonlatbox,
-                                      timesteps = c(1:settings$intern$nrec_in))$Data
+                                      timesteps = timestep)$Data
   }
   return(forcing_dataR)
 }

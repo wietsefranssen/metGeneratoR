@@ -1,7 +1,7 @@
 ## Cleanup
 rm(list=ls(all=TRUE))
 
-library(disaggregateR)
+library(metGeneratoR)
 
 params <- NULL
 params$time_step <- 60*3

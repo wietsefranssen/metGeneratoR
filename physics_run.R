@@ -2,7 +2,7 @@
 ## Cleanup
 rm(list=ls(all=TRUE))
 
-setwd("/home/wietse/Documents/WORKDIRS/RProj/disaggregateR/")
+setwd("/home/wietse/Documents/WORKDIRS/RProj/metGeneratoR/")
 source("./physics.R")
 
 library(WFRTools)

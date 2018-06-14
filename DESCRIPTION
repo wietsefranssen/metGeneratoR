@@ -1,6 +1,6 @@
-Package: disaggregateR
+Package: metGeneratoR
 Type: Package
-Title: disaggregateR
+Title: metGeneratoR
 Version: 1.0
 Date: 2018-06-11
 Author: Wietse Franssen

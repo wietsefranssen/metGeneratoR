@@ -7,11 +7,33 @@ mgsetLonlatbox <- function(lonlatbox) {
 mgsetNHourPerStep <- function(nHourPerStep) {
   metGen$settings$nHourPerStep <- nHourPerStep
   metGen$settings$nOutStepDay  <- 24 / nHourPerStep
+  
+  ## Update mgsetPeriod
+  if (!is.null(metGen$settings$startDate) && !is.null(metGen$settings$endDate))
+  {
+    mgsetPeriod(metGen$settings$startDate, metGen$settings$endDate)
+  }
 }
 
 mgsetPeriod <- function(startdate, enddate) {
   metGen$settings$startDate <- startdate
-  metGen$settings$endDate  <- enddate
+  metGen$settings$endDate <- enddate
+  metGen$derived$startDate <- as.Date(startdate)
+  metGen$derived$endDate <- as.Date(enddate)
+  
+  metGen$derived$nrec_in <- as.numeric((metGen$derived$endDate - metGen$derived$startDate) + 1)
+  metGen$derived$nrec_out <- metGen$derived$nrec_in * metGen$settings$nOutStepDay
+  
+  ymdStart<-as.numeric(strsplit(as.character(metGen$derived$startDate), "-")[[1]])
+  ymdEnd<-as.numeric(strsplit(as.character(metGen$derived$endDate), "-")[[1]])
+  
+  metGen$derived$startyear = ymdStart[1]
+  metGen$derived$startmonth = ymdStart[2]
+  metGen$derived$startday = ymdStart[3]
+  
+  metGen$derived$endyear = ymdEnd[1]
+  metGen$derived$endmonth = ymdEnd[2]
+  metGen$derived$endday = ymdEnd[3]
 }
 
 mgsetNCores <- function(nCores) {
@@ -41,22 +63,32 @@ mgsetInVars <- function(varlist) {
 }
 
 mgsetOutVars <- function(varnames) {
-  metGen$settings$outVars <- NULL
-  for (var in varnames) {
-    ## Check if output var exists
-    if (!is.element(var, names(metGen$metadata$outvars))) {
-      cat(paste0("WARING: The variable ", var, " is not a standard output variable!\n",
-                 "        Valid variables are: ", paste(names(metGen$metadata$outvars),collapse=", ") , "\n",
-                 "        Ingoring: ", var, "\n"))
-    } else {
-      # # if (settings$outperyear) {
-      metGen$settings$outVars[[var]]$name <- var
-      metGen$settings$outVars[[var]]$filename <- paste0(var, ".nc")
-      # metGen$settings$outVars[[var]]$filename <- paste0(var, "_", as.character(settings$ncOut$year), ".nc")
-      metGen$settings$outVars[[var]]$longName <- metGen$metadata$outvars[[var]]$longName
-      metGen$settings$outVars[[var]]$units <- metGen$metadata$outvars[[var]]$units
-      # # } else {
-      # # }
+  ## Check if inputvars are already defined
+  if (length(metGen$settings$inVar) <= 0) {
+    cat(paste0("First set the input variables. Based on that the possible output variables can be defined\n"))
+    stop()
+  } else {
+    metGen$settings$outVars <- NULL
+    for (var in varnames) {
+      ## Check input variables
+      if (var == "shortwave" && is.null(metGen$settings$inVar[["shortwave"]])) {
+        stop(paste0("Shortwave output can only be generated if shortwave is provided as input\nOn the mmoment, only the following input variables are defined: ", paste(names(metGen$settings$inVar), collapse=", "), "\n"), call. = FALSE)
+      }
+      if (var == "pr" && is.null(metGen$settings$inVar[["pr"]])) {
+        stop(paste0("Precipitation output can only be generated if precipitation is provided as input\nOn the mmoment, only the following input variables are defined: ", paste(names(metGen$settings$inVar), collapse=", "), "\n"), call. = FALSE)
+      }
+      
+      ## Check if output var exists
+      if (!is.element(var, names(metGen$metadata$outvars))) {
+        cat(paste0("WARING: The variable ", var, " is not a standard output variable!\n",
+                   "        Valid variables are: ", paste(names(metGen$metadata$outvars),collapse=", ") , "\n",
+                   "        Ingoring: ", var, "\n"))
+      } else {
+        metGen$settings$outVars[[var]]$name <- var
+        metGen$settings$outVars[[var]]$filename <- paste0(var, ".nc")
+        metGen$settings$outVars[[var]]$longName <- metGen$metadata$outvars[[var]]$longName
+        metGen$settings$outVars[[var]]$units <- metGen$metadata$outvars[[var]]$units
+      }
     }
   }
 }
@@ -68,7 +100,11 @@ mgsetInit<- function() {
 }
 
 mgsetInitSettings <- function() {
+  metGen$cnst <- setConstants()
   metGen$settings <- NULL
+  
+  metGen$settings$startDate <- NULL
+  metGen$settings$endDate <- NULL
   # assign("settings", list(), env=metGen)
   # unlockBinding("settings", metGen)
   mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
@@ -96,6 +132,8 @@ mgsetInitMetadata <- function() {
     pr         = list(units = "mm",    longName = "incoming precipitation"),
     tasmin     = list(units = "C",     longName = "minimum air temperature"),
     tasmax     = list(units = "C",     longName = "maximum air temperature"),
+    shortwave  = list(units = "W m-2", longName = "shortwave radiation"),
+    longwave   = list(units = "W m-2", longName = "longwave radiation"),
     wind       = list(units = "m s-1", longName = "near surface wind speed")
   )
   
@@ -105,7 +143,7 @@ mgsetInitMetadata <- function() {
 
 mgsetInitInternal <- function() {
   assign("internal", list(), env=metGen)
-
+  
   ## Return the location of the Example NetCDF-files
   metGen$internal$ncFileNameElevation  <- system.file("extdata", "elevation_Mekong.nc4", package = "metGeneratoR")
   metGen$internal$ncFileNamePr         <- system.file("extdata", "pr_Mekong.nc4", package = "metGeneratoR")

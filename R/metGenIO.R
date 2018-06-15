@@ -9,10 +9,10 @@ makeNetcdfOut <- function(mask) {
   dimX <- ncdim_def("lon", "degrees_east", mask$xyCoords$x)
   dimY <- ncdim_def("lat", "degrees_north",mask$xyCoords$y)
   timeString <-format(strptime(settings$startDate, format = "%Y-%m-%d", tz = "GMT"),format="%Y-%m-%d %T")
-  timeArray <-c(0:(settings$nOutStepDay-1)) * (24 / (24/settings$nHourPerStep))
+  timeArray <-c(0:(metGen$derived$nrec_out-1)) * (24 / (24/settings$nHourPerStep))
   dimT <- ncdim_def("time", paste0("hours since ",timeString), timeArray, unlim = TRUE, calendar = "standard")
   
-  dimsizes<-c(length(mask$xyCoords$x),length(mask$xyCoords$y),settings$nOutStepDay)
+  dimsizes<-c(length(mask$xyCoords$x),length(mask$xyCoords$y),metGen$derived$nrec_out)
   ################
   for (var in names(settings$outVars)) {
     dataVar <- ncvar_def(name=var, units='', compression = 7, dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
@@ -39,4 +39,31 @@ makeNetcdfOut <- function(mask) {
     ## Close Netcdf file
     nc_close(ncid)
   }
+}
+
+readAllForcing <- function(mask, timestep) {
+  # mask<-elevation
+  nx <- length(mask$xyCoords$x)
+  ny <- length(mask$xyCoords$y)
+  
+  # forcing_dataR <- list()
+  # for (i in 1:length(metGen$settings$inVar)) {
+  #   forcing_dataR[[i]]<- array(0, dim=c(nx, ny, 1))
+  # }
+  
+  ## Read data
+  forcing_dataR <- NULL
+  for (var in names(metGen$settings$inVar)) {
+    # for (var in 1:length(metGen$settings$inVar)) {
+    # forcing_dataR[[var]][] <- ncLoad(file = metGen$settings$inVar[[var]]$filename,
+                                     forcing_dataR[[var]] <- ncLoad(file = metGen$settings$inVar[[var]]$filename,
+                                                                      varName = metGen$settings$inVar[[var]]$ncname,
+                                      # lonlatbox = c(settings$lonlatbox[1],
+                                      #               settings$lonlatbox[2],
+                                      #               settings$lonlatbox[3],
+                                      #               settings$lonlatbox[4]),
+                                      lonlatbox = metGen$settings$lonlatbox,
+                                      timesteps = timestep)$Data
+  }
+  return(forcing_dataR)
 }

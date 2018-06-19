@@ -166,6 +166,7 @@ snowpack<-function(mt) {
   } else { prev_yday = start_yday-1; }
   count = 0;
   sum = 0.0;
+  if (ndays >1) {
   for (i in 2:ndays)
   {
     if (data$yday[i] == start_yday || data$yday[i] == prev_yday)
@@ -173,6 +174,7 @@ snowpack<-function(mt) {
       count <-count + 1;
       sum <- sum + data$s_swe[i];
     }
+  }
   }
   # /* Proceed with correction if there are valid days to reinitialize
   # the snowpack estiamtes. Otherwise use the first-pass estimate. */
@@ -279,7 +281,6 @@ compute_srad_humidity_onetime <- function(ndays, ctrl, data, tdew, pva, ttmax0, 
     
     #     /* final daily total transmittance */
     t_final = t_tmax * data$s_tfmax[i];
-    
     #     /* estimate fraction of radiation that is diffuse, on an
     #     instantaneous basis, from relationship with daily total
     #     transmittance in Jones (Plants and Microclimate, 1992)
@@ -326,9 +327,11 @@ compute_srad_humidity_onetime <- function(ndays, ctrl, data, tdew, pva, ttmax0, 
     #     /* save daily radiation */
     #       /* save cloud transmittance when rad is an input */
     if (ctrl$insw) {
+
       potrad = (srad1+srad2+sc)*daylength[yday]/t_final/86400;
       if (potrad>0 && data$s_srad[i]>0 && daylength[yday]>0) {
         data$s_tfmax[i] = (data$s_srad[i])/(potrad*t_tmax); #//both of these are 24hr mean rad. here
+        # print(data$s_tfmax[i])
         if (data$s_tfmax[i] > 1.0) data$s_tfmax[i] = 1.0 
       } else {
         data$s_tfmax[i] = 1.0;
@@ -336,15 +339,16 @@ compute_srad_humidity_onetime <- function(ndays, ctrl, data, tdew, pva, ttmax0, 
     } else {
       data$s_srad[i] = srad1 + srad2 +sc;
     }
-    
+
     #     /* start vic_change */
     LW_CLOUD_DEARDORFF <- 1
     if (options$LW_CLOUD == LW_CLOUD_DEARDORFF) {
-      data$s_tskc[i] = (1.-data$s_tfmax[i]);
+      data$s_tskc[i] = (1. - data$s_tfmax[i]);
     } else {
-      data$s_tskc[i] = sqrt((1.-data$s_tfmax[i])/0.65);
+      data$s_tskc[i] = sqrt((1. - data$s_tfmax[i])/0.65);
     }
     data$s_fdir[i] = pdir;
+    # print(pdir)
     #     /* end vic_change */
     
   }
@@ -378,6 +382,7 @@ compute_srad_humidity_onetime <- function(ndays, ctrl, data, tdew, pva, ttmax0, 
   initVals$data <- data
   
   
+  # print(initVals)
   
   return(initVals);
   

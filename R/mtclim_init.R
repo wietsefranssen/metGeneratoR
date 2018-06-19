@@ -1,6 +1,6 @@
 mtclim_init <- function(have_dewpt, have_shortwave, elevation, slope, aspect, ehoriz, whoriz, annual_prcp, 
                         lat, dmy, prec, tmax, tmin, vp, hourlyrad, 
-                        tiny_radfract, ctrl,
+                        tiny_radfract,
                         p, mtclim_data)
   #   int have_dewpt, int have_shortwave, double elevation, double slope, double aspect,
   #                    double ehoriz, double whoriz, double annual_prcp, 

@@ -310,6 +310,131 @@ calc_tiny_radfract <- function(mt, options)
   for (j in 1:tinystepspday) tiny_radfract[366,j] = tiny_radfract[365,j];
   # /* end vic_change */
   
+  
+  #####################
+  # /* calculate diurnal temperature range for transmittance calculations */
+  for (i in 1:ndays) {
+    tmax = data$tmax[i];
+    tmin = data$tmin[i];
+    if (tmax < tmin) 
+      tmax = tmin;
+    dtr[i] = tmax-tmin;
+  }
+  
+  # /* smooth dtr array: After Bristow and Campbell, 1984 */
+  sm_dtr <- pulled_boxcar(dtr, 0)
+  
+  # /* calculate the annual total precip */
+  sum_prcp = 0.0;
+  for (i in 1:ndays) {
+    sum_prcp<-sum_prcp + data$s_prcp[i];
+  }
+  ann_prcp = (sum_prcp/ndays) * 365.25;
+  if (ann_prcp == 0.0) ann_prcp = 1.0;
+  
+  # /* Generate the effective annual precip, based on a 3-month
+  # moving-window. Requires some special case handling for the
+  # beginning of the record and for short records. */
+  #   /* check if there are at least 90 days in this input file, if not,
+  # use a simple total scaled to effective annual precip */
+  if (ndays < 90) {
+    sum_prcp = 0.0;
+    for (i in 1:ndays) {
+      sum_prcp <- sum_prcp + data$s_prcp[i];
+    }
+    effann_prcp = (sum_prcp/ndays) * 365.25;
+    # /* if the effective annual precip for this period
+    # is less than 8 cm, set the effective annual precip to 8 cm
+    # to reflect an arid condition, while avoiding possible
+    # division-by-zero errors and very large ratios (PET/Pann) */
+    if (effann_prcp < 8.0) {
+      effann_prcp = 8.0;
+    }
+    for (i in 1:ndays) {
+      parray[i] = effann_prcp;
+    }
+  } else {
+    # /* Check if the yeardays at beginning and the end of this input file
+    # match up. If so, use parts of the three months at the end
+    # of the input file to generate effective annual precip for
+    # the first 3-months. Otherwise, duplicate the first 90 days
+    # of the record. */
+    start_yday = data$yday[1];
+    end_yday = data$yday[ndays];
+    if (start_yday != 1) {
+      isloop = (end_yday == start_yday-1) ? 1 : 0;
+    }
+    else {
+      isloop = (end_yday == 365 || end_yday == 366) ? 1 : 0;
+    }
+    
+    # /* fill the first 90 days of window */
+    for (i in 1:90) {
+      if (isloop) {
+        window[i] = data$s_prcp[ndays-90+i];  ## TODO!!!
+      } else {
+        window[i] = data$s_prcp[i];
+      }
+    }
+    # /* fill the rest of the window array */
+    for (i in 1:ndays) {
+      window[i+90] = data$s_prcp[i];    ## TODO!!!
+    }
+    
+    # /* for each day, calculate the effective annual precip from 
+    # scaled 90-day total */
+    for (i in 1:ndays) {
+      sum_prcp = 0.0;
+      for (j in 1:90) {
+        sum_prcp <- sum_prcp + window[i+j];
+      }
+      sum_prcp = (sum_prcp/90.0) * 365.25;
+      # /* if the effective annual precip for this 90-day period
+      # is less than 8 cm, set the effective annual precip to 8 cm
+      # to reflect an arid condition, while avoiding possible
+      # division-by-zero errors and very large ratios (PET/Pann) */
+      parray[i] = (sum_prcp < 8.0) ? 8.0 : sum_prcp;
+    }
+  } # /* end if ndays >= 90 */	
+  
+  # 
+  # /* STEP (4)  calculate the sky proportion for diffuse radiation */
+  # /* uses the product of spherical cap defined by average horizon angle
+  # and the great-circle truncation of a hemisphere. this factor does not
+  # vary by yearday. */
+  avg_horizon = (p$site_ehoriz + p$site_whoriz)/2.0;
+  horizon_scalar = 1.0 - sin(avg_horizon * constants$RADPERDEG);
+  if (p$site_slp > avg_horizon) 
+  {
+    slope_excess = p$site_slp - avg_horizon;
+  } else {
+    slope_excess = 0.0;
+  }
+  if (2.0*avg_horizon > 180.0)
+  {
+    slope_scalar = 0.0;
+  } else {
+    slope_scalar = 1.0 - (slope_excess/(180.0 - 2.0*avg_horizon));
+    if (slope_scalar < 0.0) slope_scalar = 0.0;
+  }
+  sky_prop = horizon_scalar * slope_scalar;
+  
+  # /* b parameter, and t_fmax not varying with Tdew, so these can be
+  # calculated once, outside the iteration between radiation and humidity
+  # estimates. Requires storing t_fmax in an array. */
+  for (i in 1:ndays) {
+    # /* b parameter from 30-day average of DTR */
+    b = constants$B0 + constants$B1 * exp(-constants$B2 * sm_dtr[i]);
+    
+    # /* proportion of daily maximum transmittance */
+    t_fmax[i] = 1.0 - 0.9 * exp(-b * dtr[i]^constants$C);
+    
+    # /* correct for precipitation if this is a rain day */
+    if (data$prcp[i] > options$SW_PREC_THRESH) t_fmax[i] <- t_fmax[i] * constants$RAIN_SCALAR;
+    data$s_tfmax[i] = t_fmax[i];
+    
+  }
+  #####################
   mt$p <- p
   mt$ctrl <- ctrl
   mt$mtclim_data <- data
@@ -318,7 +443,7 @@ calc_tiny_radfract <- function(mt, options)
   mt$flat_potrad <-flat_potrad
   mt$slope_potrad <- slope_potrad
   mt$daylength <- daylength
-
+  mt$sky_prop <- sky_prop 
   return(mt)
 } # /* end of calc_srad_humidity_iterative() */
 

@@ -6,6 +6,7 @@ library(metGeneratoR)
 # source("./R/metGenSettings.R")
 
 mgsetLonlatbox(c(92.25, 110.25, 7.25, 36.25))
+mgsetLonlatbox(c(92.25, 92.25, -8.25, -8.25))
 # mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
 mgsetPeriod(startdate = "1950-01-01", enddate = "1950-01-02")
 mgsetNHourPerStep(3) # Set N hours per timestep
@@ -53,7 +54,7 @@ nx <- length(mask$xyCoords$x)
 ny <- length(mask$xyCoords$y)
 
 ## Do load rad_small & Subselect from global data
-do_rad_small <- F
+do_rad_small <- T
 if(do_rad_small) {
   load(file = "./hpc/outDaylength_2880.Rdata")
   load(file = "./hpc/outRadFractions_2880.Rdata")

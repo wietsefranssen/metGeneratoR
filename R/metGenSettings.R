@@ -18,22 +18,31 @@ mgsetNHourPerStep <- function(nHourPerStep) {
 mgsetPeriod <- function(startdate, enddate) {
   metGen$settings$startDate <- startdate
   metGen$settings$endDate <- enddate
-  metGen$derived$startDate <- as.Date(startdate)
-  metGen$derived$endDate <- as.Date(enddate)
-  
-  metGen$derived$nrec_in <- as.numeric((metGen$derived$endDate - metGen$derived$startDate) + 1)
+  metGen$derived$startDate <- as.POSIXlt(startdate, tz = "GMT")
+  metGen$derived$endDate <- as.POSIXlt(enddate, tz = "GMT")
+    
+  metGen$derived$nday <- as.numeric(metGen$derived$endDate - metGen$derived$startDate + 1)
+  metGen$derived$nrec_in <- metGen$derived$nday
   metGen$derived$nrec_out <- metGen$derived$nrec_in * metGen$settings$nOutStepDay
+
+  by <- "24 hours"
+  metGen$derived$inDates = seq(metGen$derived$startDate, length = metGen$derived$nrec_in, by = by)
+  metGen$derived$inYDays = as.POSIXlt(metGen$derived$inDates)$yday + 1
+  by <- paste(metGen$settings$nHourPerStep, "hours")
+  metGen$derived$outDates = seq(metGen$derived$startDate, length = metGen$derived$nrec_out, by = by)
+  metGen$derived$outYDays = as.POSIXlt(metGen$derived$outDates)$yday + 1
   
-  ymdStart<-as.numeric(strsplit(as.character(metGen$derived$startDate), "-")[[1]])
-  ymdEnd<-as.numeric(strsplit(as.character(metGen$derived$endDate), "-")[[1]])
-  
-  metGen$derived$startyear = ymdStart[1]
-  metGen$derived$startmonth = ymdStart[2]
-  metGen$derived$startday = ymdStart[3]
-  
-  metGen$derived$endyear = ymdEnd[1]
-  metGen$derived$endmonth = ymdEnd[2]
-  metGen$derived$endday = ymdEnd[3]
+  # ymdStart<-as.numeric(strsplit(as.character(metGen$derived$startDate), "-")[[1]])
+  # ymdEnd<-as.numeric(strsplit(as.character(metGen$derived$endDate), "-")[[1]])
+  # 
+  # metGen$derived$startyear = ymdStart[1]
+  # metGen$derived$startmonth = ymdStart[2]
+  # metGen$derived$startday = ymdStart[3]
+  # 
+  # metGen$derived$endyear = ymdEnd[1]
+  # metGen$derived$endmonth = ymdEnd[2]
+  # metGen$derived$endday = ymdEnd[3]
+
 }
 
 mgsetNCores <- function(nCores) {
@@ -100,7 +109,8 @@ mgsetInit<- function() {
 }
 
 mgsetInitSettings <- function() {
-  metGen$cnst <- setConstants()
+#  metGen$cnst <- setConstants()
+  metGen$constants <-setConstants()
   metGen$settings <- NULL
   
   metGen$settings$startDate <- NULL
@@ -153,8 +163,3 @@ mgsetInitInternal <- function() {
 }
 
 mgsetInit()
-
-# # Gets the value of the variable
-# mggetArea <- function() {
-#   return(get("area", metGen))
-# }

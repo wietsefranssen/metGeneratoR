@@ -9,7 +9,7 @@ mgsetLonlatbox(c(92.25, 110.25, 7.25, 36.25))
 mgsetLonlatbox(c(92.25, 92.25, -8.25, -8.25))
 # mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
 mgsetPeriod(startdate = "1950-01-01", enddate = "1950-01-02")
-mgsetNHourPerStep(3) # Set N hours per timestep
+mgsetOutDt(3) # Set N hours per timestep
 mgsetNCores(4) # Set N hours per timestep
 
 ## Define input variables
@@ -72,7 +72,7 @@ endX <- ((metGen$settings$lonlatbox[2] - -179.75) * 2) + 1
 startY <- ((metGen$settings$lonlatbox[3] - -89.75) * 2) + 1
 endY <- ((metGen$settings$lonlatbox[4] - -89.75) * 2) + 1
 rad_small <- rad_small[startY:endY,,]
-rad_small <- rad_small * metGen$settings$nOutStepDay
+rad_small <- rad_small * metGen$derived$nOutStepDay
 outDaylength <- outDaylength[startY:endY,]
 
 ## makeOutputNetCDF
@@ -81,7 +81,7 @@ makeNetcdfOut(mask)
 ## DEFINE OUTPUT ARRAY
 outData <- NULL
 for (var in names(metGen$settings$outVars)) {
-  outData[[var]] <- array(NA, dim = c(nx, ny, metGen$settings$nOutStepDay))
+  outData[[var]] <- array(NA, dim = c(nx, ny, metGen$derived$nOutStepDay))
 }
 
 profile<-NULL
@@ -100,21 +100,21 @@ for (iday in 1:metGen$derived$nrec_in) {
   profile$start.time.run <- Sys.time()
   
   ## Cut rad_small per day
-  rad_small_xy <- array(NA, dim = c(nx, ny, metGen$settings$nOutStepDay))
+  rad_small_xy <- array(NA, dim = c(nx, ny, metGen$derived$nOutStepDay))
   for (ix in 1:nx) {
     rad_small_xy[ix,,] <- rad_small[ , iday, ]
   }
   
   ## Do precip
   if (!is.null(metGen$settings$outVars$pr)) {
-    for (it in 1:metGen$settings$nOutStepDay) {
+    for (it in 1:metGen$derived$nOutStepDay) {
       outData[["pr"]][,,it] <- inData[["pr"]][ , , 1 ]
     }
   }
   
   ## Do radiation
   if (!is.null(metGen$settings$outVars$shortwave)) {
-    for (it in 1:metGen$settings$nOutStepDay) {
+    for (it in 1:metGen$derived$nOutStepDay) {
       outData[["shortwave"]][,,it] <- inData[[1]][ , , 1 ] * rad_small_xy[,,it]
     }
   }
@@ -126,13 +126,13 @@ for (iday in 1:metGen$derived$nrec_in) {
   ## ADD OUTPUT TO NETCDF
   profile$start.time.write <- Sys.time()
   for (var in names(metGen$settings$outVars)) {
-    timeIndex <- metGen$settings$nOutStepDay*(iday-1)+1
+    timeIndex <- metGen$derived$nOutStepDay*(iday-1)+1
     metGen$settings$outVars[[var]]$ncid <- nc_open(metGen$settings$outVars[[var]]$filename, write = TRUE)
     ncvar_put(metGen$settings$outVars[[var]]$ncid,
               var,
               outData[[var]][,,],
               start = c(1, 1, timeIndex),
-              count = c(nx, ny, metGen$settings$nOutStepDay)
+              count = c(nx, ny, metGen$derived$nOutStepDay)
     )
     nc_close(metGen$settings$outVars[[var]]$ncid)
   }

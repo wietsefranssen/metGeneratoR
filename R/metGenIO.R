@@ -1,6 +1,7 @@
 makeNetcdfOut <- function(mask) {
   
   settings<-metGen$settings
+  derived<-metGen$derived
   
   # CREATE NETCDF
   FillValue <- 1e20
@@ -9,7 +10,7 @@ makeNetcdfOut <- function(mask) {
   dimX <- ncdim_def("lon", "degrees_east", mask$xyCoords$x)
   dimY <- ncdim_def("lat", "degrees_north",mask$xyCoords$y)
   timeString <-format(strptime(settings$startDate, format = "%Y-%m-%d", tz = "GMT"),format="%Y-%m-%d %T")
-  timeArray <-c(0:(metGen$derived$nrec_out-1)) * (24 / (24/settings$nHourPerStep))
+  timeArray <-c(0:(metGen$derived$nrec_out-1)) * (24 / (24/metGen$derived$outDt))
   dimT <- ncdim_def("time", paste0("hours since ",timeString), timeArray, unlim = TRUE, calendar = "standard")
   
   dimsizes<-c(length(mask$xyCoords$x),length(mask$xyCoords$y),metGen$derived$nrec_out)

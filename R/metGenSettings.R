@@ -4,10 +4,21 @@ mgsetLonlatbox <- function(lonlatbox) {
   metGen$settings$lonlatbox <- lonlatbox
 }
 
-mgsetNHourPerStep <- function(nHourPerStep) {
-  metGen$settings$nHourPerStep <- nHourPerStep
-  metGen$settings$nOutStepDay  <- 24 / nHourPerStep
+mgsetInDt <- function(inDt) {
+  metGen$derived$inDt <- metGen$settings$inDt <- inDt
+  metGen$derived$nInStepDay  <- 24 / metGen$derived$inDt
   
+  ## Update mgsetPeriod
+  if (!is.null(metGen$settings$startDate) && !is.null(metGen$settings$endDate))
+  {
+    mgsetPeriod(metGen$settings$startDate, metGen$settings$endDate)
+  }
+}
+
+mgsetOutDt <- function(outDt) {
+  metGen$derived$outDt <- metGen$settings$outDt <- outDt
+  metGen$derived$nOutStepDay  <- 24 / metGen$derived$outDt
+
   ## Update mgsetPeriod
   if (!is.null(metGen$settings$startDate) && !is.null(metGen$settings$endDate))
   {
@@ -21,14 +32,15 @@ mgsetPeriod <- function(startdate, enddate) {
   metGen$derived$startDate <- as.POSIXlt(startdate, tz = "GMT")
   metGen$derived$endDate <- as.POSIXlt(enddate, tz = "GMT")
     
+  
   metGen$derived$nday <- as.numeric(metGen$derived$endDate - metGen$derived$startDate + 1)
-  metGen$derived$nrec_in <- metGen$derived$nday
-  metGen$derived$nrec_out <- metGen$derived$nrec_in * metGen$settings$nOutStepDay
+  metGen$derived$nrec_in <- metGen$derived$nday * metGen$derived$nInStepDay
+  metGen$derived$nrec_out <- metGen$derived$nday * metGen$derived$nOutStepDay
 
-  by <- "24 hours"
+  by <- paste(metGen$derived$inDt, "hours")
   metGen$derived$inDates = seq(metGen$derived$startDate, length = metGen$derived$nrec_in, by = by)
   metGen$derived$inYDays = as.POSIXlt(metGen$derived$inDates)$yday + 1
-  by <- paste(metGen$settings$nHourPerStep, "hours")
+  by <- paste(metGen$derived$outDt, "hours")
   metGen$derived$outDates = seq(metGen$derived$startDate, length = metGen$derived$nrec_out, by = by)
   metGen$derived$outYDays = as.POSIXlt(metGen$derived$outDates)$yday + 1
   
@@ -118,7 +130,8 @@ mgsetInitSettings <- function() {
   # assign("settings", list(), env=metGen)
   # unlockBinding("settings", metGen)
   mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
-  mgsetNHourPerStep(24) # Set N hours per timestep
+  mgsetInDt(24) # Set N hours per timestep
+  mgsetOutDt(24) # Set N hours per timestep
   mgsetNCores(1) # Set N hours per timestep
   
 }

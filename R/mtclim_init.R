@@ -55,24 +55,23 @@ mtclim_init <- function(have_dewpt, have_shortwave, elevation, slope, aspect, eh
   
   # /* initialize the data arrays with the vic input data */
   mtclim_data <- NULL
-  for (i in 1:ctrl$ndays) {
-    mtclim_data$yday[i] = metGen$derived$inYDays[i]
-    mtclim_data$tmax[i] = tmax[i];
-    mtclim_data$tmin[i] = tmin[i];
-    if (ctrl$insw) {
-      mtclim_data$s_srad[i] = 0;
-      for (j in 1:24) 
-      {
-        mtclim_data$s_srad[i] <- mtclim_data$s_srad[i] + hourlyrad[(i-1)*24+j];
-      }
-      mtclim_data$s_srad[i] <- mtclim_data$s_srad[i] / 24;
+  mtclim_data$yday = metGen$derived$inYDays
+  mtclim_data$tmax = tmax;
+  mtclim_data$tmin = tmin;
+  if (ctrl$insw) {
+    mtclim_data$s_srad = 0;
+    for (j in 1:24) 
+    {
+      mtclim_data$s_srad <- mtclim_data$s_srad + hourlyrad[j];
     }
-    if (ctrl$invp) mtclim_data$s_hum[i] = vp[i];
-    # /* MTCLIM prcp in cm */
-    mtclim_data$prcp[i] = prec[i]/10.; 
-    if (have_dewpt==1)
-      stop("have_dewpt not yet implemented ...\n");
+    mtclim_data$s_srad <- mtclim_data$s_srad / 24;
   }
+  if (ctrl$invp) mtclim_data$s_hum = vp;
+  # /* MTCLIM prcp in cm */
+  mtclim_data$prcp = prec/10.; 
+  if (have_dewpt==1)
+    stop("have_dewpt not yet implemented ...\n");
+  
   tinystepspday = 86400/metGen$constants$SRADDT;
   tiny_radfract <- array(0, dim = c(366,tinystepspday))
   

@@ -43,7 +43,6 @@ calc_tair<-function(mt) {
   
   constants <- metGen$constants
   
-  ndays <- ctrl$ndays;
   # /* calculate elevation difference in kilometers */
   dz <- (p$site_elev - p$base_elev)/1000.0;
   
@@ -52,15 +51,13 @@ calc_tair<-function(mt) {
   # lapse rate, it is possible at high elevation sites for these corrections
   # to result in tmin > tmax. Check for that occurrence and force
   # tmin = corrected tmax - 0.5 deg C. */
-  for (i in 1:ndays) {
-    # /* lapse rate corrections */
-    data$s_tmax[i] <- tmax <- data$tmax[i] + (dz * p$tmax_lr);
-    data$s_tmin[i] <- tmin <- data$tmin[i] + (dz * p$tmin_lr);
-    
-    # /* derived temperatures */
-    tmean = (tmax + tmin)/2.0;
-    data$s_tday[i] = ((tmax - tmean)*constants$TDAYCOEF) + tmean;
-  }
+  # /* lapse rate corrections */
+  data$s_tmax <- tmax <- data$tmax + (dz * p$tmax_lr);
+  data$s_tmin <- tmin <- data$tmin + (dz * p$tmin_lr);
+  
+  # /* derived temperatures */
+  tmean = (tmax + tmin)/2.0;
+  data$s_tday = ((tmax - tmean)*constants$TDAYCOEF) + tmean;
   
   mt$p <- p
   mt$ctrl <- ctrl
@@ -68,32 +65,6 @@ calc_tair<-function(mt) {
   
   return(mt)
 }
-
-# # /* calc_tair() calculates daily air temperatures */
-# calc_tair_old<-function(tmin, tmax) {
-#   # tmin <-4
-#   # tmax<-5
-#   # 
-#   constants <- metGen$constants
-#   
-#   #   /* calculate elevation difference in kilometers */
-#   #     dz = (p->site_elev - p->base_elev)/1000.0;
-#   #   
-#   #   /* apply lapse rate corrections to tmax and tmin */
-#   #     /* Since tmax lapse rate usually has a larger absolute value than tmin
-#   #   lapse rate, it is possible at high elevation sites for these corrections
-#   #   to result in tmin > tmax. Check for that occurrence and force
-#   #   tmin = corrected tmax - 0.5 deg C. */
-#   #     for (i=0 ; i<ndays ; i++) {
-#   #       /* lapse rate corrections */
-#   #         data->s_tmax[i] = tmax = data->tmax[i] + (dz * p->tmax_lr);
-#   #         data->s_tmin[i] = tmin = data->tmin[i] + (dz * p->tmin_lr);
-#   
-#   tmean <- (tmax + tmin)/2.0;
-#   tair <- ((tmax - tmean)*constants$TDAYCOEF) + tmean;
-#   
-#   return(tair)  
-# }
 
 # /* calc_prcp() calculates daily total precipitation */
 calc_prcp<-function(mt) {
@@ -122,9 +93,7 @@ calc_prcp<-function(mt) {
   }
   # /* end vic_change */
   
-  for (i in 1:ndays) {
-    data$s_prcp[i] = data$prcp[i] * ratio;
-  }
+  data$s_prcp = data$prcp * ratio;
   
   mt$p <- p
   mt$ctrl <- ctrl
@@ -142,22 +111,18 @@ snowpack<-function(mt) {
   
   constants <- metGen$constants
   
-  ndays <- ctrl$ndays;
-  
   # /* first pass to initialize SWE array */
   snowpack = 0.0;
-  for (i in 1:ndays)
-  {
-    newsnow = 0.0;
-    snowmelt = 0.0;
-    if (data$s_tmin[i] <= constants$SNOW_TCRIT) { newsnow = data$s_prcp[i];
-    } else {
-      snowmelt = constants$SNOW_TRATE * (data$s_tmin[i] - constants$SNOW_TCRIT);
-    }
-    snowpack <- snowpack + (newsnow - snowmelt)
-    if (snowpack < 0.0) snowpack = 0.0;
-    data$s_swe[i] = snowpack;
+  newsnow = 0.0;
+  snowmelt = 0.0;
+  if (data$s_tmin <= constants$SNOW_TCRIT) { newsnow = data$s_prcp;
+  } else {
+    snowmelt = constants$SNOW_TRATE * (data$s_tmin - constants$SNOW_TCRIT);
   }
+  snowpack <- snowpack + (newsnow - snowmelt)
+  if (snowpack < 0.0) snowpack = 0.0;
+  data$s_swe = snowpack;
+  
   
   # /* use the first pass to set the initial snowpack conditions for the
   # first day of data */
@@ -166,35 +131,22 @@ snowpack<-function(mt) {
   } else { prev_yday = start_yday-1; }
   count = 0;
   sum = 0.0;
-  if (ndays >1) {
-  for (i in 2:ndays)
-  {
-    if (data$yday[i] == start_yday || data$yday[i] == prev_yday)
-    {
-      count <-count + 1;
-      sum <- sum + data$s_swe[i];
-    }
-  }
-  }
+  
   # /* Proceed with correction if there are valid days to reinitialize
   # the snowpack estiamtes. Otherwise use the first-pass estimate. */
   if (count)
   {
     snowpack = sum/count;
-    for (i in 1:ndays)
-    {
-      newsnow = 0.0;
-      snowmelt = 0.0;
-      if (data$s_tmin[i] <= SNOW_TCRIT) {newsnow = data$s_prcp[i]; 
-      } else { snowmelt = SNOW_TRATE * (data$s_tmin[i] - SNOW_TCRIT); }
-      snowpack <-snowpack + (newsnow - snowmelt)
-      if (snowpack < 0.0) snowpack = 0.0;
-      data$s_swe[i] = snowpack;
-    }
+    newsnow = 0.0;
+    snowmelt = 0.0;
+    if (data$s_tmin <= constants$SNOW_TCRIT) {newsnow = data$s_prcp; 
+    } else { snowmelt = constants$SNOW_TRATE * (data$s_tmin - constants$SNOW_TCRIT); }
+    snowpack <-snowpack + (newsnow - snowmelt)
+    if (snowpack < 0.0) snowpack = 0.0;
+    data$s_swe = snowpack;
   }
   
   mt$p <- p
-  mt$ctrl <- ctrl
   mt$mtclim_data <- data
   
   return(mt)
@@ -327,7 +279,7 @@ compute_srad_humidity_onetime <- function(ndays, ctrl, data, tdew, pva, ttmax0, 
     #     /* save daily radiation */
     #       /* save cloud transmittance when rad is an input */
     if (ctrl$insw) {
-
+      
       potrad = (srad1+srad2+sc)*daylength[yday]/t_final/86400;
       if (potrad>0 && data$s_srad[i]>0 && daylength[yday]>0) {
         data$s_tfmax[i] = (data$s_srad[i])/(potrad*t_tmax); #//both of these are 24hr mean rad. here
@@ -339,7 +291,7 @@ compute_srad_humidity_onetime <- function(ndays, ctrl, data, tdew, pva, ttmax0, 
     } else {
       data$s_srad[i] = srad1 + srad2 +sc;
     }
-
+    
     #     /* start vic_change */
     LW_CLOUD_DEARDORFF <- 1
     if (options$LW_CLOUD == LW_CLOUD_DEARDORFF) {

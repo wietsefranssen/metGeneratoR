@@ -77,23 +77,7 @@ calc_prcp<-function(mt) {
   
   ndays <- ctrl$ndays;
   
-  # /* start vic_change */
-  ratio = -1.;
-  if ( p$site_isoh < 1e-10 && p$base_isoh < 1e-10 ) {
-    # /* If base_isoh and site_isoh are both small, set the ratio to 1.
-    # This handles the case in which annual precip is 0, resulting in
-    # base_isoh and site_isoh being 0 and their ratio being undefined. */
-    ratio = 1.;
-  }
-  else if (p$base_isoh == 0) {
-    stop("Error in calc_prcp(): base_isoh == 0 and site_isoh/base_isoh == NaN.");
-  }
-  else {
-    ratio = p$site_isoh / p$base_isoh;
-  }
-  # /* end vic_change */
-  
-  data$s_prcp = data$prcp * ratio;
+  data$s_prcp = data$prcp
   
   mt$p <- p
   mt$ctrl <- ctrl
@@ -108,7 +92,6 @@ snowpack<-function(mt) {
   p <- mt$p
   ctrl <- mt$ctrl
   data <- mt$mtclim_data
-  
   constants <- metGen$constants
   
   # /* first pass to initialize SWE array */

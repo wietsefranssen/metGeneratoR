@@ -1,17 +1,11 @@
-mtclim_init <- function(have_dewpt, have_shortwave, elevation, slope, aspect, ehoriz, whoriz, annual_prcp, 
-                        lat, dmy, prec, tmax, tmin, vp, hourlyrad, 
+mtclim_init <- function(have_dewpt, have_shortwave, elevation, slope, aspect, ehoriz, whoriz,
+                        lat, prec, tmax, tmin, vp, yday, hourlyrad, 
                         tiny_radfract,
                         p, mtclim_data)
-  #   int have_dewpt, int have_shortwave, double elevation, double slope, double aspect,
-  #                    double ehoriz, double whoriz, double annual_prcp, 
-  # 		   double lat, int Ndays, dmy_struct *dmy, 
-  # 		   double *prec, double *tmax, double *tmin, double *vp, double *hourlyrad, 
-  # 		   double **tiny_radfract, control_struct *ctrl, 
-  # 		   parameter_struct *p, data_struct *mtclim_data)
 {
   # /* initialize the control structure */
   ctrl<-NULL
-  ctrl$ndays = metGen$derived$nday;
+  # ctrl$ndays = metGen$derived$nday;
   
   ctrl$indewpt = 0;
   ctrl$invp = 0;
@@ -33,16 +27,13 @@ mtclim_init <- function(have_dewpt, have_shortwave, elevation, slope, aspect, eh
   # /* initialize the parameter structure.  Meteorological variables are only
   #    calculated for the mean grid cell elevation.  The temperatures are lapsed
   #    outside of the mtclim code.  Therefore p$base_elev and p$site_elev are
-  #    set to the same value.  The same is true for p$base_isoh and
-  #    p$site_isoh. */
+  #    set to the same value.
   p <- NULL
   p$base_elev   = elevation;
-  p$base_isoh   = annual_prcp/10.; # /* MTCLIM prcp in cm */
   p$site_lat    = lat;
   p$site_elev   = elevation;
   p$site_slp    = slope;
   p$site_asp    = aspect;
-  p$site_isoh   = annual_prcp/10.; # /* MTCLIM prcp in cm */
   p$site_ehoriz = ehoriz;
   p$site_whoriz = whoriz;
   p$tmax_lr     = -1*metGen$constants$T_LAPSE*metGen$constants$METERS_PER_KM;	# /* not used since site_elev == base_elev */
@@ -55,7 +46,7 @@ mtclim_init <- function(have_dewpt, have_shortwave, elevation, slope, aspect, eh
   
   # /* initialize the data arrays with the vic input data */
   mtclim_data <- NULL
-  mtclim_data$yday = metGen$derived$inYDays
+  mtclim_data$yday = yday
   mtclim_data$tmax = tmax;
   mtclim_data$tmin = tmin;
   if (ctrl$insw) {

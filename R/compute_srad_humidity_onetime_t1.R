@@ -3,7 +3,7 @@
 compute_srad_humidity_onetime_t1 <- function(ctrl, data, tdew, pva, ttmax0, flat_potrad, 
                                           slope_potrad, sky_prop, daylength, pet, parray, pa, dtr, options) {
     yday = data$yday
-    
+    sky_prop <- 1
     #   /*** Compute SW radiation ***/
     t_tmax = ttmax0 + metGen$constants$ABASE * pva;
     if (t_tmax < 0.0001) t_tmax = 0.0001; # // this is mainly for the case of observed VP supplied, for which t_tmax sometimes ends up being negative (when potential radiation is low and VP is high)
@@ -33,20 +33,20 @@ compute_srad_humidity_onetime_t1 <- function(ctrl, data, tdew, pva, ttmax0, flat
     #     */
     #       
     #       /* component 1 */
-    srad1 = slope_potrad[yday] * t_final * pdir;
+    srad1 = slope_potrad * t_final * pdir;
     
     #     /* component 2 (diffuse) */
     #       /* includes the effect of surface albedo in raising the diffuse
     #     radiation for obstructed horizons */
-    srad2 = flat_potrad[yday] * t_final * pdif * (sky_prop + metGen$constants$DIF_ALB*(1.0-sky_prop));
+    srad2 = flat_potrad * t_final * pdif * (sky_prop + metGen$constants$DIF_ALB*(1.0-sky_prop));
     
     #     /* snow pack influence on radiation */
     if (options$MTCLIM_SWE_CORR && data$s_swe > 0.0) {
       #         /* snow correction in J/m2/day */
       sc = (1.32 + 0.096 * data$s_swe) * 1e6;
       #           /* convert to W/m2 and check for zero daylength */
-      if (daylength[yday] >  0.0) {
-        sc<-sc / daylength[yday] 
+      if (daylength >  0.0) {
+        sc<-sc / daylength 
       } else { 
         sc = 0.0 
       }
@@ -58,8 +58,8 @@ compute_srad_humidity_onetime_t1 <- function(ctrl, data, tdew, pva, ttmax0, flat
     #       /* save cloud transmittance when rad is an input */
     if (ctrl$insw) {
       
-      potrad = (srad1+srad2+sc)*daylength[yday]/t_final/86400;
-      if (potrad>0 && data$s_srad>0 && daylength[yday]>0) {
+      potrad = (srad1+srad2+sc)*daylength/t_final/86400;
+      if (potrad>0 && data$s_srad>0 && daylength>0) {
         data$s_tfmax = (data$s_srad)/(potrad*t_tmax); #//both of these are 24hr mean rad. here
         # print(data$s_tfmax)
         if (data$s_tfmax > 1.0) data$s_tfmax = 1.0 

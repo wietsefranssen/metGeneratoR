@@ -5,7 +5,7 @@ profile<-NULL
 source("./R/temp_function.R")
 # mgsetPeriod(startdate = "1950-01-03", enddate = "1950-01-05")
 # mgsetPeriod(startdate = "1964-12-31", enddate = "1965-01-03")
-mgsetPeriod(startdate = "1965-01-01", enddate = "1965-01-01")
+mgsetPeriod(startdate = "1965-01-01", enddate = "1965-01-03")
 mgsetInDt(24) # Set N hours per timestep
 mgsetOutDt(6) # Set N hours per timestep
 
@@ -14,10 +14,6 @@ constants <- metGen$constants
 
 have_dewpt <- F
 theta_l = -30
-
-slope <- 0
-aspect <- 0
-ehoriz <- whoriz <- 0
 
 param_set_TYPE_SHORTWAVE_SUPPLIED <- 1
 options <- NULL
@@ -32,7 +28,7 @@ tmax <- c(33.05, 30.70, 28.74)
 rsds <- c(196.90, 178.50, 186.60)
 
 
-ncellsTotal <- 1
+ncellsTotal <- 5
 elevation <- 434
 lat <- array(-8.25, dim = ncellsTotal)
 lon <- array(-39.25, dim = ncellsTotal)
@@ -51,6 +47,26 @@ for (iTime in 1:metGen$derived$nrec_in) {
     elevationAll[iCell] <- elevation
     lonAll[iCell] <- lon[iCell]
     latAll[iCell] <- lat[iCell]
+  }
+}
+
+## Calculate solar GEOMs as preprocessing step
+lapse_rate <- 0.0065
+solar_geom_file <- "./solar_geom.Rdata"
+if(file.exists(solar_geom_file)) {
+  load(file = solar_geom_file)
+  ## Check the file:
+  if (length(solar_geom$lat) == length(lat) &&
+      solar_geom$lat == lat && solar_geom$elev == elevation && solar_geom$lapse_rate == lapse_rate) {
+    print("Good!") 
+  } else {
+    print("Error in file! Regenerating solar_geom file...") 
+    solar_geom<-solar_geom(lat = lat)
+    solar_geom$tt_max<-solar_geom_tt_max0(lat = lat, elev = elevation, lr = lapse_rate)
+    solar_geom$lat <- lat
+    solar_geom$elev <- elevation
+    solar_geom$lapse_rate <- lapse_rate
+    save(solar_geom, file = solar_geom_file)
   }
 }
 
@@ -100,61 +116,34 @@ for (iday in 1:metGen$derived$nday) {
       }
     }
     ###################### START MTCLIM WRAPPER
-    print("doing mtclim_init...")
-    mt <- mtclim_init(have_dewpt, param_set_TYPE_SHORTWAVE_SUPPLIED, elevation, slope, aspect, ehoriz, whoriz,
+    printf("doing mtclim_init...\n")
+    mt <- mtclim_init(have_dewpt, param_set_TYPE_SHORTWAVE_SUPPLIED, elevation, 0,0,0,
                       lat, prec, tmax, tmin, vp, metGen$derived$inYDays[iday], hourlyrad,
                       tiny_radfract,
                       p, mtclim_data)
-
+    
     mt<-calc_tair(mt)
     
     mt<-calc_prcp(mt)
     
     mt<-snowpack(mt)
     
+    ## Select mt data for current day in year
+    yday<-metGen$derived$inYDays[iday]
+    mt$ttmax0<-solar_geom$tt_max[yday]
+    mt$flat_potrad<-solar_geom$flat_potrad[yday]
+    mt$slope_potrad<-solar_geom$flat_potrad[yday]
+    mt$daylength<-solar_geom$daylength[yday]
+    tiny_radfract <- solar_geom$tiny_rad_fract
+    
     profile$start.time.run <- Sys.time()
-    mt <-calc_tiny_radfract(mt)
-    mt2 <-calc_tiny_radfract_rest(mt, options)
+    for (i in 1:(1)) mt_t2<-calc_rest_1t(mt, options)
+    # for (i in 1:(67420)) mt_t2<-calc_rest_1t(mt2, options)
     profile$end.time.run <- Sys.time()
     cat(sprintf("  Times (run): %.1f seconds\n",
                 as.numeric(profile$end.time.run   - profile$start.time.run, units = "secs")))
-
-    # save(mt2, file = "mt2.Rdata")
-    # save(mt_new, file = "mt_new2.Rdata")
-    
-    # stop()
-    ## Load mt data
-    # load("mt2.Rdata")
-    # mt_old<-mt2
-    tiny_radfract <- mt2$tiny_radfract
-    mt2$tiny_radfract<-NULL
-    
-    
-    print("rest...")
-    ## Select mt data for current day in year
-    yday<-metGen$derived$inYDays[iday]
-    mt<-mt2
-    mt$ttmax0<-mt$ttmax0[yday]
-    mt$flat_potrad<-mt$flat_potrad[yday]
-    mt$slope_potrad<-mt$slope_potrad[yday]
-    mt$daylength<-mt$daylength[yday]
-    
-    # profile$start.time.run <- Sys.time()
-    # # for (i in 1:(360*5)) mt3<-calc_rest2(mt2, options)
-    # profile$end.time.run <- Sys.time()
-    # cat(sprintf("  Old Times (run): %.1f seconds\n",
-    #             as.numeric(profile$end.time.run   - profile$start.time.run, units = "secs")))
-    
-    mt2<-mt
-    profile$start.time.run <- Sys.time()
-    for (i in 1:(1)) mt_t2<-calc_rest_1t(mt2, options)
-    # for (i in 1:(67420)) mt_t2<-calc_rest_1t(mt2, options)
-    profile$end.time.run <- Sys.time()
-    cat(sprintf("  New Times (run): %.1f seconds\n",
-                as.numeric(profile$end.time.run   - profile$start.time.run, units = "secs")))
     ctrl<-mt$ctrl
     mtclim_data<-mt_t2
-    yday
     hourly_rad <- mtclim_to_vic(hour_offset, yday, tiny_radfract, mt$ctrl, 
                                 mt_t2, tskc, vp, fdir)
     
@@ -207,7 +196,7 @@ for (iday in 1:metGen$derived$nday) {
       outData$shortwave[rec] <- outData$shortwave[rec] / metGen$derived$outDt
       sum <- sum + outData$shortwave[rec]
     }
-    print(outData$shortwave)
+    # print(outData$shortwave)
     
     ## Move data to previous timestep
     hourlyrad_prev <- hourlyrad 
@@ -220,5 +209,5 @@ cat(sprintf("  Total: %.1f seconds\n", as.numeric(profile$end.time.total   - pro
 totTime<-as.numeric(profile$end.time.total   - profile$start.time.total, units = "secs")
 cat(sprintf("  Total: %.1f seconds for %d x %d = %d cells. So: 100 yeas (67420 cels) will take: %.1f days\n", totTime, metGen$derived$nday ,ncellsTotal, (metGen$derived$nday * ncellsTotal), (
   (totTime * 67420 * 365.25 * 100) / (metGen$derived$nday * ncellsTotal) / 86400
-  )))
+)))
 

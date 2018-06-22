@@ -1,4 +1,4 @@
-mtclim_init <- function(have_dewpt, have_shortwave, elevation, slope, aspect, ehoriz, whoriz,
+mtclim_init <- function(have_dewpt, have_shortwave, elevation, aspect, ehoriz, whoriz,
                         lat, prec, tmax, tmin, vp, yday, hourlyrad, 
                         tiny_radfract,
                         p, mtclim_data)
@@ -32,7 +32,7 @@ mtclim_init <- function(have_dewpt, have_shortwave, elevation, slope, aspect, eh
   p$base_elev   = elevation;
   p$site_lat    = lat;
   p$site_elev   = elevation;
-  p$site_slp    = slope;
+  p$site_slp    = 0 # slope;
   p$site_asp    = aspect;
   p$site_ehoriz = ehoriz;
   p$site_whoriz = whoriz;

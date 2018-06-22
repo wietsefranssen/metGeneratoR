@@ -28,7 +28,7 @@ tmax <- c(33.05, 30.70, 28.74)
 rsds <- c(196.90, 178.50, 186.60)
 
 
-ncellsTotal <- 5
+ncellsTotal <- 100
 elevation <- 434
 lat <- array(-8.25, dim = ncellsTotal)
 lon <- array(-39.25, dim = ncellsTotal)
@@ -69,6 +69,24 @@ if(file.exists(solar_geom_file)) {
     save(solar_geom, file = solar_geom_file)
   }
 }
+hourly_rad_fract_file <- "./hourly_rad_fract.Rdata"
+if(file.exists(hourly_rad_fract_file)) {
+  load(file = hourly_rad_fract_file)
+  ## Check the file:
+  if (length(hourly_rad_fract$lat) == length(lat) && length(hourly_rad_fract$lon) == length(lon)) {
+    print("Good!") 
+    hourly_rad_fract_data <- hourly_rad_fract$data
+  } else {
+    print("Error in file! Regenerating hourly_rad_fract file...") 
+    hourly_rad_fract<-NULL
+    hourly_rad_fract$data <- hourly_rad_fract(lon = lon[1], lat = lat[1], theta_l, solar_geom$tiny_rad_fract)
+    hourly_rad_fract$lat <- lat
+    hourly_rad_fract$lon <- lon
+    save(hourly_rad_fract, file = hourly_rad_fract_file)
+    hourly_rad_fract_data <- hourly_rad_fract$data
+  }
+}
+# hourly_rad_fract <- hourly_rad_fract(hour_offset, tiny_radfract)
 
 ### THE MAIN LOOP
 profile$start.time.total <- Sys.time()
@@ -119,7 +137,6 @@ for (iday in 1:metGen$derived$nday) {
     printf("doing mtclim_init...\n")
     mt <- mtclim_init(have_dewpt, param_set_TYPE_SHORTWAVE_SUPPLIED, elevation, 0,0,0,
                       lat, prec, tmax, tmin, vp, metGen$derived$inYDays[iday], hourlyrad,
-                      tiny_radfract,
                       p, mtclim_data)
     
     mt<-calc_tair(mt)
@@ -144,9 +161,22 @@ for (iday in 1:metGen$derived$nday) {
                 as.numeric(profile$end.time.run   - profile$start.time.run, units = "secs")))
     ctrl<-mt$ctrl
     mtclim_data<-mt_t2
-    hourly_rad <- mtclim_to_vic(hour_offset, yday, tiny_radfract, mt$ctrl, 
-                                mt_t2, tskc, vp, fdir)
     
+    # hourly_rad_fract <- hourly_rad_fract(hour_offset, tiny_radfract)
+    
+    if (ctrl$insw) {
+      tmp_rad <- mtclim_data$s_srad * 24.;
+    } else {
+      tmp_rad = mtclim_data$s_srad * mtclim_data$s_dayl / 3600.;
+    }
+    hourly_rad <- array(0, dim = (24))
+    
+    ## Previous mtclim_to_vic function now splitted up in hourly_rad_fract function and the lines below:
+    for (j in 1:24) {
+      hourly_rad[j] <-  hourly_rad_fract_data[yday,j] * tmp_rad;
+    }
+
+    # print(hourly_rad)
     ###################### END MTCLIM WRAPPER
     
     # /***********************************************************

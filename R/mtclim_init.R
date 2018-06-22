@@ -1,6 +1,5 @@
 mtclim_init <- function(have_dewpt, have_shortwave, elevation, aspect, ehoriz, whoriz,
-                        lat, prec, tmax, tmin, vp, yday, hourlyrad, 
-                        tiny_radfract,
+                        lat, prec, tmax, tmin, vp, yday, hourlyrad,
                         p, mtclim_data)
 {
   # /* initialize the control structure */
@@ -63,13 +62,9 @@ mtclim_init <- function(have_dewpt, have_shortwave, elevation, aspect, ehoriz, w
   if (have_dewpt==1)
     stop("have_dewpt not yet implemented ...\n");
   
-  tinystepspday = 86400/metGen$constants$SRADDT;
-  tiny_radfract <- array(0, dim = c(366,tinystepspday))
-  
   mt<-NULL
   mt$mtclim_data<-mtclim_data
   mt$p <- p
   mt$ctrl <- ctrl
-  mt$tiny_radfract<-tiny_radfract
   return(mt)
 }

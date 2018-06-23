@@ -2,7 +2,7 @@ rm(list=ls(all=TRUE))
 
 library(metGeneratoR)
 profile<-NULL
-source("./R/temp_function.R")
+
 # mgsetPeriod(startdate = "1950-01-03", enddate = "1950-01-05")
 # mgsetPeriod(startdate = "1964-12-31", enddate = "1965-01-3")
 mgsetPeriod(startdate = "1965-01-01", enddate = "1965-01-3")

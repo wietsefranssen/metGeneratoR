@@ -4,8 +4,8 @@ library(metGeneratoR)
 profile<-NULL
 source("./R/temp_function.R")
 # mgsetPeriod(startdate = "1950-01-03", enddate = "1950-01-05")
-# mgsetPeriod(startdate = "1964-12-31", enddate = "1965-01-03")
-mgsetPeriod(startdate = "1965-01-01", enddate = "1965-01-03")
+# mgsetPeriod(startdate = "1964-12-31", enddate = "1965-01-3")
+mgsetPeriod(startdate = "1965-01-01", enddate = "1965-01-3")
 mgsetInDt(24) # Set N hours per timestep
 mgsetOutDt(6) # Set N hours per timestep
 
@@ -26,9 +26,13 @@ prec <- c(0.79, 0.00, 2.90)
 tmin <- c(22.09, 18.65, 21.44)
 tmax <- c(33.05, 30.70, 28.74)
 rsds <- c(196.90, 178.50, 186.60)
+# prec <- c(0.79, 0.79, 0.00, 2.90)
+# tmin <- c(22.09, 22.09, 18.65, 21.44)
+# tmax <- c(33.05, 33.05, 30.70, 28.74)
+# rsds <- c(196.90, 196.90, 178.50, 186.60)
 
+ncellsTotal <- 1
 
-ncellsTotal <- 100
 elevation <- 434
 lat <- array(-8.25, dim = ncellsTotal)
 lon <- array(-39.25, dim = ncellsTotal)
@@ -69,6 +73,7 @@ if(file.exists(solar_geom_file)) {
     save(solar_geom, file = solar_geom_file)
   }
 }
+### TODO: check if start yday is correct!!!
 hourly_rad_fract_file <- "./hourly_rad_fract.Rdata"
 if(file.exists(hourly_rad_fract_file)) {
   load(file = hourly_rad_fract_file)
@@ -86,7 +91,6 @@ if(file.exists(hourly_rad_fract_file)) {
     hourly_rad_fract_data <- hourly_rad_fract$data
   }
 }
-# hourly_rad_fract <- hourly_rad_fract(hour_offset, tiny_radfract)
 
 ### THE MAIN LOOP
 profile$start.time.total <- Sys.time()
@@ -123,20 +127,19 @@ for (iday in 1:metGen$derived$nday) {
     # /*************************************************
     #   Shortwave, part 1.
     # *************************************************/
-    hourlyrad <- array(NA, dim = c(24))
+    hourly_rad <- array(NA, dim = c(24))
     if (param_set_TYPE_SHORTWAVE_SUPPLIED) {
       if(metGen$derived$inDt == 24) {
-        hourlyrad <- rep(rsds, 24)
+        hourly_rad <- rep(rsds, 24)
       } else {
         for (hour in 1:24) {
-          hourlyrad[hour] = rsds[hour];
+          hourly_rad[hour] = rsds[hour];
         }
       }
     }
     ###################### START MTCLIM WRAPPER
-    printf("doing mtclim_init...\n")
     mt <- mtclim_init(have_dewpt, param_set_TYPE_SHORTWAVE_SUPPLIED, elevation, 0,0,0,
-                      lat, prec, tmax, tmin, vp, metGen$derived$inYDays[iday], hourlyrad,
+                      lat, prec, tmax, tmin, vp, metGen$derived$inYDays[iday], hourly_rad,
                       p, mtclim_data)
     
     mt<-calc_tair(mt)
@@ -153,17 +156,9 @@ for (iday in 1:metGen$derived$nday) {
     mt$daylength<-solar_geom$daylength[yday]
     tiny_radfract <- solar_geom$tiny_rad_fract
     
-    profile$start.time.run <- Sys.time()
-    for (i in 1:(1)) mt_t2<-calc_rest_1t(mt, options)
-    # for (i in 1:(67420)) mt_t2<-calc_rest_1t(mt2, options)
-    profile$end.time.run <- Sys.time()
-    cat(sprintf("  Times (run): %.1f seconds\n",
-                as.numeric(profile$end.time.run   - profile$start.time.run, units = "secs")))
+    mtclim_data<-calc_rest_1t(mt, options)
     ctrl<-mt$ctrl
-    mtclim_data<-mt_t2
-    
-    # hourly_rad_fract <- hourly_rad_fract(hour_offset, tiny_radfract)
-    
+
     if (ctrl$insw) {
       tmp_rad <- mtclim_data$s_srad * 24.;
     } else {
@@ -192,21 +187,21 @@ for (iday in 1:metGen$derived$nday) {
     if (param_set_TYPE_SHORTWAVE_SUPPLIED && (metGen$derived$inDt < 24)) {
       for (day in 1:metGen$derived$nday) {
         for (hour in 1:24) {
-          hourlyrad[(day-1)*24+hour] = local_forcing_data[SHORTWAVE][(day-1)*24+hour];
+          hourly_rad[(day-1)*24+hour] = local_forcing_data[SHORTWAVE][(day-1)*24+hour];
         }
       }
     }
     
     ## Copy data to previous timestep for first timestep
     if (iday == 1) {
-      hourlyrad_prev <- hourlyrad 
+      hourly_rad_prev <- hourly_rad 
     }
     
     
     ## Fill the arrays
     outData<-NULL
     outData$shortwave<-array(NA, dim = metGen$derived$nOutStepDay)
-    # // Transfer hourlyrad to atmos structure
+    # // Transfer hourly_rad to atmos structure
     for(rec in 1:metGen$derived$nOutStepDay) {
       sum = 0;
       hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
@@ -215,21 +210,22 @@ for (iday in 1:metGen$derived$nday) {
       for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
         if (idx_tmp <= 24) {
           idx<-idx_tmp
-          outData$shortwave[rec] <- outData$shortwave[rec] + hourlyrad_prev[idx];
+          outData$shortwave[rec] <- outData$shortwave[rec] + hourly_rad_prev[idx];
           # printf("rec %d, hour_local_out %d, prev_day index: %d\n", rec, hour_local_out, idx)
         } else {
           idx<-idx_tmp-24
-          outData$shortwave[rec] <- outData$shortwave[rec] + hourlyrad[idx];
+          outData$shortwave[rec] <- outData$shortwave[rec] + hourly_rad[idx];
           # printf("rec %d, hour_local_out %d, curr_day index: %d\n", rec, hour_local_out, idx)
         }
       }
       outData$shortwave[rec] <- outData$shortwave[rec] / metGen$derived$outDt
       sum <- sum + outData$shortwave[rec]
     }
-    # print(outData$shortwave)
-    
+
     ## Move data to previous timestep
-    hourlyrad_prev <- hourlyrad 
+    hourly_rad_prev <- hourly_rad 
+    
+    print(outData$shortwave)
   }
 }
 

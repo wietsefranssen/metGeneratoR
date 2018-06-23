@@ -75,7 +75,7 @@ solar_geom <- function(lat = lat) {
         # Sun not above horizon
         dir_flat_topa <- 0
       }
-      tinystep <- min(max((12 * cnst$SEC_PER_HOUR + h * cnst$SEC_PER_RAD) / dt, 0), tiny_step_per_day - 1)
+      tinystep <- ceiling(min(max((12 * cnst$SEC_PER_HOUR + h * cnst$SEC_PER_RAD) / dt, 0), tiny_step_per_day - 1))
       tiny_rad_fract[i,tinystep] <- dir_flat_topa
     }
     if (daylength[i] && sum_flat_potrad > 0) {

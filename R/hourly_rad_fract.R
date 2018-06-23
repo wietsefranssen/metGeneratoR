@@ -36,6 +36,16 @@ hourly_rad_fract <- function(lon, lat, theta_l, tiny_radfract)
   # //else (i.e., MTCLIM calculated), assume it's a daylight period average
   hourly_rad_fract <- array(0, dim = c(366,24))
   
+  ## Define julian days for the rest of the year based on first day of run
+  yday<-array(NA, 366)
+  yday_start<-metGen$derived$inYDays[1]
+  yday_tmp <- yday_start
+  for (i in 1:366) {
+    if (yday_tmp > 366) yday_tmp <- 1
+    yday[i] <- yday_tmp
+    yday_tmp <- yday_tmp + 1
+  }
+
   for (day in 1:366) {
     for (j in 1:24) {
       hourly_rad_fract[j] = 0;
@@ -48,7 +58,7 @@ hourly_rad_fract <- function(lon, lat, theta_l, tiny_radfract)
         if (tinystep > 24*tinystepsphour) {
           tinystep <- tinystep - 24*tinystepsphour; 
         }
-        hourly_rad_fract[day,j] <- hourly_rad_fract[day,j] + tiny_radfract[day,tinystep]
+        hourly_rad_fract[day,j] <- hourly_rad_fract[day,j] + tiny_radfract[yday[day],tinystep]
       }
     }
   }

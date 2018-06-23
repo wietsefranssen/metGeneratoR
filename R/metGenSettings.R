@@ -4,6 +4,11 @@ mgsetLonlatbox <- function(lonlatbox) {
   metGen$settings$lonlatbox <- lonlatbox
 }
 
+mgsetSwRadDt <- function(swRadDt) {
+  metGen$derived$swRadDt <- metGen$settings$swRadDt <- swRadDt
+  metGen$derived$nSwRadDay  <- 86400 / metGen$derived$swRadDt
+}
+
 mgsetInDt <- function(inDt) {
   metGen$derived$inDt <- metGen$settings$inDt <- inDt
   metGen$derived$nInStepDay  <- 24 / metGen$derived$inDt
@@ -133,6 +138,7 @@ mgsetInitSettings <- function() {
   mgsetInDt(24) # Set N hours per timestep
   mgsetOutDt(24) # Set N hours per timestep
   mgsetNCores(1) # Set N hours per timestep
+  mgsetSwRadDt(30) # Set timestep for radiation routine (seconds)
   
 }
 

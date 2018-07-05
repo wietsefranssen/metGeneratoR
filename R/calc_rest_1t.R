@@ -3,7 +3,6 @@ calc_rest_1t <- function(mt, options)
   p <- mt$p
   ctrl <- mt$ctrl
   data <- mt$mtclim_data
-  # tiny_radfract <- mt$tiny_radfract
   ttmax0 <- mt$ttmax0
   flat_potrad <- mt$flat_potrad
   slope_potrad <- mt$slope_potrad

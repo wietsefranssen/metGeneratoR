@@ -40,7 +40,7 @@ mgsetElevation(ncname = "elevation", filename = metGen$internal$ncFileNameElevat
 
 ## Define output variables
 # mgsetOutVars(c("pr", "tas"))
-mgsetOutVars(c( "shortwave"))
+mgsetOutVars(c( "shortwave", "tas"))
 
 
 ## Load elevation
@@ -268,10 +268,41 @@ for (iday in 1:metGen$derived$nday) {
           sum <- sum + outData$shortwave[ilon, ilat, rec]
         }
         
+        ## Temperature!!
+        tminmaxhour<- set_t_minmax_hour(hourly_rad)
+        
+        hourly_tair<-HourlyT(tminmaxhour[2],tmax,tminmaxhour[1],tmin)
+        
+        if (iday == 1) {
+          hourly_tair_prev <- hourly_tair
+        }
+        
+        # // Transfer hourly_tair to atmos structure
+        for(rec in 1:metGen$derived$nOutStepDay) {
+          sum = 0;
+          hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
+          if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
+          outData$tas[ilon, ilat, rec] <- 0;
+          for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
+            if (idx_tmp <= 24) {
+              idx<-idx_tmp
+              outData$tas[ilon, ilat, rec] <- outData$tas[ilon, ilat, rec] + hourly_tair_prev[idx];
+              # printf("rec %d, hour_local_out %d, prev_day index: %d\n", rec, hour_local_out, idx)
+            } else {
+              idx<-idx_tmp-24
+              outData$tas[ilon, ilat, rec] <- outData$tas[ilon, ilat, rec] + hourly_tair[idx];
+              # printf("rec %d, hour_local_out %d, curr_day index: %d\n", rec, hour_local_out, idx)
+            }
+          }
+          outData$tas[ilon, ilat, rec] <- outData$tas[ilon, ilat, rec] / metGen$derived$outDt
+          sum <- sum + outData$tas[ilon, ilat, rec]
+        }
+        
+        
         ## Move data to previous timestep
         hourly_rad_prev <- hourly_rad 
+        hourly_tair_prev <- hourly_tair 
         
-        # print(outData$shortwave)
       }
     }
     ## refresh progressbar
@@ -284,7 +315,7 @@ for (iday in 1:metGen$derived$nday) {
   ## ADD OUTPUT TO NETCDF
   profile$start.time.write <- Sys.time()
   for (var in names(metGen$settings$outVars)) {
-    var<-"shortwave"
+    # var<-"shortwave"
     timeIndex <- metGen$derived$nOutStepDay*(iday-1)+1
     metGen$settings$outVars[[var]]$ncid <- nc_open(metGen$settings$outVars[[var]]$filename, write = TRUE)
     ncvar_put(metGen$settings$outVars[[var]]$ncid,

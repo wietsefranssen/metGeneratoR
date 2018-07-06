@@ -1,4 +1,4 @@
-set_min_max_hour <- function(tiny_rad_fract, yday, n_days,
+set_min_max_hour_old <- function(tiny_rad_fract, yday, n_days,
                              ts, params) {
 
   # def set_min_max_hour(tiny_rad_fract: np.array, yday: np.array, n_days: int,

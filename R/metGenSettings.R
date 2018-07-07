@@ -111,7 +111,7 @@ mgsetOutVars <- function(varnames) {
                    "        Ingoring: ", var, "\n"))
       } else {
         metGen$settings$outVars[[var]]$name <- var
-        metGen$settings$outVars[[var]]$filename <- paste0(var, ".nc")
+        metGen$settings$outVars[[var]]$filename <- paste0("output/", var, ".nc")
         metGen$settings$outVars[[var]]$longName <- metGen$metadata$outvars[[var]]$longName
         metGen$settings$outVars[[var]]$units <- metGen$metadata$outvars[[var]]$units
       }
@@ -152,18 +152,21 @@ mgsetInitMetadata <- function() {
     pressure   = list(filename = "", enable = FALSE, units = "kPa",       longName = "near surface atmospheric pressure"),
     qair       = list(filename = "", enable = FALSE, units = "kg kg-1",   longName = "specific humidity"),
     vp         = list(filename = "", enable = FALSE, units = "kPa",       longName = "near surface vapor pressure"),
-    rel_humid  = list(filename = "", enable = FALSE, units = "fraction",  longName = "relative humidity"),
+    relhum     = list(filename = "", enable = FALSE, units = "fraction",  longName = "relative humidity"),
     density    = list(filename = "", enable = FALSE, units = "kg m-3",    longName = "near-surface atmospheric density"),
     wind       = list(filename = "", enable = FALSE, units = "m s-1",     longName = "near surface wind speed")
   )
   
   metGen$metadata$invars <- list(
-    pr         = list(units = "mm",    longName = "incoming precipitation"),
-    tasmin     = list(units = "C",     longName = "minimum air temperature"),
-    tasmax     = list(units = "C",     longName = "maximum air temperature"),
-    shortwave  = list(units = "W m-2", longName = "shortwave radiation"),
-    longwave   = list(units = "W m-2", longName = "longwave radiation"),
-    wind       = list(units = "m s-1", longName = "near surface wind speed")
+    pr         = list(units = "mm",       longName = "incoming precipitation"),
+    tasmin     = list(units = "C",        longName = "minimum air temperature"),
+    tasmax     = list(units = "C",        longName = "maximum air temperature"),
+    shortwave  = list(units = "W m-2",    longName = "shortwave radiation"),
+    vp         = list(units = "kPa",      longName = "near surface vapor pressure"),
+    relhum     = list(units = "fraction", longName = "relative humidity"),
+    longwave   = list(units = "W m-2",    longName = "longwave radiation"),
+    pressure   = list(units = "kPa",      longName = "near surface atmospheric pressure"),
+    wind       = list(units = "m s-1",    longName = "near surface wind speed")
   )
   
   metGen$metadata$elevation <- list(ncName = "elevation")

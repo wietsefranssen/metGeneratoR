@@ -1,4 +1,32 @@
-hourly_rad_fract <- function(lmask, theta_l, tiny_rad_fract)
+hourly_rad_fract2 <- function(mask, theta_l, tiny_rad_fract)
+  # void mtclim_to_vic(double hour_offset, 
+  #                    int Ndays, dmy_struct *dmy, 
+  #                    double **tiny_rad_fract, control_struct *ctrl, 
+  #                    data_struct *mtclim_data, double *tskc, double *vp, 
+  #                    double *hourly_rad_fract, double *fdir)
+  # /******************************************************************************
+  #   mtclim_to_vic: Store MTCLIM variables in VIC arrays.
+  # 
+  # Modifications:
+  #   2012-Feb-16 Removed check on mtclim_data->insw for storing tinyradfract data
+  # in hourly_rad_fract array.						TJB
+# ******************************************************************************/
+{
+  hourly_rad_fract <- array(0, dim = c(366, 24, length(mask$xyCoords$y)))
+  
+ for (day in 1:366) {
+    for (k in 1:(86400/30)) {
+      hour<-ceiling(k/tinystepsphour)
+      
+      hourly_rad_fract[day,hour,] <- hourly_rad_fract[day,hour,] + tiny_rad_fract[day, k,]
+    }
+  }
+  
+  return(hourly_rad_fract)
+}
+
+
+hourly_rad_fract <- function(mask, theta_l, tiny_rad_fract)
   # void mtclim_to_vic(double hour_offset, 
   #                    int Ndays, dmy_struct *dmy, 
   #                    double **tiny_rad_fract, control_struct *ctrl, 

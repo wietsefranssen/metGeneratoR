@@ -4,15 +4,19 @@
 
 
 rm(list=ls(all=TRUE))
-
+# setwd("~/Documents/WORKDIRS/RProj/metGeneratoR")
+shifter <- function(x, n = 1) {
+  if (n == 0) x else c(tail(x, -n), head(x, n))
+}
 library(metGeneratoR)
+source('./R/Cpp_met.R')
 profile<-NULL
 
-mgsetLonlatbox(c(92.25, 110.25, 7.25, 36.25))
+# mgsetLonlatbox(c(92.25, 110.25, 7.25, 36.25))
 # mgsetLonlatbox(c(92.25, 92.25, -8.25, -8.25))
 # mgsetLonlatbox(c(92.25, 92.75, 34.25, 36.75))
-# mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
-mgsetPeriod(startdate = "1950-01-01", enddate = "1950-01-02")
+mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
+mgsetPeriod(startdate = "1950-6-01", enddate = "1950-6-01")
 # mgsetPeriod(startdate = "1964-12-31", enddate = "1965-01-3")
 # mgsetPeriod(startdate = "1965-01-01", enddate = "1965-01-2")
 mgsetInDt(24) # Set N hours per timestep
@@ -32,14 +36,14 @@ options$LW_CLOUD <- 1
 options$VP_ITER <- 1
 
 mgsetInVars(list(
-  pr         = list(ncname = "pr",      filename = "../example_data4mtclim/Mekong/pr_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  tasmin     = list(ncname = "tasmin",  filename = "../example_data4mtclim/Mekong/tasmin_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  tasmax     = list(ncname = "tasmax",  filename = "../example_data4mtclim/Mekong/tasmax_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  pressure   = list(ncname = "ps",      filename = "../example_data4mtclim/Mekong/ps_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  relhum     = list(ncname = "hurs",    filename = "../example_data4mtclim/Mekong/hurs_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  shortwave  = list(ncname = "rsds",    filename = "../example_data4mtclim/Mekong/rsds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  longwave   = list(ncname = "rlds",    filename = "../example_data4mtclim/Mekong/rlds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  wind       = list(ncname = "sfcWind", filename = "../example_data4mtclim/Mekong/wind_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc")
+  pr         = list(ncname = "pr",      filename = "../example_data4mtclim/Global/pr_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  tasmin     = list(ncname = "tasmin",  filename = "../example_data4mtclim/Global/tasmin_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  tasmax     = list(ncname = "tasmax",  filename = "../example_data4mtclim/Global/tasmax_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  # pressure   = list(ncname = "ps",      filename = "../example_data4mtclim/Global/ps_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  # relhum     = list(ncname = "hurs",    filename = "../example_data4mtclim/Global/hurs_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  shortwave  = list(ncname = "rsds",    filename = "../example_data4mtclim/Global/rsds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  # longwave   = list(ncname = "rlds",    filename = "../example_data4mtclim/Global/rlds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  wind       = list(ncname = "sfcWind", filename = "../example_data4mtclim/Global/wind_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc")
 ))
 
 ## Define elevation file
@@ -47,7 +51,8 @@ mgsetElevation(ncname = "elevation", filename = metGen$internal$ncFileNameElevat
 
 ## Define output variables
 # mgsetOutVars(c("pr", "tas"))
-mgsetOutVars(c( "shortwave", "longwave", "tas", "pr", "pressure", "wind", "vp"))
+# mgsetOutVars(c( "shortwave", "longwave", "tas", "pr", "pressure", "wind", "vp"))
+mgsetOutVars(c( "shortwave"))
 
 
 ## Load elevation
@@ -62,67 +67,27 @@ mask$Data[!is.na(mask$Data)]<- 1
 nx <- length(mask$xyCoords$x)
 ny <- length(mask$xyCoords$y)
 
-## Calculate solar GEOMs as preprocessing step
+# ## Calculate solar GEOMs as preprocessing step
 lapse_rate <- 0.0065
-solar_geom_file <- "./Rdata/solar_geom_new.Rdata"
-if(file.exists(solar_geom_file)) {
-  printf("Loading solar_geom_file: %s\n", solar_geom_file)
-  load(file = solar_geom_file)
-} else {
-  print("No solar_geom_file file!...") 
-}
-## Check the file:
-if (!is.null(solar_geom) && dim(solar_geom$lats) == dim(mask$xyCoords$y) && dim(solar_geom$lons) == dim(mask$xyCoords$x) && dim(solar_geom$elev) == dim(mask$Data)) {
-  print("File is oke!")
-} else {
-  print("Error in file! Regenerating solar_geom file...") 
-  # solar_geom<-solar_geom(lat = lat)
-  solar_geom <- NULL
-  solar_geom$tiny_rad_fract <- array(NA, dim = c(366, metGen$derived$nSwRadDay, length(mask$xyCoords$y)))
-  solar_geom$daylength <- array(NA, dim = c(366, length(mask$xyCoords$y)))
-  solar_geom$flat_potrad <- array(NA, dim = c(366, length(mask$xyCoords$y)))
-  solar_geom$tt_max <- array(NA, dim = c(366, length(mask$xyCoords$x), length(mask$xyCoords$y)))
-  solar_geom$lons <- mask$xyCoords$x
-  solar_geom$lats <- mask$xyCoords$y
-  solar_geom$elev <- elev$Data
-  
-  for (ilat in 1:length(mask$xyCoords$y)) {
-    print(ilat)
-    solar_geom_temp <- solar_geom(lat = mask$xyCoords$y[ilat])
-    solar_geom$tiny_rad_fract[,,ilat] <- solar_geom_temp$tiny_rad_fract
-    solar_geom$daylength[,ilat] <- solar_geom_temp$daylength
-    solar_geom$flat_potrad[,ilat] <- solar_geom_temp$flat_potrad
-    for (ilon in 1:length(mask$xyCoords$x)) {
-      if (!is.na(mask$Data[ilon,ilat])) {
-        solar_geom$tt_max[,ilon,ilat] <- solar_geom_tt_max0(lat = mask$xyCoords$y[ilat], elev = elev$Data[ilon,ilat], lr = lapse_rate)
-      }
-    }
-  }
-  rm(solar_geom_temp)
-  save(solar_geom, file = solar_geom_file)
-}
 
-### TODO: check if start yday is correct!!!
-hourly_rad_fract_file <- "./Rdata/hourly_rad_fract_new.Rdata"
-if(file.exists(hourly_rad_fract_file)) {
-  printf("Loading hourly_rad_fract_file: %s\n", hourly_rad_fract_file)
-  load(file = hourly_rad_fract_file)
-} else {
-  print("No hourly_rad_fract_file file!...") 
-}
-## Check the file:
-if (!is.null(hourly_rad_fract) && dim(hourly_rad_fract$lat) == dim(mask$xyCoords$y) && dim(hourly_rad_fract$lon) == dim(mask$xyCoords$x)) {
-  print("File is oke!")
-  hourly_rad_fract_data <- hourly_rad_fract$data
-} else {
-  print("Error in file! Regenerating hourly_rad_fract file...") 
-  hourly_rad_fract<-NULL
-  hourly_rad_fract$data <- hourly_rad_fract(mask, theta_l, solar_geom$tiny_rad_fract)
-  hourly_rad_fract$lons <- mask$xyCoords$x
-  hourly_rad_fract$lats <- mask$xyCoords$y
-  save(hourly_rad_fract, file = hourly_rad_fract_file)
-  hourly_rad_fract_data <- hourly_rad_fract$data
-}
+# load("./hpc/outRadFractions_2880.Rdata")
+load("./hpc/outDaylength_2880.Rdata")
+load("./hpc/outFlat_potrad_2880.Rdata")
+load("./hpc/outTt_max0.Rdata")
+
+solar_geom<-NULL
+# tiny_rad_fract <- aperm(outRadFractions, c(2,3,1))
+# solar_geom$tiny_rad_fract <- aperm(outRadFractions, c(2,3,1))
+solar_geom$daylength <- aperm(outDaylength, c(2,1))
+solar_geom$flat_potrad <- aperm(outFlat_potrad, c(2,1))
+solar_geom$tt_max <-  aperm(outTt_max0, c(3,1,2))
+solar_geom$lats <- elev$xyCoords$y
+solar_geom$lons <- elev$xyCoords$x
+solar_geom$elevation <- elev$Data
+# rm(outRadFractions, outDaylength, outFlat_potrad, outTt_max0)
+rm(outDaylength, outFlat_potrad, outTt_max0)
+
+# ### TODO: check if start yday is correct!!!
 
 ## makeOutputNetCDF
 makeNetcdfOut(mask)
@@ -137,7 +102,7 @@ for (var in names(metGen$settings$outVars)) {
 profile$start.time.total <- Sys.time()
 for (iday in 1:metGen$derived$nday) {
   # iday<-2
-  metGen$current$timestep <- 1
+  metGen$current$timestep <- iday
   printf("Day: %d\n", iday)
   
   ## Init progressbar
@@ -153,6 +118,14 @@ for (iday in 1:metGen$derived$nday) {
   
   # for (ilat in 1:length(mask$xyCoords$y)) {
   for (ilon in 1:length(mask$xyCoords$x)) {
+    lon      <- mask$xyCoords$x[ilon]
+
+    ## Calculate offset longitude
+    nrOffsetSteps <- 24
+    # nrOffsetSteps <- 720
+    
+    hour_offset <- hour_offset_int <- ceiling(ilon * (nrOffsetSteps/720))    # hour_offset<-0
+  
     for (ilat in 1:length(mask$xyCoords$y)) {
       ## Select mt data for current day in year
       # mt$ttmax0       <- solar_geom$tt_max[yday, ilon, ilat]
@@ -161,10 +134,8 @@ for (iday in 1:metGen$derived$nday) {
       daylength    <- solar_geom$daylength[yday, ilat]
       
       elevation <- mask$Data[ilon, ilat]
-      if (!is.na(elevation)) {
-        # printf("Day:  %d, elevation %d, lon %5.2f, lat %5.2f\n", iday, elevation, lon, lat)
-        
-        lon      <- mask$xyCoords$x[ilon]
+      if (!is.na(elevation) && !is.na(inData$pr[ilon, ilat,1])) {
+
         lat      <- mask$xyCoords$y[ilat]
         prec     <- inData$pr[ilon, ilat,1]
         pressure <- inData$pressure[ilon, ilat,1]
@@ -175,156 +146,83 @@ for (iday in 1:metGen$derived$nday) {
         shortwave <- inData$shortwave[ilon, ilat,1]
         longwave <- inData$longwave[ilon, ilat,1]
         
-        ## Calculate offset longitude
-        hour_offset = (theta_l-lon)*24/360;
-        if (hour_offset < 0) {
-          hour_offset_int = floor(hour_offset-0.5);
-        } else {
-          hour_offset_int = floor(hour_offset+0.5);
-        }
-        hour_offset <- hour_offset - hour_offset_int #// hour_offset is now the distance from the center of local time zone
-        
-        # /*************************************************
-        #   Shortwave, part 1.
-        # *************************************************/
-        hourly_rad <- array(NA, dim = c(24))
-        if (param_set_TYPE_SHORTWAVE_SUPPLIED) {
-          if(metGen$derived$inDt == 24) {
-            hourly_rad <- rep(shortwave, 24)
-          } else {
-            for (hour in 1:24) {
-              hourly_rad[hour] = shortwave[hour];
-            }
+        if(!is.null(metGen$settings$inVar$shortwave) && !is.null(outData$shortwave)) {
+          hourly_rad <- solar_geom_c(lat, yday)
+          for (j in 1:nrOffsetSteps) {
+            hourly_rad[j] <-  hourly_rad[j] * (shortwave*nrOffsetSteps)
           }
-        }
-        ###################### START MTCLIM WRAPPER
-        mt <- mtclim_init(have_dewpt, param_set_TYPE_SHORTWAVE_SUPPLIED, elevation, 0,0,0,
-                          lat, prec, tmax, tmin, vp, metGen$derived$inYDays[iday], hourly_rad,
-                          p, mtclim_data)
-        
-        mt<-calc_tair(mt)
-        
-        mt<-calc_prcp(mt)
-        
-        mt<-snowpack(mt)
-        
-        ## Select mt data for current day in year
-        mt$ttmax0       <- solar_geom$tt_max[yday, ilon, ilat]
-        mt$flat_potrad  <- flat_potrad
-        mt$slope_potrad <- slope_potrad
-        mt$daylength    <- daylength
-        
-        mtclim_data<-calc_rest_1t(mt, options)
-        ctrl<-mt$ctrl
-        
-        if (ctrl$insw) {
-          tmp_rad <- mtclim_data$s_srad * 24.;
-        } else {
-          tmp_rad = mtclim_data$s_srad * mtclim_data$s_dayl / 3600.;
-        }
-        hourly_rad <- array(0, dim = (24))
-        
-        ## Previous mtclim_to_vic function now splitted up in hourly_rad_fract function and the lines below:
-        for (j in 1:24) {
-          hourly_rad[j] <-  hourly_rad_fract_data[yday,j, ilon, ilat] * tmp_rad;
-        }
-        
-        # print(hourly_rad)
-        ###################### END MTCLIM WRAPPER
-        
-        # /***********************************************************
-        #   Shortwave, part 2.
-        # Transfer the hourly shortwave from MTCLIM to atmos array.
-        # This hourly shortwave is one of the following:
-        #   a) exactly equal to the supplied shortwave, if supplied shortwave was hourly
-        # b) equal to the supplied shortwave when aggregated up to the DT of the supplied shortwave (with hourly variability estimated by MTCLIM)
-        # c) completely estimated by MTCLIM, if no shortwave was supplied as a forcing
-        # ***********************************************************/
-        #
-        # // Ignore MTCLIM estimates if sub-daily SW was supplied
-        if (param_set_TYPE_SHORTWAVE_SUPPLIED && (metGen$derived$inDt < 24)) {
-          for (day in 1:metGen$derived$nday) {
-            for (hour in 1:24) {
-              hourly_rad[(day-1)*24+hour] = local_forcing_data[SHORTWAVE][(day-1)*24+hour];
-            }
+          
+          ## Fill the arrays
+          ## Copy data to previous timestep for first timestep
+          if (iday == 1) {
+            hourly_rad_prev <- hourly_rad 
           }
-        }
-        
-        ## Copy data to previous timestep for first timestep
-        if (iday == 1) {
-          hourly_rad_prev <- hourly_rad 
-        }
-        
-        ## Fill the arrays
-        # // Transfer hourly_rad to atmos structure
-        for(rec in 1:metGen$derived$nOutStepDay) {
-          sum = 0;
-          hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
-          if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
-          outData$shortwave[ilon, ilat, rec] <- 0;
-          for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
-            if (idx_tmp <= 24) {
-              idx<-idx_tmp
-              outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] + hourly_rad_prev[idx];
-              # printf("rec %d, hour_local_out %d, prev_day index: %d\n", rec, hour_local_out, idx)
-            } else {
-              idx<-idx_tmp-24
-              outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] + hourly_rad[idx];
-              # printf("rec %d, hour_local_out %d, curr_day index: %d\n", rec, hour_local_out, idx)
+
+          # print("start")
+          for(rec in 1:metGen$derived$nOutStepDay) {
+            sum = 0;
+            outData$shortwave[ilon, ilat, rec] <- 0;
+            arr<-1:nrOffsetSteps
+            arr_new<-shifter(arr,hour_offset_int)
+            arr_new2<-arr_new[((rec-1) * metGen$derived$outDt):(rec * metGen$derived$outDt)]
+            for (idx in arr_new2) {
+                outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] + hourly_rad[idx];
             }
+            outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] / metGen$derived$outDt
+            sum <- sum + outData$shortwave[ilon, ilat, rec]
           }
-          outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] / metGen$derived$outDt
-          sum <- sum + outData$shortwave[ilon, ilat, rec]
         }
         
         ## Temperature!!
-        tminmaxhour<- set_t_minmax_hour(hourly_rad)
-        
-        hourly_tair<-HourlyT(tminmaxhour[2],tmax,tminmaxhour[1],tmin)
-        
-        if (iday == 1) {
-          hourly_tair_prev <- hourly_tair
-        }
-        
-        # // Transfer hourly_tair to atmos structure
-        for(rec in 1:metGen$derived$nOutStepDay) {
-          sum = 0;
-          hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
-          if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
-          outData$tas[ilon, ilat, rec] <- 0;
-          for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
-            if (idx_tmp <= 24) {
-              idx<-idx_tmp
-              outData$tas[ilon, ilat, rec] <- outData$tas[ilon, ilat, rec] + hourly_tair_prev[idx];
-            } else {
-              idx<-idx_tmp-24
-              outData$tas[ilon, ilat, rec] <- outData$tas[ilon, ilat, rec] + hourly_tair[idx];
-            }
+        if(!is.null(metGen$settings$inVar$tasmin) && !is.null(metGen$settings$inVar$tasmin) && !is.null(outData$tas)) {
+          tminmaxhour<- set_t_minmax_hour(hourly_rad)
+          hourly_tair<-HourlyT(tminmaxhour[2],tmax,tminmaxhour[1],tmin)
+          
+          if (iday == 1) {
+            hourly_tair_prev <- hourly_tair
           }
-          outData$tas[ilon, ilat, rec] <- outData$tas[ilon, ilat, rec] / metGen$derived$outDt
-          sum <- sum + outData$tas[ilon, ilat, rec]
+          
+          # // Transfer hourly_tair to atmos structure
+          for(rec in 1:metGen$derived$nOutStepDay) {
+            sum = 0;
+            hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
+            if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
+            outData$tas[ilon, ilat, rec] <- 0;
+            for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
+              if (idx_tmp <= 24) {
+                idx<-idx_tmp
+                outData$tas[ilon, ilat, rec] <- outData$tas[ilon, ilat, rec] + hourly_tair_prev[idx];
+              } else {
+                idx<-idx_tmp-24
+                outData$tas[ilon, ilat, rec] <- outData$tas[ilon, ilat, rec] + hourly_tair[idx];
+              }
+            }
+            outData$tas[ilon, ilat, rec] <- outData$tas[ilon, ilat, rec] / metGen$derived$outDt
+            sum <- sum + outData$tas[ilon, ilat, rec]
+          }
         }
-        
         # /*************************************************
         #   Precipitation
         # *************************************************/
-        if (iday == 1) {
-          prec_prev <- prec
-        }
-        
-        if(is.null(metGen$settings$inVar$pr)) {
-          cat("niet gegeven!\n")
-        } else {
-          # cat("gegeven!\n")
-          for(rec in 1:metGen$derived$nOutStepDay) {
-            hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
-            if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
-            outData$pr[ilon, ilat, rec] <- 0;
-            for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
-              if (idx_tmp <= 24) {
-                outData$pr[ilon, ilat, rec] <- prec_prev;
-              } else {
-                outData$pr[ilon, ilat, rec] <- prec;
+        if(!is.null(metGen$settings$inVar$pr) && !is.null(outData$pr)) {
+          if (iday == 1) {
+            prec_prev <- prec
+          }
+          
+          if(is.null(metGen$settings$inVar$pr)) {
+            cat("niet gegeven!\n")
+          } else {
+            # cat("gegeven!\n")
+            for(rec in 1:metGen$derived$nOutStepDay) {
+              hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
+              if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
+              outData$pr[ilon, ilat, rec] <- 0;
+              for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
+                if (idx_tmp <= 24) {
+                  outData$pr[ilon, ilat, rec] <- prec_prev;
+                } else {
+                  outData$pr[ilon, ilat, rec] <- prec;
+                }
               }
             }
           }
@@ -333,23 +231,25 @@ for (iday in 1:metGen$derived$nday) {
         # /**************************************
         #   Estimate Atmospheric Pressure (Pa) 
         # **************************************/
-        if (iday == 1) {
-          pressure_prev <- pressure
-        }
-        
-        if(is.null(metGen$settings$inVar$pressure)) {
-          # cat("niet gegeven!\n")
-        } else {
-          # cat("gegeven!\n")
-          for(rec in 1:metGen$derived$nOutStepDay) {
-            hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
-            if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
-            outData$pressure[ilon, ilat, rec] <- 0;
-            for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
-              if (idx_tmp <= 24) {
-                outData$pressure[ilon, ilat, rec] <- pressure_prev;
-              } else {
-                outData$pressure[ilon, ilat, rec] <- pressure;
+        if(!is.null(metGen$settings$inVar$pressure) && !is.null(outData$pressure)) {
+          if (iday == 1) {
+            pressure_prev <- pressure
+          }
+          
+          if(is.null(metGen$settings$inVar$pressure)) {
+            # cat("niet gegeven!\n")
+          } else {
+            # cat("gegeven!\n")
+            for(rec in 1:metGen$derived$nOutStepDay) {
+              hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
+              if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
+              outData$pressure[ilon, ilat, rec] <- 0;
+              for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
+                if (idx_tmp <= 24) {
+                  outData$pressure[ilon, ilat, rec] <- pressure_prev;
+                } else {
+                  outData$pressure[ilon, ilat, rec] <- pressure;
+                }
               }
             }
           }
@@ -358,23 +258,25 @@ for (iday in 1:metGen$derived$nday) {
         # /*************************************************
         #   Wind Speed
         # *************************************************/
-        if (iday == 1) {
-          wind_prev <- wind
-        }
-        
-        if(is.null(metGen$settings$inVar$wind)) {
-          # cat("niet gegeven!\n")
-        } else {
-          # cat("gegeven!\n")
-          for(rec in 1:metGen$derived$nOutStepDay) {
-            hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
-            if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
-            outData$wind[ilon, ilat, rec] <- 0;
-            for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
-              if (idx_tmp <= 24) {
-                outData$wind[ilon, ilat, rec] <- wind_prev;
-              } else {
-                outData$wind[ilon, ilat, rec] <- wind;
+        if(!is.null(metGen$settings$inVar$wind) && !is.null(outData$wind)) {
+          if (iday == 1) {
+            wind_prev <- wind
+          }
+          
+          if(is.null(metGen$settings$inVar$wind)) {
+            # cat("niet gegeven!\n")
+          } else {
+            # cat("gegeven!\n")
+            for(rec in 1:metGen$derived$nOutStepDay) {
+              hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
+              if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
+              outData$wind[ilon, ilat, rec] <- 0;
+              for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
+                if (idx_tmp <= 24) {
+                  outData$wind[ilon, ilat, rec] <- wind_prev;
+                } else {
+                  outData$wind[ilon, ilat, rec] <- wind;
+                }
               }
             }
           }
@@ -383,23 +285,25 @@ for (iday in 1:metGen$derived$nday) {
         # /*************************************************
         #   Longwave
         # *************************************************/
-        if (iday == 1) {
-          longwave_prev <- longwave
-        }
-        
-        if(is.null(metGen$settings$inVar$longwave)) {
-          # cat("niet gegeven!\n")
-        } else {
-          # cat("gegeven!\n")
-          for(rec in 1:metGen$derived$nOutStepDay) {
-            hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
-            if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
-            outData$longwave[ilon, ilat, rec] <- 0;
-            for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
-              if (idx_tmp <= 24) {
-                outData$longwave[ilon, ilat, rec] <- longwave_prev;
-              } else {
-                outData$longwave[ilon, ilat, rec] <- longwave;
+        if(!is.null(metGen$settings$inVar$pressure) && !is.null(outData$pressure)) {
+          if (iday == 1) {
+            longwave_prev <- longwave
+          }
+          
+          if(is.null(metGen$settings$inVar$longwave)) {
+            # cat("niet gegeven!\n")
+          } else {
+            # cat("gegeven!\n")
+            for(rec in 1:metGen$derived$nOutStepDay) {
+              hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
+              if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
+              outData$longwave[ilon, ilat, rec] <- 0;
+              for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
+                if (idx_tmp <= 24) {
+                  outData$longwave[ilon, ilat, rec] <- longwave_prev;
+                } else {
+                  outData$longwave[ilon, ilat, rec] <- longwave;
+                }
               }
             }
           }
@@ -408,20 +312,23 @@ for (iday in 1:metGen$derived$nday) {
         # /*************************************************
         #   Vapor pressure
         # *************************************************/
-        if (iday == 1) {
-          relhum_prev <- relhum
-        }
-
-        if(!is.null(metGen$settings$inVar$relhum) && !is.null(metGen$settings$outVars$tas)) {
-          for(rec in 1:metGen$derived$nOutStepDay) {
-            hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
-            if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
-            outData$vp[ilon, ilat, rec] <- 0;
-            for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
-              if (idx_tmp <= 24) {
-                outData$vp[ilon, ilat, rec] <- relhum_prev * svp(outData$tas[ilon, ilat, rec]) / 100
-              } else {
-                outData$vp[ilon, ilat, rec] <- relhum * svp(outData$tas[ilon, ilat, rec]) / 100
+        if(!is.null(metGen$settings$inVar$relhum) && !is.null(outData$vp)) {
+          
+          if (iday == 1) {
+            relhum_prev <- relhum
+          }
+          
+          if(!is.null(metGen$settings$inVar$relhum) && !is.null(metGen$settings$outVars$tas)) {
+            for(rec in 1:metGen$derived$nOutStepDay) {
+              hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
+              if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
+              outData$vp[ilon, ilat, rec] <- 0;
+              for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
+                if (idx_tmp <= 24) {
+                  outData$vp[ilon, ilat, rec] <- relhum_prev * svp(outData$tas[ilon, ilat, rec]) / 100
+                } else {
+                  outData$vp[ilon, ilat, rec] <- relhum * svp(outData$tas[ilon, ilat, rec]) / 100
+                }
               }
             }
           }
@@ -429,12 +336,12 @@ for (iday in 1:metGen$derived$nday) {
         
         ## Move data to previous timestep
         hourly_rad_prev <- hourly_rad 
-        hourly_tair_prev <- hourly_tair 
+        # hourly_tair_prev <- hourly_tair 
         prec_prev <- prec 
-        pressure_prev <- pressure
-        wind_prev <- wind
-        longwave_prev <- longwave
-        relhum_prev <- relhum
+        # pressure_prev <- pressure
+        # wind_prev <- wind
+        # longwave_prev <- longwave
+        # relhum_prev <- relhum
       }
     }
     ## refresh progressbar

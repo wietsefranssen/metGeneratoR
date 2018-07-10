@@ -68,24 +68,24 @@ nx <- length(mask$xyCoords$x)
 ny <- length(mask$xyCoords$y)
 
 # ## Calculate solar GEOMs as preprocessing step
-lapse_rate <- 0.0065
+# lapse_rate <- 0.0065
 
 # load("./hpc/outRadFractions_2880.Rdata")
-load("./hpc/outDaylength_2880.Rdata")
-load("./hpc/outFlat_potrad_2880.Rdata")
-load("./hpc/outTt_max0.Rdata")
+# load("./hpc/outDaylength_2880.Rdata")
+# load("./hpc/outFlat_potrad_2880.Rdata")
+# load("./hpc/outTt_max0.Rdata")
 
-solar_geom<-NULL
+# solar_geom<-NULL
 # tiny_rad_fract <- aperm(outRadFractions, c(2,3,1))
 # solar_geom$tiny_rad_fract <- aperm(outRadFractions, c(2,3,1))
-solar_geom$daylength <- aperm(outDaylength, c(2,1))
-solar_geom$flat_potrad <- aperm(outFlat_potrad, c(2,1))
-solar_geom$tt_max <-  aperm(outTt_max0, c(3,1,2))
-solar_geom$lats <- elev$xyCoords$y
-solar_geom$lons <- elev$xyCoords$x
-solar_geom$elevation <- elev$Data
+# solar_geom$daylength <- aperm(outDaylength, c(2,1))
+# solar_geom$flat_potrad <- aperm(outFlat_potrad, c(2,1))
+# solar_geom$tt_max <-  aperm(outTt_max0, c(3,1,2))
+# solar_geom$lats <- elev$xyCoords$y
+# solar_geom$lons <- elev$xyCoords$x
+# solar_geom$elevation <- elev$Data
 # rm(outRadFractions, outDaylength, outFlat_potrad, outTt_max0)
-rm(outDaylength, outFlat_potrad, outTt_max0)
+# rm(outDaylength, outFlat_potrad, outTt_max0)
 
 # ### TODO: check if start yday is correct!!!
 
@@ -116,26 +116,43 @@ for (iday in 1:metGen$derived$nday) {
   
   yday            <- metGen$derived$inYDays[iday]
   
+  ############## RADNEW
+  # hourly_rad <- solar_geom_c(lat, yday)
+  map_rad_frac<-array(NA, dim = c(24,360))
+  for (iy in 1:360) {
+    # iiy<-iy+180
+    # if(iiy>360) iiy<- iiy-360
+    
+    # print(iiy)
+    # yday<-yday+1
+    lat <- -89.75 + ((iy-1)*0.5)
+    map_rad_frac[,iy] <- solar_geom_c(lat, yday)
+  }
+  
+  
+  
+  ############## RADNEW
+  
   # for (ilat in 1:length(mask$xyCoords$y)) {
   for (ilon in 1:length(mask$xyCoords$x)) {
     lon      <- mask$xyCoords$x[ilon]
-
+    
     ## Calculate offset longitude
     nrOffsetSteps <- 24
     # nrOffsetSteps <- 720
     
     hour_offset <- hour_offset_int <- ceiling(ilon * (nrOffsetSteps/720))    # hour_offset<-0
-  
+    
     for (ilat in 1:length(mask$xyCoords$y)) {
       ## Select mt data for current day in year
       # mt$ttmax0       <- solar_geom$tt_max[yday, ilon, ilat]
-      flat_potrad  <- solar_geom$flat_potrad[yday, ilat]
-      slope_potrad <- solar_geom$flat_potrad[yday, ilat]
-      daylength    <- solar_geom$daylength[yday, ilat]
+      # flat_potrad  <- solar_geom$flat_potrad[yday, ilat]
+      # slope_potrad <- solar_geom$flat_potrad[yday, ilat]
+      # daylength    <- solar_geom$daylength[yday, ilat]
       
       elevation <- mask$Data[ilon, ilat]
       if (!is.na(elevation) && !is.na(inData$pr[ilon, ilat,1])) {
-
+        
         lat      <- mask$xyCoords$y[ilat]
         prec     <- inData$pr[ilon, ilat,1]
         pressure <- inData$pressure[ilon, ilat,1]
@@ -147,29 +164,18 @@ for (iday in 1:metGen$derived$nday) {
         longwave <- inData$longwave[ilon, ilat,1]
         
         if(!is.null(metGen$settings$inVar$shortwave) && !is.null(outData$shortwave)) {
-          hourly_rad <- solar_geom_c(lat, yday)
-          for (j in 1:nrOffsetSteps) {
-            hourly_rad[j] <-  hourly_rad[j] * (shortwave*nrOffsetSteps)
-          }
-          
-          ## Fill the arrays
-          ## Copy data to previous timestep for first timestep
-          if (iday == 1) {
-            hourly_rad_prev <- hourly_rad 
-          }
+          # hourly_rad <- solar_geom_c(lat, yday) * (shortwave*nrOffsetSteps)
+          hourly_rad <- map_rad_frac[,ilat] * (shortwave*nrOffsetSteps)
 
-          # print("start")
           for(rec in 1:metGen$derived$nOutStepDay) {
-            sum = 0;
             outData$shortwave[ilon, ilat, rec] <- 0;
             arr<-1:nrOffsetSteps
             arr_new<-shifter(arr,hour_offset_int)
             arr_new2<-arr_new[((rec-1) * metGen$derived$outDt):(rec * metGen$derived$outDt)]
             for (idx in arr_new2) {
-                outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] + hourly_rad[idx];
+              outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] + hourly_rad[idx];
             }
             outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] / metGen$derived$outDt
-            sum <- sum + outData$shortwave[ilon, ilat, rec]
           }
         }
         
@@ -335,7 +341,7 @@ for (iday in 1:metGen$derived$nday) {
         }
         
         ## Move data to previous timestep
-        hourly_rad_prev <- hourly_rad 
+        # hourly_rad_prev <- hourly_rad 
         # hourly_tair_prev <- hourly_tair 
         prec_prev <- prec 
         # pressure_prev <- pressure

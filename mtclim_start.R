@@ -125,7 +125,9 @@ for (iday in 1:metGen$derived$nday) {
   map_rad_frac_new<-array(NA, dim = c(720, 360, metGen$derived$nOutStepDay))
   for (iy in 1:360) {
     lat <- -89.75 + ((iy-1)*0.5)
-    map_rad_tmp[,iy] <- solar_geom_c(lat, yday)
+    # map_rad_tmp[,iy] <- solar_geom_c(lat, yday)
+    map_rad_tmp[,iy] <- solar_geom_cr(lat, yday, 24)
+    
   }
   # 
   # for (ix in 1:720) {
@@ -189,9 +191,7 @@ for (iday in 1:metGen$derived$nday) {
     ## Calculate offset longitude
     nrOffsetSteps <- 24
     # nrOffsetSteps <- 720
-    
-    
-    
+
     hour_offset <- hour_offset_int <- ceiling(ilon * (nrOffsetSteps/720))    # hour_offset<-0
     for (ilat in 1:length(mask$xyCoords$y)) {
       elevation <- mask$Data[ilon, ilat]
@@ -213,20 +213,24 @@ for (iday in 1:metGen$derived$nday) {
   }
   
   
-  mmm<-main2(200)
-  dim(mmm)<-c(24,360,720)
-  dim(mmm)<-c(360,720,24)
-  # dim(mmm)<-c(24,720,360)
-  image(mmm[,,1])
-  image(mmm[,,2])
-  image(mmm[,,300])
-  image(mmm[10,,])
-  image(mmm[11,,])
-  image(mmm[12,,])
-  image(mmm[130,,])
-  # qq<-mmm[,,1]
-  
-  
+  # mmm<-main2(200)
+  # dim(mmm)<-c(4,360,720)
+  # dim(mmm)<-c(360,720,4)
+  # # dim(mmm)<-c(24,720,360)
+  # image(mmm[,,1])
+  # image(mmm[,,2])
+  # image(mmm[,,300])
+  # image(mmm[10,,])
+  # image(mmm[11,,])
+  # image(mmm[12,,])
+  # image(mmm[130,,])
+  # # qq<-mmm[,,1]
+  # 
+  # mmm<-main2(200)
+  # dim(mmm)<-c(720,360,4)
+  # image(mmm[,,1])
+  # plot(mmm[200,,1])
+  # plot(mmm[,200,1])
   
   for(rec in 1:metGen$derived$nOutStepDay) {
     outData$shortwave[, , rec] <- radfrac[ , , rec] * inData$shortwave[, ,1]

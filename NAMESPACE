@@ -1,2 +1,3 @@
 exportPattern("^[[:alpha:]]+")
-#export(csolar_geom)
+importFrom(Rcpp, evalCpp)
+useDynLib(metGeneratoR)

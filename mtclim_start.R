@@ -2,7 +2,6 @@
 ## if eg prev_pr is used than the map is moved one gridcell upwards 
 ## vapor pressure is too high???
 
-
 rm(list=ls(all=TRUE))
 # setwd("~/Documents/WORKDIRS/RProj/metGeneratoR")
 shifter <- function(x, n = 1) {
@@ -112,26 +111,136 @@ for (iday in 1:metGen$derived$nday) {
   ## LOAD WHOLE DOMAIN FROM NETCDF
   profile$start.time.read <- Sys.time()
   inData <- readAllForcing(mask, iday)
+  inData$shortwave[,,1] <- mask$Data * inData$shortwave[,,1]
   profile$end.time.read <- Sys.time()
   
   yday            <- metGen$derived$inYDays[iday]
   
   ############## RADNEW
-  # hourly_rad <- solar_geom_c(lat, yday)
-  map_rad_frac<-array(NA, dim = c(24,360))
+  tmp<-24
+  # tmp<-720
+  
+  map_rad_tmp<-array(NA, dim = c(tmp,360))
+  map_rad_frac<-array(NA, dim = c(720,360))
+  map_rad_frac_new<-array(NA, dim = c(720, 360, metGen$derived$nOutStepDay))
   for (iy in 1:360) {
-    # iiy<-iy+180
-    # if(iiy>360) iiy<- iiy-360
-    
-    # print(iiy)
-    # yday<-yday+1
     lat <- -89.75 + ((iy-1)*0.5)
-    map_rad_frac[,iy] <- solar_geom_c(lat, yday)
+    map_rad_tmp[,iy] <- solar_geom_c(lat, yday)
+  }
+  # 
+  # for (ix in 1:720) {
+  #   iix<- ceiling(ix/(720/tmp))
+  #   map_rad_frac[ix,] <- map_rad_tmp[iix,]
+  # }
+  # 
+  # arr <- 1:720
+  # arr<-shifter(arr,30*3)
+  # outData$shortwave[, , ] <- 0
+  # for(rec in 1:metGen$derived$nOutStepDay) {
+  #   arr_new<-shifter(arr,(rec-1)*(720/4))
+  #   # print(arr_new)
+  #   # map_rad_frac_new[,,rec] <- map_rad_frac[arr_new,]
+  #   outData$shortwave[, , rec] <- map_rad_frac[arr_new,] * inData$shortwave[, ,1] * 24
+  # 
+  #   # arr<-1:24
+  #   # arr_new<-shifter(arr,hour_offset_int)
+  #   # #       arr_new2<-arr_new[((rec-1) * metGen$derived$outDt):(rec * metGen$derived$outDt)]
+  #   # for (idx in arr_new2) {
+  #   #   outData$shortwave[, , rec] <- outData$shortwave[, , rec] + (map_rad_frac[arr_new,] * inData$shortwave[, ,1] * 24)
+  #   # }
+  #   
+  # }
+  
+  # for(rec in 1:metGen$derived$nOutStepDay) {
+  # outData$shortwave[, , rec] <- map_rad_frac_new[,,rec] * inData$shortwave[, ,1] * 24
+  # }
+  
+  ############## RADNEW
+  
+  #     hour_offset <- hour_offset_int <- ceiling(ilon * (nrOffsetSteps/720))    # hour_offset<-0
+  #     # hourly_rad <- map_rad_tmp[,ilat] * (inData$shortwave[ilon, ilat,1]*nrOffsetSteps)
+  #     hourly_rad <- map_rad_tmp[,ilat]
+  # 
+  #     radTmp<-array(0, dim = 4)
+  #     for(rec in 1:metGen$derived$nOutStepDay) {
+  #       outData$shortwave[ilon, ilat, rec] <- 0;
+  #       arr<-1:nrOffsetSteps
+  #       arr_new<-shifter(arr,hour_offset_int)
+  #       arr_new2<-arr_new[((rec-1) * metGen$derived$outDt):(rec * metGen$derived$outDt)]
+  #       for (idx in arr_new2) {
+  #         # outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] + hourly_rad[idx];
+  #         radTmp[rec] <- radTmp[rec] + hourly_rad[idx];
+  #       }
+  #       # outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] / metGen$derived$outDt
+  #       radTmp[rec] <- radTmp[rec] / metGen$derived$outDt
+  #     }
+  #     
+  #     for(rec in 1:metGen$derived$nOutStepDay) {
+  #       radTmp[rec] <- radTmp[rec] *inData$shortwave[ilon, ilat,1]*nrOffsetSteps
+  #     }
+  #   }
+  # }
+  ############## RADNEW
+  radfrac <- array(0, dim = c(720, 360, metGen$derived$nOutStepDay))
+  for (ilon in 1:length(mask$xyCoords$x)) {
+    print(ilon)
+    lon      <- mask$xyCoords$x[ilon]
+    
+    ## Calculate offset longitude
+    nrOffsetSteps <- 24
+    # nrOffsetSteps <- 720
+    
+    
+    
+    hour_offset <- hour_offset_int <- ceiling(ilon * (nrOffsetSteps/720))    # hour_offset<-0
+    for (ilat in 1:length(mask$xyCoords$y)) {
+      elevation <- mask$Data[ilon, ilat]
+      if (!is.na(elevation) && !is.na(inData$pr[ilon, ilat,1])) {
+        
+        if(!is.null(metGen$settings$inVar$shortwave) && !is.null(outData$shortwave)) {
+
+          for(rec in 1:metGen$derived$nOutStepDay) {
+            arr<-1:nrOffsetSteps
+            arr_new<-shifter(arr,hour_offset_int)
+            arr_new2<-arr_new[((rec-1) * metGen$derived$outDt):(rec * metGen$derived$outDt)]
+            for (idx in arr_new2) {
+              radfrac[ilon, ilat, rec] <- radfrac[ilon, ilat, rec] + map_rad_tmp[idx, ilat] * metGen$derived$nOutStepDay
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  
+  mmm<-main2(200)
+  dim(mmm)<-c(24,360,720)
+  dim(mmm)<-c(360,720,24)
+  # dim(mmm)<-c(24,720,360)
+  image(mmm[,,1])
+  image(mmm[,,2])
+  image(mmm[,,300])
+  image(mmm[10,,])
+  image(mmm[11,,])
+  image(mmm[12,,])
+  image(mmm[130,,])
+  # qq<-mmm[,,1]
+  
+  
+  
+  for(rec in 1:metGen$derived$nOutStepDay) {
+    outData$shortwave[, , rec] <- radfrac[ , , rec] * inData$shortwave[, ,1]
   }
   
   
   
-  ############## RADNEW
+  
+  
+  
+  
+  
+  
+  
   
   # for (ilat in 1:length(mask$xyCoords$y)) {
   for (ilon in 1:length(mask$xyCoords$x)) {
@@ -163,21 +272,21 @@ for (iday in 1:metGen$derived$nday) {
         shortwave <- inData$shortwave[ilon, ilat,1]
         longwave <- inData$longwave[ilon, ilat,1]
         
-        if(!is.null(metGen$settings$inVar$shortwave) && !is.null(outData$shortwave)) {
-          # hourly_rad <- solar_geom_c(lat, yday) * (shortwave*nrOffsetSteps)
-          hourly_rad <- map_rad_frac[,ilat] * (shortwave*nrOffsetSteps)
-
-          for(rec in 1:metGen$derived$nOutStepDay) {
-            outData$shortwave[ilon, ilat, rec] <- 0;
-            arr<-1:nrOffsetSteps
-            arr_new<-shifter(arr,hour_offset_int)
-            arr_new2<-arr_new[((rec-1) * metGen$derived$outDt):(rec * metGen$derived$outDt)]
-            for (idx in arr_new2) {
-              outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] + hourly_rad[idx];
-            }
-            outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] / metGen$derived$outDt
-          }
-        }
+        # if(!is.null(metGen$settings$inVar$shortwave) && !is.null(outData$shortwave)) {
+        #   # hourly_rad <- solar_geom_c(lat, yday) * (shortwave*nrOffsetSteps)
+        #   hourly_rad <- map_rad_tmp[,ilat] * (shortwave*nrOffsetSteps)
+        #   
+        #   for(rec in 1:metGen$derived$nOutStepDay) {
+        #     outData$shortwave[ilon, ilat, rec] <- 0;
+        #     arr<-1:nrOffsetSteps
+        #     arr_new<-shifter(arr,hour_offset_int)
+        #     arr_new2<-arr_new[((rec-1) * metGen$derived$outDt):(rec * metGen$derived$outDt)]
+        #     for (idx in arr_new2) {
+        #       outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] + hourly_rad[idx];
+        #     }
+        #     outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] / metGen$derived$outDt
+        #   }
+        # }
         
         ## Temperature!!
         if(!is.null(metGen$settings$inVar$tasmin) && !is.null(metGen$settings$inVar$tasmin) && !is.null(outData$tas)) {
@@ -384,3 +493,4 @@ totTime<-as.numeric(profile$end.time.total   - profile$start.time.total, units =
 cat(sprintf("  Total: %.1f seconds for %d x %d = %d cells. So: 100 years (67420 cels) will take: %.1f days\n", totTime, metGen$derived$nday, ncellsTotal, 
             (metGen$derived$nday * ncellsTotal), ((totTime * 67420 * 365.25 * 100) / (metGen$derived$nday * ncellsTotal) / 86400
             )))
+

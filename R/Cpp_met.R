@@ -1,4 +1,17 @@
 library(Rcpp)
+cppFunction('NumericVector radfract_latlon_c(NumericVector radfract,float lat, int yday) {
+int nx = 720;
+int ny = 360;
+            for (int ix = 0; ix < nx; ix++) {
+            for (int iy = 0; iy < ny; iy++) {
+
+}
+}
+NumericVector result(nx*ny);
+            //double result[timesteps_per_day];
+
+  return result;
+}')
 cppFunction('NumericVector  solar_geom_c(float lat, int yday) {
 
     // double lat = -88.75;

@@ -129,6 +129,7 @@ for (iday in 1:metGen$derived$nday) {
     map_rad_tmp[,iy] <- solar_geom_cr(lat, yday, 24)
     
   }
+  map_rad_tmp2 <- rad_map_lats_cr(24, yday)
   # 
   # for (ix in 1:720) {
   #   iix<- ceiling(ix/(720/tmp))
@@ -211,6 +212,8 @@ for (iday in 1:metGen$derived$nday) {
       }
     }
   }
+  ccc=rad_map_final_cr(4,1)
+image(t(ccc[1,,]))
   
   
   # mmm<-main2(200)

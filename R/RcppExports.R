@@ -13,7 +13,3 @@ solar_geom_cr <- function(lat, yday, timesteps_per_day) {
     .Call('_metGeneratoR_solar_geom_cr', PACKAGE = 'metGeneratoR', lat, yday, timesteps_per_day)
 }
 
-timesTwo <- function(x) {
-    .Call('_metGeneratoR_timesTwo', PACKAGE = 'metGeneratoR', x)
-}
-

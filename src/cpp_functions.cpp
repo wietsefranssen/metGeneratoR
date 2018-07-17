@@ -4,7 +4,7 @@
 #include "header.h"
 
 int solar_geom_c(double *rad_fract_per_timestep, float lat, int yday, int timesteps_per_day) {
-
+  
   double dt = 30;
   double PII = 3.141593;
   double MIN_DECL = -0.4092797;
@@ -33,7 +33,7 @@ int solar_geom_c(double *rad_fract_per_timestep, float lat, int yday, int timest
   
   for (i = 0; i < timesteps_per_day; i++) rad_fract_per_timestep[i] = 0;
   for (i = 0; i < tinystepsperday; i++) tiny_rad_fract_1day[i] = 0;
-
+  
   /* optical airmass by degrees */
   double optam[21] = {2.90, 3.05, 3.21, 3.39, 3.69, 3.82, 4.07, 4.37, 4.72, 5.12, 5.60,
                       6.18, 6.88, 7.77, 8.90, 10.39, 12.44, 15.36, 19.79, 26.96, 30.00};
@@ -50,7 +50,7 @@ int solar_geom_c(double *rad_fract_per_timestep, float lat, int yday, int timest
   
   /*  Sub-daily time step and angular step */
   dh = dt / SEC_PER_RAD;
-
+  
   /* Declination and quantities of interest */
   decl = MIN_DECL * cos(((yday - 1) + DAYS_OFF) * RAD_PER_DAY);
   cosdecl = cos(decl);
@@ -70,7 +70,7 @@ int solar_geom_c(double *rad_fract_per_timestep, float lat, int yday, int timest
   if (daylength > 86400) daylength = 86400;
   
   /* extraterrestrial radiation perpendicular to beam, total over
-  the timestep (J) */
+   the timestep (J) */
   dir_beam_topa = (1368.0 + 45.5 * sin((2.0 * PII * (double) (yday - 1) / 365.25) + 1.7)) * dt;
   
   /* Set up angular calculations */
@@ -82,12 +82,12 @@ int solar_geom_c(double *rad_fract_per_timestep, float lat, int yday, int timest
     
     if (cza > 0.0) {
       /* When sun is above flat horizon do flat-surface
-      calculations to determine daily total transmittance
-      and save potential radiation for calculation of
-      diffuse portion */
+       calculations to determine daily total transmittance
+       and save potential radiation for calculation of
+       diffuse portion */
       
       /* potential radiation for this time period, flat surface,
-      top of atmosphere */
+       top of atmosphere */
       dir_flat_topa = dir_beam_topa * cza;
       /* determine optical air mass */
       am = 1.0 / (cza + 0.0000001);
@@ -101,7 +101,7 @@ int solar_geom_c(double *rad_fract_per_timestep, float lat, int yday, int timest
       }
       
       /* keep track of total potential radiation on a flat
-      surface for ideal horizons */
+       surface for ideal horizons */
       sum_flat_potrad += dir_flat_topa;
       
     }/* end if sun above ideal horizon */
@@ -130,12 +130,11 @@ int solar_geom_c(double *rad_fract_per_timestep, float lat, int yday, int timest
     istep = floor(tss / (tinystepsperday / timesteps_per_day));
     rad_fract_per_timestep[istep] += tiny_rad_fract_1day[tss];
   }
-
+  
   free(tiny_rad_fract_1day);
-
+  
   return 0;
 }
-
 
 int rad_fract_lats_c(double **rad_fract_map, int nt, int yday) {
   
@@ -158,85 +157,6 @@ int rad_fract_lats_c(double **rad_fract_map, int nt, int yday) {
     solar_geom_c(rad_fract, lat, yday, nt);
     for (it = 0; it < nt; it++) {
       rad_fract_map[iy][it] = rad_fract[it];
-      // *(rad_fract_map + iy*nt + it) = rad_fract[it];
-    }
-    
-  } 
-  // Free
-  free(rad_fract);
-  
-  return 0;
-}
-
-
-int radfract_latlon(double *result, double *map_rad_tmp, int nx, int ny, int nt, int nOutStepDay) {
-  int nrOffsetSteps = 24;
-  float lat, lon;
-  int ix, iy, it, itiy;
-  int irec;
-  int hour_offset_int;
-  int itt, ntt;
-  size_t i;
-  size_t idx;
-  size_t idxy;
-  size_t iyrec;
-  size_t ixyrec;
-  
-  ntt = nt / nOutStepDay;
-  
-  for (i = 0; i < (nx * ny * nOutStepDay); i++) {
-    result[i] = 0;
-  }
-    
-  for (ix = 0; ix < nx; ix++) {
-    lon = (ix * 0.5) + -179.75;
-    // hour_offset_int = ceil((ix + 1) * (nrOffsetSteps / nx)); // hour_offset<-0
-    hour_offset_int =  floor((float)ix * ( (float)nrOffsetSteps / (float)nx) );
-    // hour_offset_int = 0; // hour_offset<-0
-    for (iy = 0; iy < ny; iy++) {
-      for (irec = 0; irec < nOutStepDay; irec++) {
-        for (itt = 0; itt < ntt; itt++) {
-          idx = (irec * ntt) + itt + hour_offset_int;
-          if (idx >= nt) idx -= nt;
-          // idxy = (iy * nt) + idx;
-          // idxy = (iy * nOutStepDay) + idx;
-          idxy = (iy * nt) + it;
-          // idxy = (iy * nt) + idx;
-          iyrec = (iy * nOutStepDay) + irec;
-          ixyrec = (ix * ny * nOutStepDay) + iyrec;
-          // int iyt = (iy * nt) + it;
-          
-          result[ixyrec] += (map_rad_tmp[idxy] * nOutStepDay);
-          printf("hoi: %zu, %zu, %d, %d, %d, %d, %zu, %f, %f\n", ixyrec, idxy, ix, iy, irec, itt, idx, map_rad_tmp[idxy], result[ixyrec]);
-
-        }
-      }
-    }
-  }
-  return 0;
-}
-
-int rad_map_final_c(double ***rad_fract_map_final, double **rad_fract_map, int nt, int yday) {
-  
-  float slat = -89.75;
-  float elat = 89.75;
-  float reslat = 0.5;
-  float lat;
-  int ny, iy;
-  int it;
-  
-  ny = ((elat - slat) / reslat) + 1;
-  
-  // Define and allocate
-  double *rad_fract = (double*)malloc(nt * sizeof(double));
-  
-  for (iy = 0; iy < ny; iy++) {
-    lat = slat + ((iy)*0.5);
-    
-    // run the function
-    // solar_geom_c(rad_fract, lat, yday, nt);
-    for (it = 0; it < nt; it++) {
-      // rad_fract_map[iy][it] = rad_fract[it];
       // *(rad_fract_map + iy*nt + it) = rad_fract[it];
     }
     

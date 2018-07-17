@@ -3,6 +3,7 @@
 ## vapor pressure is too high???
 ## shortwave can only be done globally: fix this!
 ## check if start yday is correct
+## check base_offset it is now right for 6hourly calculations but maybe not for others like 3 hourly
 ## unitconversion
 
 
@@ -16,11 +17,10 @@ profile<-NULL
 # mgsetLonlatbox(c(92.25, 92.25, -8.25, -8.25))
 # mgsetLonlatbox(c(92.25, 92.75, 34.25, 36.75))
 mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
-mgsetPeriod(startdate = "1950-4-01", enddate = "1950-4-2")
-# mgsetPeriod(startdate = "1964-12-31", enddate = "1965-01-3")
+mgsetPeriod(startdate = "1950-1-01", enddate = "1950-1-2")
 # mgsetPeriod(startdate = "1965-01-01", enddate = "1965-06-2")
 mgsetInDt(24) # Set N hours per timestep
-mgsetOutDt(1) # Set N hours per timestep
+mgsetOutDt(6) # Set N hours per timestep
 
 metGen$constants<-setConstants()
 constants <- metGen$constants
@@ -34,22 +34,22 @@ options$LW_CLOUD <- 1
 options$VP_ITER <- 1
 
 mgsetInVars(list(
-  pr         = list(ncname = "pr",      filename = "../example_data4mtclim/Global/pr_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  # pr         = list(ncname = "pr",      filename = "../example_data4mtclim/Global/pr_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   tasmin     = list(ncname = "tasmin",  filename = "../example_data4mtclim/Global/tasmin_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   tasmax     = list(ncname = "tasmax",  filename = "../example_data4mtclim/Global/tasmax_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  pressure   = list(ncname = "ps",      filename = "../example_data4mtclim/Global/ps_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  relhum     = list(ncname = "hurs",    filename = "../example_data4mtclim/Global/hurs_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  shortwave  = list(ncname = "rsds",    filename = "../example_data4mtclim/Global/rsds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  longwave   = list(ncname = "rlds",    filename = "../example_data4mtclim/Global/rlds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  wind       = list(ncname = "sfcWind", filename = "../example_data4mtclim/Global/wind_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc")
+  # pressure   = list(ncname = "ps",      filename = "../example_data4mtclim/Global/ps_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  # relhum     = list(ncname = "hurs",    filename = "../example_data4mtclim/Global/hurs_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  shortwave  = list(ncname = "rsds",    filename = "../example_data4mtclim/Global/rsds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc")
+  # longwave   = list(ncname = "rlds",    filename = "../example_data4mtclim/Global/rlds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  # wind       = list(ncname = "sfcWind", filename = "../example_data4mtclim/Global/wind_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc")
 ))
 
 ## Define elevation file
 mgsetElevation(ncname = "elevation", filename = metGen$internal$ncFileNameElevation)
 
 ## Define output variables
-# mgsetOutVars(c("pr", "tas"))
-mgsetOutVars(c( "shortwave", "longwave", "tas", "pr", "pressure", "wind", "vp"))
+mgsetOutVars(c("shortwave", "tas"))
+# mgsetOutVars(c( "shortwave", "longwave", "tas", "pr", "pressure", "wind", "vp"))
 # mgsetOutVars(c( "shortwave", "pr"))
 
 ## Load elevation
@@ -91,15 +91,6 @@ for (iday in 1:metGen$derived$nday) {
   inData$shortwave[,,1] <- mask$Data * inData$shortwave[,,1]
   profile$end.time.read <- Sys.time()
   
-  radfrac<-aperm(rad_map_final_cr(metGen$derived$nOutStepDay, yday, nx_parts = 720), c(3,2,1))
-  ## Mask out
-  for (i in 1:metGen$derived$nOutStepDay) {
-    ccc<-radfrac[,,i]
-    radfrac[,,i] <- ccc
-  }
-  #image(radfrac[,,3])
-  #plot(radfrac[1,,2])
-  
   # /*************************************************
   #   Precipitation
   # *************************************************/
@@ -108,10 +99,17 @@ for (iday in 1:metGen$derived$nday) {
       outData$pr[, , rec] <- inData$pr[, ,1]
     }
   }
-
+  
   # /*************************************************
   #   Shortwave radiation
   # *************************************************/
+  radfrac<-aperm(rad_map_final_cr(metGen$derived$nOutStepDay, yday, nx_parts = 720), c(3,2,1))
+  ## Mask out
+  for (i in 1:metGen$derived$nOutStepDay) {
+    ccc<-radfrac[,,i]
+    radfrac[,,i] <- ccc
+  }
+  
   if(!is.null(metGen$settings$inVar$shortwave) && !is.null(outData$shortwave)) {
     for(rec in 1:metGen$derived$nOutStepDay) {
       outData$shortwave[, , rec] <- radfrac[ , , rec] * inData$shortwave[, ,1]
@@ -156,7 +154,7 @@ for (iday in 1:metGen$derived$nday) {
       # outData$pressure[, , rec] <- subdaily_tair[, ,rec]
     }
   }
-
+  
   # # for (ilat in 1:length(mask$xyCoords$y)) {
   # for (ilon in 1:length(mask$xyCoords$x)) {
   #   lon      <- mask$xyCoords$x[ilon]

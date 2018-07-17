@@ -1,12 +1,13 @@
-## ISSUES
+## ISSUES/TODO
 ## if eg prev_pr is used than the map is moved one gridcell upwards 
 ## vapor pressure is too high???
+## shortwave can only be done globally: fix this!
+## check if start yday is correct
+## unitconversion
+
 
 rm(list=ls(all=TRUE))
-# setwd("~/Documents/WORKDIRS/RProj/metGeneratoR")
-shifter <- function(x, n = 1) {
-  if (n == 0) x else c(tail(x, -n), head(x, n))
-}
+
 library(metGeneratoR)
 
 profile<-NULL
@@ -15,19 +16,17 @@ profile<-NULL
 # mgsetLonlatbox(c(92.25, 92.25, -8.25, -8.25))
 # mgsetLonlatbox(c(92.25, 92.75, 34.25, 36.75))
 mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
-mgsetPeriod(startdate = "1950-4-01", enddate = "1950-4-01")
+mgsetPeriod(startdate = "1950-4-01", enddate = "1950-4-2")
 # mgsetPeriod(startdate = "1964-12-31", enddate = "1965-01-3")
 # mgsetPeriod(startdate = "1965-01-01", enddate = "1965-06-2")
 mgsetInDt(24) # Set N hours per timestep
-mgsetOutDt(6) # Set N hours per timestep
+mgsetOutDt(1) # Set N hours per timestep
 
 metGen$constants<-setConstants()
 constants <- metGen$constants
 
-have_dewpt <- F
 theta_l = -30
 
-param_set_TYPE_SHORTWAVE_SUPPLIED <- 1
 options <- NULL
 options$SW_PREC_THRESH <- 0
 options$MTCLIM_SWE_CORR <- 0
@@ -38,10 +37,10 @@ mgsetInVars(list(
   pr         = list(ncname = "pr",      filename = "../example_data4mtclim/Global/pr_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   tasmin     = list(ncname = "tasmin",  filename = "../example_data4mtclim/Global/tasmin_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   tasmax     = list(ncname = "tasmax",  filename = "../example_data4mtclim/Global/tasmax_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  # pressure   = list(ncname = "ps",      filename = "../example_data4mtclim/Global/ps_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  # relhum     = list(ncname = "hurs",    filename = "../example_data4mtclim/Global/hurs_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  pressure   = list(ncname = "ps",      filename = "../example_data4mtclim/Global/ps_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  relhum     = list(ncname = "hurs",    filename = "../example_data4mtclim/Global/hurs_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   shortwave  = list(ncname = "rsds",    filename = "../example_data4mtclim/Global/rsds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  # longwave   = list(ncname = "rlds",    filename = "../example_data4mtclim/Global/rlds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  longwave   = list(ncname = "rlds",    filename = "../example_data4mtclim/Global/rlds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   wind       = list(ncname = "sfcWind", filename = "../example_data4mtclim/Global/wind_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc")
 ))
 
@@ -50,9 +49,8 @@ mgsetElevation(ncname = "elevation", filename = metGen$internal$ncFileNameElevat
 
 ## Define output variables
 # mgsetOutVars(c("pr", "tas"))
-# mgsetOutVars(c( "shortwave", "longwave", "tas", "pr", "pressure", "wind", "vp"))
-mgsetOutVars(c( "shortwave"))
-
+mgsetOutVars(c( "shortwave", "longwave", "tas", "pr", "pressure", "wind", "vp"))
+# mgsetOutVars(c( "shortwave", "pr"))
 
 ## Load elevation
 elev <- ncLoad(file = metGen$internal$ncFileNameElevation,
@@ -71,8 +69,6 @@ ny <- length(mask$xyCoords$y)
 # load("./hpc/outFlat_potrad_2880.Rdata")
 # load("./hpc/outTt_max0.Rdata")
 
-### TODO: check if start yday is correct!!!
-
 ## makeOutputNetCDF
 makeNetcdfOut(mask)
 
@@ -87,7 +83,7 @@ profile$start.time.total <- Sys.time()
 for (iday in 1:metGen$derived$nday) {
   metGen$current$timestep <- iday
   yday            <- metGen$derived$inYDays[iday]
-  printf("Day: %d\n", iday)
+  printf("Day: %d, date: %s\n", iday, metGen$derived$inDates[iday])
   
   ## LOAD WHOLE DOMAIN FROM NETCDF
   profile$start.time.read <- Sys.time()
@@ -95,18 +91,6 @@ for (iday in 1:metGen$derived$nday) {
   inData$shortwave[,,1] <- mask$Data * inData$shortwave[,,1]
   profile$end.time.read <- Sys.time()
   
- 
-  # radfrac2<-aperm(rad_map_final_cr(4, yday, nx_parts = 24), c(2,3,1))
-  # ccc<-rad_map_final_cr(4, yday, nx_parts = 24)
-  # ## Mask out
-  # for (i in 1:metGen$derived$nOutStepDay) {
-  #   ccc<-radfrac2[,,i]
-  #   ccc[is.na(mask$Data)]<-0
-  #   ccc[is.na(inData$pr[, ,1])]<-0
-  #   radfrac2[,,i] <- ccc
-  # }
-  # image(radfrac[,,2])
-
   radfrac<-aperm(rad_map_final_cr(metGen$derived$nOutStepDay, yday, nx_parts = 720), c(3,2,1))
   ## Mask out
   for (i in 1:metGen$derived$nOutStepDay) {
@@ -116,22 +100,63 @@ for (iday in 1:metGen$derived$nday) {
   #image(radfrac[,,3])
   #plot(radfrac[1,,2])
   
-  
-    
-  for(rec in 1:metGen$derived$nOutStepDay) {
-    outData$shortwave[, , rec] <- radfrac[ , , rec] * inData$shortwave[, ,1]
+  # /*************************************************
+  #   Precipitation
+  # *************************************************/
+  if(!is.null(metGen$settings$inVar$pr) && !is.null(outData$pr)) {
+    for(rec in 1:metGen$derived$nOutStepDay) {
+      outData$pr[, , rec] <- inData$pr[, ,1]
+    }
+  }
+
+  # /*************************************************
+  #   Shortwave radiation
+  # *************************************************/
+  if(!is.null(metGen$settings$inVar$shortwave) && !is.null(outData$shortwave)) {
+    for(rec in 1:metGen$derived$nOutStepDay) {
+      outData$shortwave[, , rec] <- radfrac[ , , rec] * inData$shortwave[, ,1]
+    }
   }
   
+  # /*************************************************
+  #   Longwave radiation
+  # *************************************************/
+  if(!is.null(metGen$settings$inVar$longwave) && !is.null(outData$longwave)) {
+    for(rec in 1:metGen$derived$nOutStepDay) {
+      outData$longwave[, , rec] <- radfrac[ , , rec] * inData$longwave[, ,1]
+    }
+  }
   
+  # /*************************************************
+  #   Wind
+  # *************************************************/
+  if(!is.null(metGen$settings$inVar$wind) && !is.null(outData$wind)) {
+    for(rec in 1:metGen$derived$nOutStepDay) {
+      outData$wind[, , rec] <- inData$wind[, ,1]
+    }
+  }
   
+  # /**************************************
+  #   Atmospheric Pressure (Pa)
+  # **************************************/
+  if(!is.null(metGen$settings$inVar$pressure) && !is.null(outData$pressure)) {
+    for(rec in 1:metGen$derived$nOutStepDay) {
+      outData$pressure[, , rec] <- inData$pressure[, ,1]
+    }
+  }
   
-  
-  
-  
-  
-  
-  
-  
+  # /**************************************
+  #   Temperature
+  # **************************************/
+  if(!is.null(metGen$settings$inVar$tasmin) && !is.null(metGen$settings$inVar$tasmin) && !is.null(outData$tas)) {
+    for(rec in 1:metGen$derived$nOutStepDay) {
+      # tminmaxhour<- set_t_minmax_hour(hourly_rad)
+      # subdaily_tair<-HourlyT(tminmaxhour[2],tmax,tminmaxhour[1],tmin)
+      # 
+      # outData$pressure[, , rec] <- subdaily_tair[, ,rec]
+    }
+  }
+
   # # for (ilat in 1:length(mask$xyCoords$y)) {
   # for (ilon in 1:length(mask$xyCoords$x)) {
   #   lon      <- mask$xyCoords$x[ilon]
@@ -162,21 +187,6 @@ for (iday in 1:metGen$derived$nday) {
   #       shortwave <- inData$shortwave[ilon, ilat,1]
   #       longwave <- inData$longwave[ilon, ilat,1]
   #       
-  #       # if(!is.null(metGen$settings$inVar$shortwave) && !is.null(outData$shortwave)) {
-  #       #   # hourly_rad <- solar_geom_c(lat, yday) * (shortwave*nrOffsetSteps)
-  #       #   hourly_rad <- map_rad_tmp[,ilat] * (shortwave*nrOffsetSteps)
-  #       #   
-  #       #   for(rec in 1:metGen$derived$nOutStepDay) {
-  #       #     outData$shortwave[ilon, ilat, rec] <- 0;
-  #       #     arr<-1:nrOffsetSteps
-  #       #     arr_new<-shifter(arr,hour_offset_int)
-  #       #     arr_new2<-arr_new[((rec-1) * metGen$derived$outDt):(rec * metGen$derived$outDt)]
-  #       #     for (idx in arr_new2) {
-  #       #       outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] + hourly_rad[idx];
-  #       #     }
-  #       #     outData$shortwave[ilon, ilat, rec] <- outData$shortwave[ilon, ilat, rec] / metGen$derived$outDt
-  #       #   }
-  #       # }
   #       
   #       ## Temperature!!
   #       if(!is.null(metGen$settings$inVar$tasmin) && !is.null(metGen$settings$inVar$tasmin) && !is.null(outData$tas)) {
@@ -206,113 +216,7 @@ for (iday in 1:metGen$derived$nday) {
   #           sum <- sum + outData$tas[ilon, ilat, rec]
   #         }
   #       }
-  #       # /*************************************************
-  #       #   Precipitation
-  #       # *************************************************/
-  #       if(!is.null(metGen$settings$inVar$pr) && !is.null(outData$pr)) {
-  #         if (iday == 1) {
-  #           prec_prev <- prec
-  #         }
-  #         
-  #         if(is.null(metGen$settings$inVar$pr)) {
-  #           cat("niet gegeven!\n")
-  #         } else {
-  #           # cat("gegeven!\n")
-  #           for(rec in 1:metGen$derived$nOutStepDay) {
-  #             hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
-  #             if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
-  #             outData$pr[ilon, ilat, rec] <- 0;
-  #             for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
-  #               if (idx_tmp <= 24) {
-  #                 outData$pr[ilon, ilat, rec] <- prec_prev;
-  #               } else {
-  #                 outData$pr[ilon, ilat, rec] <- prec;
-  #               }
-  #             }
-  #           }
-  #         }
-  #       }
   #       
-  #       # /**************************************
-  #       #   Estimate Atmospheric Pressure (Pa) 
-  #       # **************************************/
-  #       if(!is.null(metGen$settings$inVar$pressure) && !is.null(outData$pressure)) {
-  #         if (iday == 1) {
-  #           pressure_prev <- pressure
-  #         }
-  #         
-  #         if(is.null(metGen$settings$inVar$pressure)) {
-  #           # cat("niet gegeven!\n")
-  #         } else {
-  #           # cat("gegeven!\n")
-  #           for(rec in 1:metGen$derived$nOutStepDay) {
-  #             hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
-  #             if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
-  #             outData$pressure[ilon, ilat, rec] <- 0;
-  #             for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
-  #               if (idx_tmp <= 24) {
-  #                 outData$pressure[ilon, ilat, rec] <- pressure_prev;
-  #               } else {
-  #                 outData$pressure[ilon, ilat, rec] <- pressure;
-  #               }
-  #             }
-  #           }
-  #         }
-  #       }
-  #       
-  #       # /*************************************************
-  #       #   Wind Speed
-  #       # *************************************************/
-  #       if(!is.null(metGen$settings$inVar$wind) && !is.null(outData$wind)) {
-  #         if (iday == 1) {
-  #           wind_prev <- wind
-  #         }
-  #         
-  #         if(is.null(metGen$settings$inVar$wind)) {
-  #           # cat("niet gegeven!\n")
-  #         } else {
-  #           # cat("gegeven!\n")
-  #           for(rec in 1:metGen$derived$nOutStepDay) {
-  #             hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
-  #             if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
-  #             outData$wind[ilon, ilat, rec] <- 0;
-  #             for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
-  #               if (idx_tmp <= 24) {
-  #                 outData$wind[ilon, ilat, rec] <- wind_prev;
-  #               } else {
-  #                 outData$wind[ilon, ilat, rec] <- wind;
-  #               }
-  #             }
-  #           }
-  #         }
-  #       }
-  #       
-  #       # /*************************************************
-  #       #   Longwave
-  #       # *************************************************/
-  #       if(!is.null(metGen$settings$inVar$pressure) && !is.null(outData$pressure)) {
-  #         if (iday == 1) {
-  #           longwave_prev <- longwave
-  #         }
-  #         
-  #         if(is.null(metGen$settings$inVar$longwave)) {
-  #           # cat("niet gegeven!\n")
-  #         } else {
-  #           # cat("gegeven!\n")
-  #           for(rec in 1:metGen$derived$nOutStepDay) {
-  #             hour_local_out <- (rec-1)*metGen$derived$outDt - hour_offset_int;
-  #             if ((0 - hour_offset_int) < 0) hour_local_out <- hour_local_out + 24;
-  #             outData$longwave[ilon, ilat, rec] <- 0;
-  #             for (idx_tmp in (hour_local_out+1):(((hour_local_out-1)+metGen$derived$outDt)+1)) {
-  #               if (idx_tmp <= 24) {
-  #                 outData$longwave[ilon, ilat, rec] <- longwave_prev;
-  #               } else {
-  #                 outData$longwave[ilon, ilat, rec] <- longwave;
-  #               }
-  #             }
-  #           }
-  #         }
-  #       }
   #       
   #       # /*************************************************
   #       #   Vapor pressure
@@ -349,15 +253,8 @@ for (iday in 1:metGen$derived$nday) {
   #       # relhum_prev <- relhum
   #     }
   #   }
-  #   ## refresh progressbar
-  #   setTxtProgressBar(pb, ilon)
-  # }
-  
-  ## Close ProgressBar
-  # close(pb)
   
   ## ADD OUTPUT TO NETCDF
-  profile$start.time.write <- Sys.time()
   for (var in names(metGen$settings$outVars)) {
     # var<-"shortwave"
     timeIndex <- metGen$derived$nOutStepDay*(iday-1)+1
@@ -370,15 +267,11 @@ for (iday in 1:metGen$derived$nday) {
     )
     nc_close(metGen$settings$outVars[[var]]$ncid)
   }
-  profile$end.time.write <- Sys.time()
-  
 }
-
-profile$end.time.total <- Sys.time()
-cat(sprintf("  Total: %.1f seconds\n", as.numeric(profile$end.time.total   - profile$start.time.total, units = "secs")))
 
 ncellsTotal <- dim(mask$Data)[1] * dim(mask$Data)[2]
 ncellsTotal <- sum(mask$Data, na.rm = TRUE)
+profile$end.time.total <- Sys.time()
 totTime<-as.numeric(profile$end.time.total   - profile$start.time.total, units = "secs")
 cat(sprintf("  Total: %.1f seconds for %d x %d = %d cells. So: 100 years (67420 cels) will take: %.1f days\n", totTime, metGen$derived$nday, ncellsTotal, 
             (metGen$derived$nday * ncellsTotal), ((totTime * 67420 * 365.25 * 100) / (metGen$derived$nday * ncellsTotal) / 86400

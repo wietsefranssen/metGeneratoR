@@ -216,7 +216,6 @@ int radfract_latlon(double *result, double *map_rad_tmp, int nx, int ny, int nt,
   return 0;
 }
 
-
 int rad_map_final_c(double ***rad_fract_map_final, double **rad_fract_map, int nt, int yday) {
   
   float slat = -89.75;

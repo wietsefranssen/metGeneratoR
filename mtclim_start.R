@@ -8,7 +8,7 @@ shifter <- function(x, n = 1) {
   if (n == 0) x else c(tail(x, -n), head(x, n))
 }
 library(metGeneratoR)
-source('./R/Cpp_met.R')
+
 profile<-NULL
 
 # mgsetLonlatbox(c(92.25, 110.25, 7.25, 36.25))

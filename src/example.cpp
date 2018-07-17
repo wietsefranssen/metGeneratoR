@@ -138,8 +138,6 @@ NumericVector rad_map_final_cr(int nrec, int yday, int nx_parts) {
   
   int irec;
   
-  // nt = 360;
-  // nt = 24;
   nt = nx_parts;
   ny = ((elat - slat) / reslat) + 1;
   nx = ((elon - slon) / reslon) + 1;
@@ -183,35 +181,20 @@ NumericVector rad_map_final_cr(int nrec, int yday, int nx_parts) {
   int idx = 0;
   size_t count = 0;
   for (ix = 0; ix < nx; ix++) {
-    lon = (ix * 0.5) + -179.75;
-    // hour_offset_int = ceil((ix + 1) * (nrOffsetSteps / nx)); // hour_offset<-0
     hour_offset_int =  (floor((float)ix * ( (float)nrOffsetSteps / (float)nx) )) + base_offset;
-    // printf("offset: %d\n", hour_offset_int);
+    idx = hour_offset_int;
     for (iy = 0; iy < ny; iy++) {
-        idx = hour_offset_int;
-        for (irec = 0; irec < nrec; irec++) {
-          for (int id = 0; id < dt; id++) {
-            if (idx >= 24) idx = idx - nt;
-            // rad_fract_map_r[count] = count;
-            size_t qq = iy*nrec + irec;
-            size_t qqq = ix*ny + qq;
-            // rad_fract_map_r[qqq] += rad_fract_map_org[iy][idx] / nrec;
-            rad_fract_map_r[count] += rad_fract_map_org[iy][idx] * nrec;
-            idx++;  
-            
-          }
-          count++;
-          
-        //     size_t qq = iy*nt + it; 
-        // size_t qqq = ix*ny + qq; 
-        // printf("nr: %zu, %zu\n",qq,qqq);
-        // arr<-1:nrOffsetSteps
-          
-        // rad_fract_map_r[iy*nt + it] = rad_fract_map[iy][it];
+      for (irec = 0; irec < nrec; irec++) {
+        for (int id = 0; id < dt; id++) {
+          if (idx >= nt) idx = idx - nt;
+          rad_fract_map_r[count] += rad_fract_map_org[iy][idx] * nrec;
+          idx++;  
+        }
+        count++;
       }
     }
   }
-
+  
   // Free
   for (ix = 0; ix < nx; ix++) {
     for (iy = 0; iy < ny; iy++) {
@@ -228,36 +211,6 @@ NumericVector rad_map_final_cr(int nrec, int yday, int nx_parts) {
   return rad_fract_map_r;
 }
 
-int rad_map_final_c(double ***rad_fract_map_final, double **rad_fract_map, int nt, int yday) {
-  
-  float slat = -89.75;
-  float elat = 89.75;
-  float reslat = 0.5;
-  float lat;
-  int ny, iy;
-  int it;
-  
-  ny = ((elat - slat) / reslat) + 1;
-  
-  // Define and allocate
-  double *rad_fract = (double*)malloc(nt * sizeof(double));
-  
-  for (iy = 0; iy < ny; iy++) {
-    lat = slat + ((iy)*0.5);
-    
-    // run the function
-    // solar_geom_c(rad_fract, lat, yday, nt);
-    for (it = 0; it < nt; it++) {
-      // rad_fract_map[iy][it] = rad_fract[it];
-      // *(rad_fract_map + iy*nt + it) = rad_fract[it];
-    }
-    
-  } 
-  // Free
-  free(rad_fract);
-  
-  return 0;
-}
 
 
 

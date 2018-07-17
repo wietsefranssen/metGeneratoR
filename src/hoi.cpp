@@ -217,3 +217,33 @@ int radfract_latlon(double *result, double *map_rad_tmp, int nx, int ny, int nt,
 }
 
 
+int rad_map_final_c(double ***rad_fract_map_final, double **rad_fract_map, int nt, int yday) {
+  
+  float slat = -89.75;
+  float elat = 89.75;
+  float reslat = 0.5;
+  float lat;
+  int ny, iy;
+  int it;
+  
+  ny = ((elat - slat) / reslat) + 1;
+  
+  // Define and allocate
+  double *rad_fract = (double*)malloc(nt * sizeof(double));
+  
+  for (iy = 0; iy < ny; iy++) {
+    lat = slat + ((iy)*0.5);
+    
+    // run the function
+    // solar_geom_c(rad_fract, lat, yday, nt);
+    for (it = 0; it < nt; it++) {
+      // rad_fract_map[iy][it] = rad_fract[it];
+      // *(rad_fract_map + iy*nt + it) = rad_fract[it];
+    }
+    
+  } 
+  // Free
+  free(rad_fract);
+  
+  return 0;
+}

@@ -212,29 +212,14 @@ for (iday in 1:metGen$derived$nday) {
       }
     }
   }
-  ccc=rad_map_final_cr(4,1)
-image(t(ccc[1,,]))
   
-  
-  # mmm<-main2(200)
-  # dim(mmm)<-c(4,360,720)
-  # dim(mmm)<-c(360,720,4)
-  # # dim(mmm)<-c(24,720,360)
-  # image(mmm[,,1])
-  # image(mmm[,,2])
-  # image(mmm[,,300])
-  # image(mmm[10,,])
-  # image(mmm[11,,])
-  # image(mmm[12,,])
-  # image(mmm[130,,])
-  # # qq<-mmm[,,1]
-  # 
-  # mmm<-main2(200)
-  # dim(mmm)<-c(720,360,4)
-  # image(mmm[,,1])
-  # plot(mmm[200,,1])
-  # plot(mmm[,200,1])
-  
+  ccc=rad_map_final_cr(4, yday, nt = 24)
+  ccc<-t(ccc[1,,])
+  ccc[is.na(mask$Data)]<-0
+  ccc[is.na(inData$pr[, ,1])]<-0
+  image(ccc[,])
+  image(radfrac[,,1])
+
   for(rec in 1:metGen$derived$nOutStepDay) {
     outData$shortwave[, , rec] <- radfrac[ , , rec] * inData$shortwave[, ,1]
   }

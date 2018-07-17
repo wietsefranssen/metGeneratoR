@@ -5,8 +5,8 @@ main2 <- function(yday) {
     .Call('_metGeneratoR_main2', PACKAGE = 'metGeneratoR', yday)
 }
 
-rad_map_final_cr <- function(nrec, yday) {
-    .Call('_metGeneratoR_rad_map_final_cr', PACKAGE = 'metGeneratoR', nrec, yday)
+rad_map_final_cr <- function(nrec, yday, nx_parts) {
+    .Call('_metGeneratoR_rad_map_final_cr', PACKAGE = 'metGeneratoR', nrec, yday, nx_parts)
 }
 
 rad_map_lats_cr <- function(nt, yday) {

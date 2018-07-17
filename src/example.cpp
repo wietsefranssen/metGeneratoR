@@ -122,7 +122,7 @@ NumericVector main2(int yday) {
 }
 
 // [[Rcpp::export]]
-NumericVector rad_map_final_cr(int nrec, int yday) {
+NumericVector rad_map_final_cr(int nrec, int yday, int nx_parts) {
   // Define and allocate
   float slon = -179.75;
   float elon = 179.75;
@@ -135,10 +135,12 @@ NumericVector rad_map_final_cr(int nrec, int yday) {
   float lat;
   int ny, iy;
   int nt, it;
+  
   int irec;
   
-  nt = 360;
-  nt = 24;
+  // nt = 360;
+  // nt = 24;
+  nt = nx_parts;
   ny = ((elat - slat) / reslat) + 1;
   nx = ((elon - slon) / reslon) + 1;
   
@@ -174,6 +176,7 @@ NumericVector rad_map_final_cr(int nrec, int yday) {
   rad_fract_lats_c(rad_fract_map_org, nt, yday);
     
   // Pass array back to R NumericVector
+  int base_offset = 1;
   int hour_offset_int;
   int nrOffsetSteps = nt;
   int dt = nt/nrec;
@@ -182,7 +185,7 @@ NumericVector rad_map_final_cr(int nrec, int yday) {
   for (ix = 0; ix < nx; ix++) {
     lon = (ix * 0.5) + -179.75;
     // hour_offset_int = ceil((ix + 1) * (nrOffsetSteps / nx)); // hour_offset<-0
-    hour_offset_int =  floor((float)ix * ( (float)nrOffsetSteps / (float)nx) );
+    hour_offset_int =  (floor((float)ix * ( (float)nrOffsetSteps / (float)nx) )) + base_offset;
     // printf("offset: %d\n", hour_offset_int);
     for (iy = 0; iy < ny; iy++) {
         idx = hour_offset_int;
@@ -193,7 +196,7 @@ NumericVector rad_map_final_cr(int nrec, int yday) {
             size_t qq = iy*nrec + irec;
             size_t qqq = ix*ny + qq;
             // rad_fract_map_r[qqq] += rad_fract_map_org[iy][idx] / nrec;
-            rad_fract_map_r[count] += rad_fract_map_org[iy][idx] / nrec;
+            rad_fract_map_r[count] += rad_fract_map_org[iy][idx] * nrec;
             idx++;  
             
           }

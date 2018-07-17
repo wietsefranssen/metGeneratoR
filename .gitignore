@@ -6,3 +6,4 @@ output/
 .RData
 .Ruserdata
 *.o
+*.so

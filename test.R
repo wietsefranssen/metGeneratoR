@@ -1,18 +1,21 @@
 rm(list=ls(all=TRUE))
 library(metGeneratoR)
 
+radfrac<-rad_map_final2_cr(4, 1)
+radfrac<-rad_map_final3_cr(4, 1)
+# image(radfrac[,,2]);
+
+
+
 ## Settings
 nx <- 720
-nrec <- 24
+nrec <- 4
 gmt_float <- 0
 sLon <- -179.75
 res <- 0.5
-# sLon <- -10.25
+sLon <- -10.25
 
-
-nTinyStepsPerDay <- 720
-
-
+nTinyStepsPerDay <- 360 / res
 
 ## Current location
 lat <- 0.25
@@ -20,13 +23,16 @@ lon <- 0.25
 # lon <- -179.75
 
 ## get ilon
-ilon <- ( (lon - sLon) / res ) + 1
+# ilon <- ( (lon - sLon) / res ) + 1
+
+#### Start for loop for lat here
+
 
 ## Define radractions for at lat 0.25 (equator) for 1jan
 radfrac <- solar_geom_cr(lat, 1, nTinyStepsPerDay)
 
-## plot radfrac over the day
-plot(radfrac)
+
+
 
 ## Check and correct gmt_float 
 if(gmt_float < -12 || gmt_float > 12) stop("cannot be lower than -12 and higher than 12")
@@ -37,10 +43,14 @@ gmt_float_tmp <- gmt_float + (24/nrec)/2
 iGmtOffset <- gmt_float_tmp * (nTinyStepsPerDay/24)
 
 
+
+
+
 ## Define the index offset longitude location
 iLonOffset <- (( (lon / res) + res ) )/ (720/nTinyStepsPerDay)
 if (iLonOffset < 0) iLonOffset <- iLonOffset + nTinyStepsPerDay
-iLonOffset
+
+#### Start for loop for lon here
 
 radfrac_new <- array(NA, dim = nTinyStepsPerDay)
 radfrac_new_rec <- array(0, dim = nrec)
@@ -60,3 +70,13 @@ plot(radfrac)
 plot(radfrac_new)
 plot(radfrac_new_rec)
 max(radfrac_new_rec)
+
+nTinyStepsPerDay<-720
+mapp<-array(NA, dim = c(720,360))
+for (i in 1:360) {
+  lat <- ( (i-1) * 0.5 ) + -89.75
+  mapp[,i] <- solar_geom_cr(lat, 1, nTinyStepsPerDay)
+  # print(lat)
+}
+image(mapp)
+

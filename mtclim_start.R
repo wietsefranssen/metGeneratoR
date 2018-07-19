@@ -17,15 +17,13 @@ profile<-NULL
 # mgsetLonlatbox(c(92.25, 92.25, -8.25, -8.25))
 # mgsetLonlatbox(c(92.25, 92.75, 34.25, 36.75))
 mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
-mgsetPeriod(startdate = "1950-1-01", enddate = "1950-1-2")
+mgsetPeriod(startdate = "1998-1-1", enddate = "1998-1-5")
 # mgsetPeriod(startdate = "1965-01-01", enddate = "1965-06-2")
 mgsetInDt(24) # Set N hours per timestep
 mgsetOutDt(6) # Set N hours per timestep
 
 metGen$constants<-setConstants()
 constants <- metGen$constants
-
-theta_l = -30
 
 options <- NULL
 options$SW_PREC_THRESH <- 0
@@ -103,12 +101,19 @@ for (iday in 1:metGen$derived$nday) {
   # /*************************************************
   #   Shortwave radiation
   # *************************************************/
-  radfrac<-aperm(rad_map_final_cr(metGen$derived$nOutStepDay, yday, nx_parts = 720), c(3,2,1))
-  ## Mask out
-  for (i in 1:metGen$derived$nOutStepDay) {
-    ccc<-radfrac[,,i]
-    radfrac[,,i] <- ccc
-  }
+  radfrac<-rad_map_final_cr(metGen$derived$nOutStepDay, yday, nx_parts = 720, gmt_float = 0)
+  # radfrac<-rad_map_final3_cr(metGen$derived$nOutStepDay, yday)
+  # radfrac<-array(0, dim=c(720,360,4))
+  # plot(radfrac[300:720,314,1])
+  # plot(radfrac[,315,1])
+  # image(radfrac[,,1])
+  # image(radfrac2[,,1])
+  # plot(radfrac[,1,1])
+  # plot(radfrac2[,1,1])
+  # i<-314
+  # lat <- ( (i-1) * 0.5 ) + -89.75
+  # mapp <- solar_geom_cr(lat, 1, 720)
+  # plot(mapp)
   
   if(!is.null(metGen$settings$inVar$shortwave) && !is.null(outData$shortwave)) {
     for(rec in 1:metGen$derived$nOutStepDay) {

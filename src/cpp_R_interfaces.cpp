@@ -18,16 +18,16 @@ NumericVector set_max_min_hour_cr(NumericVector hourlyrad_r, int nrec, int ix) {
   // Define and allocate
   NumericVector result(2);
   double *hourlyrad = (double*)malloc(24 * sizeof(double));
-
+  
   int nt = nrec;
   int base_offset_gmt = 0;
   base_offset_gmt =  (nt / nrec) * (base_offset_gmt + 9);
- // int ix = 2;
- int nx = 720;
- int offset;
-    offset = (floor((float)ix * ( (float)nt / (float)nx) )) + base_offset_gmt;
-    if (offset >= nrec) offset = offset - nrec;
-    printf("offset: %d\n", offset);
+  // int ix = 2;
+  int nx = 720;
+  int offset;
+  offset = (floor((float)ix * ( (float)nt / (float)nx) )) + base_offset_gmt;
+  if (offset >= nrec) offset = offset - nrec;
+  printf("offset: %d\n", offset);
   
   
   
@@ -66,7 +66,7 @@ NumericVector set_max_min_hour_cr(NumericVector hourlyrad_r, int nrec, int ix) {
   // Moet dit?:
   if (tminhour >= 0 && tmaxhour >= 0) {
     tmaxhour = 0.67 * (tmaxhour - tminhour) + tminhour;
-  
+    
   } else {
     /* arbitrarily set the min and max times to 2am and 2pm */
     tminhour = 2;
@@ -76,7 +76,7 @@ NumericVector set_max_min_hour_cr(NumericVector hourlyrad_r, int nrec, int ix) {
   // Pass array back to R NumericVector 
   result[0] = tminhour;
   result[1] = tmaxhour;
-
+  
   // Free
   free(hourlyrad);
   return result;
@@ -97,6 +97,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, int nx_parts, double gmt_floa
   float lat;
   int ny, iy;
   int nt, it;
+  int ixx ;
   
   int irec;
   
@@ -165,8 +166,8 @@ NumericVector rad_map_final_cr(int nrec, int yday, int nx_parts, double gmt_floa
   if (gmt_float < 0) gmt_float = gmt_float + nTinyStepsPerDay;
   
   // ## Define the index offset based on the gmt offset
-  gmt_float_tmp = ( gmt_float + (24/nrec)/2 ); // + ((nx/2)/nrec);
-  iGmtOffset = gmt_float_tmp * (nTinyStepsPerDay/24);
+  // gmt_float_tmp = ( gmt_float + (24/nrec)/2 ); // + ((nx/2)/nrec);
+  // iGmtOffset = gmt_float_tmp * (nTinyStepsPerDay/24);
   // iGmtOffset = 360;
   /////////////////
   gmt_float_tmp = gmt_float * (nTinyStepsPerDay/24);
@@ -175,28 +176,29 @@ NumericVector rad_map_final_cr(int nrec, int yday, int nx_parts, double gmt_floa
   if (iGmtOffset < 0) iGmtOffset = iGmtOffset + nTinyStepsPerDay;
   // printf("gmt: %d\n", iGmtOffset);
   
-  // FILE *f = fopen("runlog.txt", "w");
+  
+  // Do everything for rec 0
   for (ix = 0; ix < nx; ix++) {
-    // idx = (floor((float)ix * ( (float)nt / (float)nx) )) + gmt_float;
     idx = (floor((float)ix * ( (float)nt / (float)nx) )) + iGmtOffset;
-    // printf("ix: %d, idx: %d\n", ix, idx);
-    // idx = (floor((float)ix * ( (float)nt / (float)nx) )) + offset_index;
-    for (iy = 0; iy < ny; iy++) {
-      for (irec = 0; irec < nrec; irec++) {
-        for (int id = 0; id < dt; id++) {
-          if (idx >= nt) idx = idx - nt;
-          // rad_fract_map_r[count] += rad_fract_map_org[iy][idx] * nrec;
-          rad_fract_map[ix][iy][irec] += rad_fract_map_org[iy][idx] * nrec;
-          
-          // fprintf(f, "ix: %d, iy: %d, irec: %d, id: %d, idx: %d\n", ix, iy, irec, id,idx);
-          
-          idx++;  
-        }
-        count++;
+    for (int id = 0; id < dt; id++) {
+      if (idx >= nt) idx -= nt;
+      for (iy = 0; iy < ny; iy++) {
+        rad_fract_map[ix][iy][0] += rad_fract_map_org[iy][idx] * nrec;
       }
+      idx++;
     }
   }
-  // fclose(f);
+
+  // Copy the map of rec 0 and move it for the other recs
+  for (irec = 1; irec < nrec; irec++) {
+    for (ix = 0; ix < nx; ix++) {
+      ixx = ix - ( irec * (nx/nrec));
+      if (ixx < 0) ixx += nx;
+      for (iy = 0; iy < ny; iy++) {
+        rad_fract_map[ixx][iy][irec] = rad_fract_map[ix][iy][0];
+      }  
+    }
+  }
   
   count = 0;
   for (irec = 0; irec < nrec; irec++) {

@@ -70,6 +70,11 @@ ny <- length(mask$xyCoords$y)
 ## makeOutputNetCDF
 makeNetcdfOut(mask)
 
+## Open the output files
+for (var in names(metGen$settings$outVars)) {
+  # metGen$settings$outVars[[var]]$ncid <- nc_open(metGen$settings$outVars[[var]]$filename, write = TRUE)
+}
+
 ## DEFINE OUTPUT ARRAY
 outData <- NULL
 for (var in names(metGen$settings$outVars)) {
@@ -106,7 +111,7 @@ for (iday in 1:metGen$derived$nday) {
   # radfrac<-array(0, dim=c(720,360,4))
   # plot(radfrac[300:720,314,1])
   # plot(radfrac[,315,1])
-  # image(radfrac[,,1])
+  # image(radfrac[,,4])
   # image(radfrac2[,,1])
   # plot(radfrac[,1,1])
   # plot(radfrac2[,1,1])
@@ -126,7 +131,7 @@ for (iday in 1:metGen$derived$nday) {
   # *************************************************/
   if(!is.null(metGen$settings$inVar$longwave) && !is.null(outData$longwave)) {
     for(rec in 1:metGen$derived$nOutStepDay) {
-      outData$longwave[, , rec] <- radfrac[ , , rec] * inData$longwave[, ,1]
+      outData$longwave[, , rec] <- inData$longwave[, ,1]
     }
   }
   
@@ -256,20 +261,27 @@ for (iday in 1:metGen$derived$nday) {
   #       # relhum_prev <- relhum
   #     }
   #   }
-  
   ## ADD OUTPUT TO NETCDF
   for (var in names(metGen$settings$outVars)) {
+    # bbb<-outData$shortwave[,,]
+    # bbb<-outData[["shortwave"]][,,]
     # var<-"shortwave"
     timeIndex <- metGen$derived$nOutStepDay*(iday-1)+1
     metGen$settings$outVars[[var]]$ncid <- nc_open(metGen$settings$outVars[[var]]$filename, write = TRUE)
     ncvar_put(metGen$settings$outVars[[var]]$ncid,
               var,
               outData[[var]][,,],
+              # bbb,
               start = c(1, 1, timeIndex),
               count = c(nx, ny, metGen$derived$nOutStepDay)
     )
     nc_close(metGen$settings$outVars[[var]]$ncid)
   }
+}
+
+## Close the output files
+for (var in names(metGen$settings$outVars)) {
+  # nc_close(metGen$settings$outVars[[var]]$ncid)
 }
 
 ncellsTotal <- dim(mask$Data)[1] * dim(mask$Data)[2]

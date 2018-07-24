@@ -32,6 +32,13 @@ NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx) {
 // [[Rcpp::export]]
 NumericVector set_max_min_lonlat_cr(int nx, int ny, int yday, int nrec) {
   NumericVector result(2);
+  NumericVector tair_map_r(nrec * ny * nx);
+  IntegerVector dims(3);
+  dims[0] = nx;
+  dims[1] = ny;
+  dims[2] = nrec;
+  tair_map_r.attr("dim") = dims;
+  
   int ix, iy, nt;
   
   nt = nx;
@@ -54,7 +61,6 @@ NumericVector set_max_min_lonlat_cr(int nx, int ny, int yday, int nrec) {
     }
   }
   
-  
   // run the function
   rad_fract_lats_c(rad_fract_map_org, nt, yday);
   
@@ -63,11 +69,36 @@ NumericVector set_max_min_lonlat_cr(int nx, int ny, int yday, int nrec) {
 
   double Tmin = 15;
   double Tmax = 30;
-  int TminHour = 12;
-  int TmaxHour = 14;
+  // double TminHour = 8.1;
+  // double TmaxHour = 14.1;
+  double TminHour = 3;
+  double TmaxHour = 12;
+  
   double *Tair = (double*)malloc(nrec * sizeof(double));
   
-  HourlyT_c(1 ,nrec,1,TmaxHour, Tmax,  TminHour, Tmin, Tair);
+  HourlyT_c(nrec, TminHour, Tmin, TmaxHour, Tmax, Tair);
+
+  int irec;
+  ix=0;
+  iy=0;
+  // for (ix = 0; ix < nx; ix++) {
+    // for (iy = 0; iy < ny; iy++) {
+      for (irec = 0; irec < nrec; irec++) {
+        tair_map[ix][iy][irec] = Tair[irec];
+        // printf("ttair: %f\n", Tair[irec]);
+      }
+    // }
+  // }
+  
+  size_t count = 0;
+  for (irec = 0; irec < nrec; irec++) {
+    for (iy = 0; iy < ny; iy++) {
+      for (ix = 0; ix < nx; ix++) {
+        tair_map_r[count] = tair_map[ix][iy][irec];
+        count++;
+      }
+    }
+  }
   
   
   // Free
@@ -87,7 +118,7 @@ NumericVector set_max_min_lonlat_cr(int nx, int ny, int yday, int nrec) {
   free(rad_fract_map_org);
   result[0] = tmin_hour;
   result[1] = tmax_hour;
-  return result;
+  return tair_map_r;
 }
 
 // [[Rcpp::export]]

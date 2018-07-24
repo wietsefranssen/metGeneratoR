@@ -63,14 +63,12 @@ double hermint(double xbar, int n, double *x, double *yc1, double *yc2,
 /****************************************************************************/
 /*				    HourlyT                                 */
 /****************************************************************************/
-void HourlyT_c(int Dt,
-               int nrec,
-             int ndays, 
-             int TmaxHour, 
-             double Tmax, 
-             int TminHour,
-             double Tmin, 
-             double *Tair) 
+void HourlyT_c(int nrec,
+               double TminHour,
+               double Tmin, 
+               double TmaxHour, 
+               double Tmax, 
+               double *Tair) 
 {
   double *x;
   double *Tyc1;
@@ -82,46 +80,42 @@ void HourlyT_c(int Dt,
   int n;
   int hour;
   int nsteps;
-  
-  //  ndays=1;
-  //  TmaxHour[0]=22;
-  //  Tmax[0]=30;
-  //  TminHour[0]=8;
-  //  Tmin[0]=4;
-  //  
+
   int HOURSPERDAY = nrec;
-  nsteps = HOURSPERDAY/Dt * ndays;
+  TminHour = TminHour / (24/nrec);
+  TmaxHour = TmaxHour / (24/nrec);
+  // int HOURSPERDAY = 24;
+  // nsteps = HOURSPERDAY/Dt * ndays;
+  nsteps = nrec;
   
-  n     = ndays*2+2;
+  n     = 2+2;
   x     = (double *) calloc(n, sizeof(double));
   Tyc1  = (double *) calloc(n, sizeof(double));
   yc2   = (double *) calloc(n, sizeof(double));
   yc3   = (double *) calloc(n, sizeof(double));
   yc4   = (double *) calloc(n, sizeof(double));
-  // if (x == NULL || Tyc1 == NULL || yc2 == NULL || yc3 == NULL || yc4 == NULL)
-  //   nrerror("Memory allocation failure in HourlyT()");
-  
+
   /* First fill the x vector with the times for Tmin and Tmax, and fill the 
    Tyc1 with the corresponding temperature and humidity values */
-    if (TminHour < TmaxHour) {
-      x[j]       = TminHour + hour;
-      Tyc1[j++]  = Tmin;
-      x[j]       = TmaxHour + hour;
-      Tyc1[j++]  = Tmax;
-    }
-    else {
-      x[j]       = TmaxHour + hour;
-      Tyc1[j++]  = Tmax;
-      x[j]       = TminHour + hour;
-      Tyc1[j++]  = Tmin;
-    } 
-  
+  hour = 0;
+  if (TminHour < TmaxHour) {
+    x[1]       = TminHour + hour;
+    Tyc1[1]  = Tmin;
+    x[2]       = TmaxHour + hour;
+    Tyc1[2]  = Tmax;
+  }
+  else {
+    x[2]       = TmaxHour + hour;
+    Tyc1[2]  = Tmax;
+    x[3]       = TminHour + hour;
+    Tyc1[3]  = Tmin;
+  } 
   
   /* To "tie" down the first and last values, repeat those */
   x[0] = x[2] - HOURSPERDAY;
   Tyc1[0] = Tyc1[2];
-  x[n-1] = x[n-3] + HOURSPERDAY;
-  Tyc1[n-1] = Tyc1[n-3];
+  x[3] = x[1] + HOURSPERDAY;
+  Tyc1[3] = Tyc1[1];
   
   /* we want to preserve maxima and minima, so we require that the first 
    derivative at these points is zero */
@@ -129,14 +123,47 @@ void HourlyT_c(int Dt,
     yc2[i] = 0.;
   
   /* calculate the coefficients for the splines for the temperature */
-  hermite(n, x, Tyc1, yc2, yc3, yc4);
-  
-  /* interpolate the temperatures */
-  for (i = 0, hour = 0; i < nsteps; i++, hour += Dt) {
-    Tair[i] = hermint(hour, n, x, Tyc1, yc2, yc3, yc4);
-    printf("tair: %f\n",Tair[i]);
+  // hermite(n, x, Tyc1, yc2, yc3, yc4);
+  // for (i in 1:n-1) {
+  float dx, divdf1,divdf3;
+  for (i = 0; i < (n-1); i++)
+  {
+    dx = x[i+1] - x[i];
+    divdf1 = (Tyc1[i+1] - Tyc1[i])/dx;
+    divdf3 = yc2[i] + yc2[i+1] - 2 * divdf1;
+    yc3[i] = (divdf1 - yc2[i] - divdf3)/dx;
+    yc4[i] = divdf3/(dx*dx);
   }
   
+  /* interpolate the temperatures */
+  // for (hour = 0; hour < nsteps; hour++) {
+  //   Tair[i] = hermint(hour, n, x, Tyc1, yc2, yc3, yc4);
+  // }
+  // for (hour = 0; hour < nsteps; hour++) {
+  //   Tair[hour] = 0;
+  // }
+  
+  int klo,khi,k;
+  hour = 0;
+  for (i = 0; i < nsteps; i++) {
+
+      klo=0;
+      khi=n-1;
+      while (khi-klo > 1) {
+        k=(khi+klo) >> 1;
+
+        if (x[k] > hour) {
+          khi=k;
+        } else {
+          klo=k;
+        }
+      }
+      
+      dx = hour - x[klo];
+      Tair[i] = Tyc1[klo] + dx * (yc2[klo] + dx * (yc3[klo] + dx * yc4[klo]));
+      hour++;
+    }
+
   free(x);   
   free(Tyc1);
   free(yc2);

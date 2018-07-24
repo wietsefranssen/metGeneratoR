@@ -9,8 +9,12 @@ rad_map_final3_cr <- function(nrec, yday) {
     .Call('_metGeneratoR_rad_map_final3_cr', PACKAGE = 'metGeneratoR', nrec, yday)
 }
 
-set_max_min_hour_cr <- function(hourlyrad_r, nrec, ix) {
-    .Call('_metGeneratoR_set_max_min_hour_cr', PACKAGE = 'metGeneratoR', hourlyrad_r, nrec, ix)
+set_min_max_hour_cr <- function(radfrac, nx) {
+    .Call('_metGeneratoR_set_min_max_hour_cr', PACKAGE = 'metGeneratoR', radfrac, nx)
+}
+
+set_max_min_lonlat_cr <- function(nx, ny, yday, nrec) {
+    .Call('_metGeneratoR_set_max_min_lonlat_cr', PACKAGE = 'metGeneratoR', nx, ny, yday, nrec)
 }
 
 rad_map_final_cr <- function(nrec, yday, nx_parts, gmt_float) {

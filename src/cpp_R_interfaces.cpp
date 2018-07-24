@@ -6,82 +6,89 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-NumericVector set_max_min_hour_cr(NumericVector hourlyrad_r, int nrec, int ix) {
-  // /* optical airmass by degrees */
-  // double optam[21] = {2.90, 3.05, 3.21, 3.39, 3.69, 3.82, 4.07, 4.37, 4.72, 5.12, 5.60,
-  //                     6.18, 6.88, 7.77, 8.90, 10.39, 12.44, 15.36, 19.79, 26.96, 30.00};
-  // 
-  // int nrec = 24;
-  int tmaxhour = -999; 
-  int tminhour = -999;
-  
-  // Define and allocate
+NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx) {
   NumericVector result(2);
-  double *hourlyrad = (double*)malloc(24 * sizeof(double));
+  int ix;
+
+  double *radfrac_c = (double*)malloc(nx * sizeof(double));
+  double tmin_hour = -999;
+  double tmax_hour = -999;;
   
-  int nt = nrec;
-  int base_offset_gmt = 0;
-  base_offset_gmt =  (nt / nrec) * (base_offset_gmt + 9);
-  // int ix = 2;
-  int nx = 720;
-  int offset;
-  offset = (floor((float)ix * ( (float)nt / (float)nx) )) + base_offset_gmt;
-  if (offset >= nrec) offset = offset - nrec;
-  printf("offset: %d\n", offset);
-  
-  
-  
-  
-  
-  // Pass array from R NumericVector 
-  for (int i = 0; i < nrec; i++) hourlyrad[i] = hourlyrad_r[i];
-  
-  // run the function
-  // set_max_min_hour(hourlyrad, tmaxhour, tminhour);
-  int hour, prev_hour;
-  for (hour = 0; hour < nrec; hour++) {
-    prev_hour = hour - 1;
-    if (prev_hour < 0) prev_hour = nrec - 1; 
-    if (hourlyrad[hour] > 0 && hourlyrad[prev_hour] <= 0)
-    {
-      tminhour = prev_hour;
-    }
-    if (hourlyrad[hour] <= 0 && hourlyrad[prev_hour] > 0)
-    {
-      tmaxhour = hour + 1;
-    }
+  for (ix = 0; ix < nx; ix++) {
+    radfrac_c[ix] = radfrac[ix];
   }
-  if (tminhour == -999) {
-    // Define lowest point
-    double n = hourlyrad[0];
-    for (hour = 0; hour < nrec; hour++) {
-      if(hourlyrad[hour] < n) {
-        n = hourlyrad[hour];
-        tmaxhour = hour;
-      }
-    }
-    tminhour = tmaxhour + 1;
-    if (tminhour >= nrec) tminhour = 0;
-  }
-  // Moet dit?:
-  if (tminhour >= 0 && tmaxhour >= 0) {
-    tmaxhour = 0.67 * (tmaxhour - tminhour) + tminhour;
+  
+  set_min_max_hour_c(radfrac_c, &tmin_hour, &tmax_hour, nx);
     
-  } else {
-    /* arbitrarily set the min and max times to 2am and 2pm */
-    tminhour = 2;
-    tmaxhour = 14;
-  }
-  
-  // Pass array back to R NumericVector 
-  result[0] = tminhour;
-  result[1] = tmaxhour;
-  
-  // Free
-  free(hourlyrad);
+  result[0] = tmin_hour;
+  result[1] = tmax_hour;
   return result;
 }
+// qq<-set_max_min_hour_cr(solar_geom_cr(-89.75,1,720), 720)
+// plot(solar_geom_cr(-89.75,1,720))
+// plot(HourlyT(TmaxHour = qq[2],Tmax = 30,TminHour = 0,Tmin = 15)) 
 
+
+// [[Rcpp::export]]
+NumericVector set_max_min_lonlat_cr(int nx, int ny, int yday, int nrec) {
+  NumericVector result(2);
+  int ix, iy, nt;
+  
+  nt = nx;
+  double *radfrac_c = (double*)malloc(nx * sizeof(double));
+  double tmin_hour = -999;
+  double tmax_hour = -999;;
+  
+  // Define and allocate
+  double **rad_fract_map_org = (double**)malloc(ny * sizeof(double));
+  for (iy = 0; iy < ny; iy++) {
+    rad_fract_map_org[iy] = (double*)malloc(nt * sizeof(double));
+  }
+  
+  // Define and allocate
+  double ***tair_map = (double***)malloc(nx * sizeof(double));
+  for (ix = 0; ix < nx; ix++) {
+    tair_map[ix] = (double**)malloc(ny * sizeof(double));
+    for (iy = 0; iy < ny; iy++) {
+      tair_map[ix][iy] = (double*)malloc(nrec * sizeof(double));
+    }
+  }
+  
+  
+  // run the function
+  rad_fract_lats_c(rad_fract_map_org, nt, yday);
+  
+  iy=0;
+  set_min_max_hour_c(rad_fract_map_org[iy], &tmin_hour, &tmax_hour, nx);
+
+  double Tmin = 15;
+  double Tmax = 30;
+  int TminHour = 12;
+  int TmaxHour = 14;
+  double *Tair = (double*)malloc(nrec * sizeof(double));
+  
+  HourlyT_c(1 ,nrec,1,TmaxHour, Tmax,  TminHour, Tmin, Tair);
+  
+  
+  // Free
+  for (ix = 0; ix < nx; ix++) {
+    for (iy = 0; iy < ny; iy++) {
+      free(tair_map[ix][iy]);
+    }
+    free(tair_map[ix]);
+  }
+  free(tair_map);
+  
+  for (iy = 0; iy < ny; iy++) {
+    free(rad_fract_map_org[iy]);
+  }
+  free(Tair);
+  
+  free(rad_fract_map_org);
+  result[0] = tmin_hour;
+  result[1] = tmax_hour;
+  return result;
+}
 
 // [[Rcpp::export]]
 NumericVector rad_map_final_cr(int nrec, int yday, int nx_parts, double gmt_float) {
@@ -188,7 +195,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, int nx_parts, double gmt_floa
       idx++;
     }
   }
-
+  
   // Copy the map of rec 0 and move it for the other recs
   for (irec = 1; irec < nrec; irec++) {
     for (ix = 0; ix < nx; ix++) {

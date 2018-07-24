@@ -29,16 +29,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// set_max_min_hour_cr
-NumericVector set_max_min_hour_cr(NumericVector hourlyrad_r, int nrec, int ix);
-RcppExport SEXP _metGeneratoR_set_max_min_hour_cr(SEXP hourlyrad_rSEXP, SEXP nrecSEXP, SEXP ixSEXP) {
+// set_min_max_hour_cr
+NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx);
+RcppExport SEXP _metGeneratoR_set_min_max_hour_cr(SEXP radfracSEXP, SEXP nxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type hourlyrad_r(hourlyrad_rSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type radfrac(radfracSEXP);
+    Rcpp::traits::input_parameter< int >::type nx(nxSEXP);
+    rcpp_result_gen = Rcpp::wrap(set_min_max_hour_cr(radfrac, nx));
+    return rcpp_result_gen;
+END_RCPP
+}
+// set_max_min_lonlat_cr
+NumericVector set_max_min_lonlat_cr(int nx, int ny, int yday, int nrec);
+RcppExport SEXP _metGeneratoR_set_max_min_lonlat_cr(SEXP nxSEXP, SEXP nySEXP, SEXP ydaySEXP, SEXP nrecSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type nx(nxSEXP);
+    Rcpp::traits::input_parameter< int >::type ny(nySEXP);
+    Rcpp::traits::input_parameter< int >::type yday(ydaySEXP);
     Rcpp::traits::input_parameter< int >::type nrec(nrecSEXP);
-    Rcpp::traits::input_parameter< int >::type ix(ixSEXP);
-    rcpp_result_gen = Rcpp::wrap(set_max_min_hour_cr(hourlyrad_r, nrec, ix));
+    rcpp_result_gen = Rcpp::wrap(set_max_min_lonlat_cr(nx, ny, yday, nrec));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -85,7 +98,8 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_metGeneratoR_rad_map_final2_cr", (DL_FUNC) &_metGeneratoR_rad_map_final2_cr, 2},
     {"_metGeneratoR_rad_map_final3_cr", (DL_FUNC) &_metGeneratoR_rad_map_final3_cr, 2},
-    {"_metGeneratoR_set_max_min_hour_cr", (DL_FUNC) &_metGeneratoR_set_max_min_hour_cr, 3},
+    {"_metGeneratoR_set_min_max_hour_cr", (DL_FUNC) &_metGeneratoR_set_min_max_hour_cr, 2},
+    {"_metGeneratoR_set_max_min_lonlat_cr", (DL_FUNC) &_metGeneratoR_set_max_min_lonlat_cr, 4},
     {"_metGeneratoR_rad_map_final_cr", (DL_FUNC) &_metGeneratoR_rad_map_final_cr, 4},
     {"_metGeneratoR_rad_map_lats_cr", (DL_FUNC) &_metGeneratoR_rad_map_lats_cr, 2},
     {"_metGeneratoR_solar_geom_cr", (DL_FUNC) &_metGeneratoR_solar_geom_cr, 3},

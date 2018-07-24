@@ -3,6 +3,52 @@
 #include <stdio.h>
 #include "header.h"
 
+int set_min_max_hour_c(double *radfrac, double *tmin_hour, double *tmax_hour, int nx) {
+  int ix, iy;
+  int ix_prev;
+  int tmin_ix = -999;
+  int tmax_ix = -999;
+  
+  for (ix = 0; ix < (nx/2); ix++) {
+    ix_prev = ix - 1;
+    if (ix_prev < 0) { ix_prev = nx - 1;}
+    if (radfrac[ix] > 0 && radfrac[ix_prev] <= 0)
+    {
+      tmin_ix = ix_prev;
+      break;
+    }
+  }
+  for (ix = (nx/2); ix < nx; ix++) {
+    ix_prev = ix - 1;
+    if (ix_prev < 0) { ix_prev = nx - 1;}
+    if (radfrac[ix] <= 0 && radfrac[ix_prev] > 0)
+    {
+      tmax_ix = ix + 1;
+      break;
+    }
+  }
+  
+  // convert ix to hour
+  double partsPerHour = nx/24;
+  *tmin_hour = -999;
+  *tmax_hour = -999;
+  
+  if (tmin_ix >= 1 && tmax_ix >= 1) {
+    *tmin_hour = tmin_ix / partsPerHour;
+    *tmax_hour = tmax_ix / partsPerHour;
+  }
+  if (*tmin_hour >= 0 && *tmax_hour >= 0) {
+    *tmax_hour = 0.67 * (*tmax_hour - *tmin_hour) + *tmin_hour;
+  } else {
+    /* arbitrarily set the min and max times to 2am and 2pm */
+    *tmin_hour = 2;
+    *tmax_hour = 14;
+  }
+  
+  // printf("tmin_hour: %f tmax_hour: %f\n", *tmin_hour, *tmax_hour);
+  return 0;
+}
+
 int solar_geom_c(double *rad_fract_per_timestep, float lat, int yday, int timesteps_per_day) {
   
   double dt = 30;

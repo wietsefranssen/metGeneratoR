@@ -17,10 +17,10 @@ profile<-NULL
 # mgsetLonlatbox(c(92.25, 92.25, -8.25, -8.25))
 # mgsetLonlatbox(c(92.25, 92.75, 34.25, 36.75))
 mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
-mgsetPeriod(startdate = "1998-1-1", enddate = "1998-1-5")
+mgsetPeriod(startdate = "1998-1-1", enddate = "1998-1-2")
 # mgsetPeriod(startdate = "1965-01-01", enddate = "1965-06-2")
 mgsetInDt(24) # Set N hours per timestep
-mgsetOutDt(6) # Set N hours per timestep
+mgsetOutDt(1) # Set N hours per timestep
 
 metGen$constants<-setConstants()
 constants <- metGen$constants
@@ -111,9 +111,9 @@ for (iday in 1:metGen$derived$nday) {
   # radfrac<-array(0, dim=c(720,360,4))
   # plot(radfrac[300:720,314,1])
   # plot(radfrac[,315,1])
-  # image(radfrac[,,4])
+  image(radfrac[,,4])
   # image(radfrac2[,,1])
-  # plot(radfrac[,1,1])
+  plot(radfrac[,1,1])
   # plot(radfrac2[,1,1])
   # i<-314
   # lat <- ( (i-1) * 0.5 ) + -89.75
@@ -159,6 +159,8 @@ for (iday in 1:metGen$derived$nday) {
   if(!is.null(metGen$settings$inVar$tasmin) && !is.null(metGen$settings$inVar$tasmin) && !is.null(outData$tas)) {
     for(rec in 1:metGen$derived$nOutStepDay) {
       # tminmaxhour<- set_t_minmax_hour(hourly_rad)
+      plot(radfrac[200,200,])
+      # set_max_min_hour_cr(radfrac[200,200,], 8, 3)
       # subdaily_tair<-HourlyT(tminmaxhour[2],tmax,tminmaxhour[1],tmin)
       # 
       # outData$pressure[, , rec] <- subdaily_tair[, ,rec]

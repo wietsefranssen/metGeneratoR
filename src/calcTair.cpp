@@ -63,12 +63,13 @@ double hermint(double xbar, int n, double *x, double *yc1, double *yc2,
 /****************************************************************************/
 /*				    HourlyT                                 */
 /****************************************************************************/
-void HourlyT(int Dt, 
+void HourlyT_c(int Dt,
+               int nrec,
              int ndays, 
-             int *TmaxHour, 
-             double *Tmax, 
-             int *TminHour,
-             double *Tmin, 
+             int TmaxHour, 
+             double Tmax, 
+             int TminHour,
+             double Tmin, 
              double *Tair) 
 {
   double *x;
@@ -88,7 +89,7 @@ void HourlyT(int Dt,
   //  TminHour[0]=8;
   //  Tmin[0]=4;
   //  
-  int HOURSPERDAY = 24;
+  int HOURSPERDAY = nrec;
   nsteps = HOURSPERDAY/Dt * ndays;
   
   n     = ndays*2+2;
@@ -102,20 +103,19 @@ void HourlyT(int Dt,
   
   /* First fill the x vector with the times for Tmin and Tmax, and fill the 
    Tyc1 with the corresponding temperature and humidity values */
-  for (i = 0, j = 1, hour = 0; i < ndays; i++, hour += HOURSPERDAY) {
-    if (TminHour[i] < TmaxHour[i]) {
-      x[j]       = TminHour[i] + hour;
-      Tyc1[j++]  = Tmin[i];
-      x[j]       = TmaxHour[i] + hour;
-      Tyc1[j++]  = Tmax[i];
+    if (TminHour < TmaxHour) {
+      x[j]       = TminHour + hour;
+      Tyc1[j++]  = Tmin;
+      x[j]       = TmaxHour + hour;
+      Tyc1[j++]  = Tmax;
     }
     else {
-      x[j]       = TmaxHour[i] + hour;
-      Tyc1[j++]  = Tmax[i];
-      x[j]       = TminHour[i] + hour;
-      Tyc1[j++]  = Tmin[i];
+      x[j]       = TmaxHour + hour;
+      Tyc1[j++]  = Tmax;
+      x[j]       = TminHour + hour;
+      Tyc1[j++]  = Tmin;
     } 
-  }
+  
   
   /* To "tie" down the first and last values, repeat those */
   x[0] = x[2] - HOURSPERDAY;

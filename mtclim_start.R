@@ -17,7 +17,7 @@ profile<-NULL
 # mgsetLonlatbox(c(92.25, 92.25, -8.25, -8.25))
 # mgsetLonlatbox(c(92.25, 92.75, 34.25, 36.75))
 mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
-mgsetPeriod(startdate = "1998-1-1", enddate = "1998-1-1")
+mgsetPeriod(startdate = "1998-6-1", enddate = "1998-6-5")
 # mgsetPeriod(startdate = "1965-01-01", enddate = "1965-06-2")
 mgsetInDt(24) # Set N hours per timestep
 mgsetOutDt(6) # Set N hours per timestep
@@ -32,22 +32,22 @@ options$LW_CLOUD <- 1
 options$VP_ITER <- 1
 
 mgsetInVars(list(
-  # pr         = list(ncname = "pr",      filename = "../example_data4mtclim/Global/pr_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  pr         = list(ncname = "pr",      filename = "../example_data4mtclim/Global/pr_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   tasmin     = list(ncname = "tasmin",  filename = "../example_data4mtclim/Global/tasmin_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   tasmax     = list(ncname = "tasmax",  filename = "../example_data4mtclim/Global/tasmax_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  # pressure   = list(ncname = "ps",      filename = "../example_data4mtclim/Global/ps_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  # relhum     = list(ncname = "hurs",    filename = "../example_data4mtclim/Global/hurs_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  shortwave  = list(ncname = "rsds",    filename = "../example_data4mtclim/Global/rsds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc")
-  # longwave   = list(ncname = "rlds",    filename = "../example_data4mtclim/Global/rlds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  # wind       = list(ncname = "sfcWind", filename = "../example_data4mtclim/Global/wind_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc")
+  pressure   = list(ncname = "ps",      filename = "../example_data4mtclim/Global/ps_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  relhum     = list(ncname = "hurs",    filename = "../example_data4mtclim/Global/hurs_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  shortwave  = list(ncname = "rsds",    filename = "../example_data4mtclim/Global/rsds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  longwave   = list(ncname = "rlds",    filename = "../example_data4mtclim/Global/rlds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  wind       = list(ncname = "sfcWind", filename = "../example_data4mtclim/Global/wind_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc")
 ))
 
 ## Define elevation file
 mgsetElevation(ncname = "elevation", filename = metGen$internal$ncFileNameElevation)
 
 ## Define output variables
-mgsetOutVars(c("shortwave", "tas"))
-# mgsetOutVars(c( "shortwave", "longwave", "tas", "pr", "pressure", "wind", "vp"))
+# mgsetOutVars(c("shortwave", "tas", "vp"))
+mgsetOutVars(c( "shortwave", "longwave", "tas", "pr", "pressure", "wind", "vp"))
 # mgsetOutVars(c( "shortwave", "pr"))
 
 ## Load elevation
@@ -111,9 +111,9 @@ for (iday in 1:metGen$derived$nday) {
   # radfrac<-array(0, dim=c(720,360,4))
   # plot(radfrac[300:720,314,1])
   # plot(radfrac[,315,1])
-  image(radfrac[,,4])
+  # image(radfrac[,,4])
   # image(radfrac2[,,1])
-  plot(radfrac[,1,1])
+  # plot(radfrac[,1,1])
   # plot(radfrac2[,1,1])
   # i<-314
   # lat <- ( (i-1) * 0.5 ) + -89.75
@@ -158,15 +158,17 @@ for (iday in 1:metGen$derived$nday) {
   # **************************************/
   if(!is.null(metGen$settings$inVar$tasmin) && !is.null(metGen$settings$inVar$tasmin) && !is.null(outData$tas)) {
     outData$tas<- set_max_min_lonlat_cr(inData$tasmin[,,1], inData$tasmax[,,1], yday, metGen$derived$nOutStepDay)
-    # for(rec in 1:metGen$derived$nOutStepDay) {
-    #   # tminmaxhour<- set_t_minmax_hour(hourly_rad)
-    #   plot(radfrac[200,200,])
-    #   # set_max_min_hour_cr(radfrac[200,200,], 8, 3)
-    #   # subdaily_tair<-HourlyT(tminmaxhour[2],tmax,tminmaxhour[1],tmin)
-    #   # 
-    #   # outData$pressure[, , rec] <- subdaily_tair[, ,rec]
-    # }
   }
+ 
+  # /*************************************************
+  #   Vapor pressure
+  # *************************************************/
+  if(!is.null(metGen$settings$inVar$relhum) && !is.null(outData$vp)) {
+    for(rec in 1:metGen$derived$nOutStepDay) {
+      outData$vp <- set_vp_cr(outData$tas, inData$relhum[,,1], nx, ny, metGen$derived$nOutStepDay)
+    }
+  }
+  
   
   # # for (ilat in 1:length(mask$xyCoords$y)) {
   # for (ilon in 1:length(mask$xyCoords$x)) {

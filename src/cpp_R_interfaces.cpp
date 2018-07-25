@@ -6,6 +6,54 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
+  NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, int ny, int nrec) {
+    int irec,ix,iy;
+  NumericVector vp_r(nx*ny*nrec);
+  IntegerVector dims(3);
+  dims[0] = nx;
+  dims[1] = ny;
+  dims[2] = nrec;
+  vp_r.attr("dim") = dims;
+  
+  // Define and allocate
+  double **relhum_c = (double**)malloc(nx * sizeof(double));
+  for (ix = 0; ix < nx; ix++) {
+    relhum_c[ix] = (double*)malloc(ny * sizeof(double));
+  }
+
+  // Copy from R array
+  size_t count = 0;
+    for (iy = 0; iy < ny; iy++) {
+      for (ix = 0; ix < nx; ix++) {
+        relhum_c[ix][iy] = relhum_r[count];
+        count++;
+      }
+    }
+
+  // Dooo
+  count = 0;
+  for (irec = 0; irec < nrec; irec++) {
+    for (iy = 0; iy < ny; iy++) {
+      for (ix = 0; ix < nx; ix++) {
+        vp_r[count] = svp(tair_r[count]) * relhum_c[ix][iy] / 100 ;
+        count++;
+      }
+    }
+  }
+  
+  // Free
+  for (ix = 0; ix < nx; ix++) {
+    free(relhum_c[ix]);
+  }
+  free(relhum_c);
+  
+
+  
+ return vp_r; 
+}  
+
+
+// [[Rcpp::export]]
 NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx) {
   NumericVector result(2);
   int ix;
@@ -100,7 +148,7 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
     for (ix = 0; ix < nx; ix++) {
       sum += rad_fract_map_org[iy][ix];
     }
-    printf("iy: %d, tmin: %f, tmax: %f, radfrac: %f\n", iy, tmin_hour, tmax_hour, sum);
+    // printf("iy: %d, tmin: %f, tmax: %f, radfrac: %f\n", iy, tmin_hour, tmax_hour, sum);
     for (ix = 0; ix < nx; ix++) {
       lon = slon + (ix*reslon);
       ix_offset = (lon / 0.5) - 0.5;
@@ -113,10 +161,9 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
 
       double Tmin = 15;
       double tmax = 30;
-      HourlyT_c(nrec, tmin_hour_new, Tmin, tmax_hour_new, tmax, Tair);
-      // HourlyT_c(nrec, tmin_hour_new, tmin_map[iy*nx+ix], tmax_hour_new, tmax_map[iy*nx+ix], Tair);
-      // HourlyT_c(nrec, tmin_hour, tmin_map[iy*nx+ix], tmax_hour, tmax_map[iy*nx+ix], Tair);
-      
+      // HourlyT_c(nrec, tmin_hour_new, Tmin, tmax_hour_new, tmax, Tair);
+      HourlyT_c(nrec, tmin_hour_new, tmin_map[iy*nx+ix], tmax_hour_new, tmax_map[iy*nx+ix], Tair);
+
       // Copy back to R array
       for (irec = 0; irec < nrec; irec++) {
         tair_map[ix][iy][irec] = Tair[irec];

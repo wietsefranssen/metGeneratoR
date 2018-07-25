@@ -9,6 +9,10 @@ rad_map_final3_cr <- function(nrec, yday) {
     .Call('_metGeneratoR_rad_map_final3_cr', PACKAGE = 'metGeneratoR', nrec, yday)
 }
 
+set_vp_cr <- function(tair_r, relhum_r, nx, ny, nrec) {
+    .Call('_metGeneratoR_set_vp_cr', PACKAGE = 'metGeneratoR', tair_r, relhum_r, nx, ny, nrec)
+}
+
 set_min_max_hour_cr <- function(radfrac, nx) {
     .Call('_metGeneratoR_set_min_max_hour_cr', PACKAGE = 'metGeneratoR', radfrac, nx)
 }

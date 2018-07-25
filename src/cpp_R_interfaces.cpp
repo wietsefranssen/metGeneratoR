@@ -87,20 +87,36 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   float tmax_hour_new;
   for (iy = 0; iy < ny; iy++) {
     set_min_max_hour_c(rad_fract_map_org[iy], &tmin_hour, &tmax_hour, nx);
-    // printf("iy: %d, tmin: %f, tmax: %f\n", iy, tmin_hour, tmax_hour);
+    lat = slat + (iy*reslat);
+    if (lat < 0 && tmin_hour == 99) {
+      tmin_hour = 0;
+      tmax_hour = 16;
+    } 
+    if (lat >= 0 && tmin_hour == 99) {
+      tmin_hour = 11 - (24/(360/reslat));
+      tmax_hour = 12 + (24/(360/reslat));
+    }
+    double sum = 0;
+    for (ix = 0; ix < nx; ix++) {
+      sum += rad_fract_map_org[iy][ix];
+    }
+    printf("iy: %d, tmin: %f, tmax: %f, radfrac: %f\n", iy, tmin_hour, tmax_hour, sum);
     for (ix = 0; ix < nx; ix++) {
       lon = slon + (ix*reslon);
       ix_offset = (lon / 0.5) - 0.5;
-      tmin_hour_new = tmin_hour + (24.0/(float)nx * (float)ix_offset);
+      tmin_hour_new = tmin_hour - (24.0/(float)nx * (float)ix_offset);
       // if (tmin_hour_new<0) tmin_hour_new +=24;
-      tmax_hour_new = tmax_hour + (24.0/(float)nx * (float)ix_offset);
+      tmax_hour_new = tmax_hour - (24.0/(float)nx * (float)ix_offset);
       // if (tmax_hour_new<0) tmax_hour_new +=24;
       // if (iy == 200)
       // printf("blaat: iy: %d, ix: %d, ix_offset: %d, tmin: %f, tmax: %f\n", iy, ix, ix_offset,tmin_hour_new, tmax_hour_new);
 
       double Tmin = 15;
-      double Tmax = 30;
-      HourlyT_c(nrec, tmin_hour_new, tmin_map[iy*nx+ix], tmax_hour_new, tmax_map[iy*nx+ix], Tair);
+      double tmax = 30;
+      HourlyT_c(nrec, tmin_hour_new, Tmin, tmax_hour_new, tmax, Tair);
+      // HourlyT_c(nrec, tmin_hour_new, tmin_map[iy*nx+ix], tmax_hour_new, tmax_map[iy*nx+ix], Tair);
+      // HourlyT_c(nrec, tmin_hour, tmin_map[iy*nx+ix], tmax_hour, tmax_map[iy*nx+ix], Tair);
+      
       // Copy back to R array
       for (irec = 0; irec < nrec; irec++) {
         tair_map[ix][iy][irec] = Tair[irec];

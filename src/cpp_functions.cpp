@@ -41,8 +41,10 @@ int set_min_max_hour_c(double *radfrac, double *tmin_hour, double *tmax_hour, in
     *tmax_hour = 0.67 * (*tmax_hour - *tmin_hour) + *tmin_hour;
   } else {
     /* arbitrarily set the min and max times to 2am and 2pm */
-    *tmin_hour = 2;
-    *tmax_hour = 14;
+    // *tmin_hour = 2;
+    // *tmax_hour = 14;
+    *tmin_hour = 99;
+    *tmax_hour = 99;
   }
   
   // printf("tmin_hour: %f tmax_hour: %f\n", *tmin_hour, *tmax_hour);

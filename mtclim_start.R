@@ -17,7 +17,7 @@ profile<-NULL
 # mgsetLonlatbox(c(92.25, 92.25, -8.25, -8.25))
 # mgsetLonlatbox(c(92.25, 92.75, 34.25, 36.75))
 mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
-mgsetPeriod(startdate = "1998-6-1", enddate = "1998-6-2")
+mgsetPeriod(startdate = "1998-1-1", enddate = "1998-1-1")
 # mgsetPeriod(startdate = "1965-01-01", enddate = "1965-06-2")
 mgsetInDt(24) # Set N hours per timestep
 mgsetOutDt(6) # Set N hours per timestep

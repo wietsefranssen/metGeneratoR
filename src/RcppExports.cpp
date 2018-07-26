@@ -5,30 +5,6 @@
 
 using namespace Rcpp;
 
-// rad_map_final2_cr
-NumericVector rad_map_final2_cr(int nrec, int yday);
-RcppExport SEXP _metGeneratoR_rad_map_final2_cr(SEXP nrecSEXP, SEXP ydaySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type nrec(nrecSEXP);
-    Rcpp::traits::input_parameter< int >::type yday(ydaySEXP);
-    rcpp_result_gen = Rcpp::wrap(rad_map_final2_cr(nrec, yday));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rad_map_final3_cr
-NumericVector rad_map_final3_cr(int nrec, int yday);
-RcppExport SEXP _metGeneratoR_rad_map_final3_cr(SEXP nrecSEXP, SEXP ydaySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type nrec(nrecSEXP);
-    Rcpp::traits::input_parameter< int >::type yday(ydaySEXP);
-    rcpp_result_gen = Rcpp::wrap(rad_map_final3_cr(nrec, yday));
-    return rcpp_result_gen;
-END_RCPP
-}
 // set_vp_cr
 NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, int ny, int nrec);
 RcppExport SEXP _metGeneratoR_set_vp_cr(SEXP tair_rSEXP, SEXP relhum_rSEXP, SEXP nxSEXP, SEXP nySEXP, SEXP nrecSEXP) {
@@ -111,8 +87,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_metGeneratoR_rad_map_final2_cr", (DL_FUNC) &_metGeneratoR_rad_map_final2_cr, 2},
-    {"_metGeneratoR_rad_map_final3_cr", (DL_FUNC) &_metGeneratoR_rad_map_final3_cr, 2},
     {"_metGeneratoR_set_vp_cr", (DL_FUNC) &_metGeneratoR_set_vp_cr, 5},
     {"_metGeneratoR_set_min_max_hour_cr", (DL_FUNC) &_metGeneratoR_set_min_max_hour_cr, 2},
     {"_metGeneratoR_set_max_min_lonlat_cr", (DL_FUNC) &_metGeneratoR_set_max_min_lonlat_cr, 4},

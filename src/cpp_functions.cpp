@@ -4,7 +4,8 @@
 #include "header.h"
 
 int set_min_max_hour_c(double *radfrac, double *tmin_hour, double *tmax_hour, int nx) {
-  int ix, iy;
+  int ix;
+  // int iy;
   int ix_prev;
   int tmin_ix = -999;
   int tmax_ix = -999;
@@ -66,7 +67,7 @@ int solar_geom_c(double *rad_fract_per_timestep, float lat, int yday, int timest
   
   int tinystepsperday, i, j, tss;
   double coslat, sinlat, dh, decl, cosdecl, sindecl;
-  double sum_trans = 0;
+  // double sum_trans = 0;
   double sum_flat_potrad = 0;
   double cosh, h, am, cza, dir_flat_topa;
   int tinystep;

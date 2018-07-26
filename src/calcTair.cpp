@@ -76,7 +76,6 @@ void HourlyT_c(int nrec,
   double *yc3;
   double *yc4;
   int i;
-  int j;
   int n;
   int hour;
   int nsteps;

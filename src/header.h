@@ -18,4 +18,3 @@ void HourlyT_c(int nrec,
              double *Tair);
 
 double svp(double temp);
-  

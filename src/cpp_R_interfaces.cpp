@@ -89,8 +89,9 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   float reslat = 0.5;
   float lat;
   int ny, iy;
-  int nt, it;
-  int ixx ;
+  int nt;
+  // int it;
+  // int ixx ;
   
   int irec;
   
@@ -104,9 +105,10 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   dims[2] = nrec;
   tair_map_r.attr("dim") = dims;
   
-  double tmin_hour_ix, tmax_hour_ix;
+  // double tmin_hour_ix;
+  // double tmax_hour_ix;
   nt = nx;
-  double *radfrac_c = (double*)malloc(nx * sizeof(double));
+  // double *radfrac_c = (double*)malloc(nx * sizeof(double));
   double tmin_hour = -999;
   double tmax_hour = -999;;
   
@@ -159,8 +161,8 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
       // if (iy == 200)
       // printf("blaat: iy: %d, ix: %d, ix_offset: %d, tmin: %f, tmax: %f\n", iy, ix, ix_offset,tmin_hour_new, tmax_hour_new);
 
-      double Tmin = 15;
-      double tmax = 30;
+      // double Tmin = 15;
+      // double tmax = 30;
       // HourlyT_c(nrec, tmin_hour_new, Tmin, tmax_hour_new, tmax, Tair);
       HourlyT_c(nrec, tmin_hour_new, tmin_map[iy*nx+ix], tmax_hour_new, tmax_map[iy*nx+ix], Tair);
 
@@ -208,12 +210,10 @@ NumericVector rad_map_final_cr(int nrec, int yday, int nx_parts, double gmt_floa
   float slon = -179.75;
   float elon = 179.75;
   float reslon = 0.5;
-  float lon;
   int nx, ix;
   float slat = -89.75;
   float elat = 89.75;
   float reslat = 0.5;
-  float lat;
   int ny, iy;
   int nt, it;
   int ixx ;
@@ -265,20 +265,20 @@ NumericVector rad_map_final_cr(int nrec, int yday, int nx_parts, double gmt_floa
   
   // Pass array back to R NumericVector
   // int base_offset = 1;
-  int offset;
+  // int offset;
   int dt = nt/nrec;
   int idx = 0;
   size_t count = 0;
-  int gmt = 0;
-  int HoursPerDay = 24;
+  // int gmt = 0;
+  // int HoursPerDay = 24;
   
-  int offset_index = (nt / HoursPerDay) * (gmt + 12);
+  // int offset_index = (nt / HoursPerDay) * (gmt + 12);
   // int offset_index =  (nrec / HoursPerDay) * (gmt + 12);
   
   ///////////////
   // double gmt_float = 14;
   double gmt_float_tmp;
-  int iGmtOffset, iLonOffset;
+  int iGmtOffset;
   int nTinyStepsPerDay =nt;
   // ## Check and correct gmt_float 
   // if(gmt_float < -12 || gmt_float > 12) stop("cannot be lower than -12 and higher than 12")
@@ -351,7 +351,6 @@ NumericVector rad_map_lats_cr(int nt, int yday) {
   float slat = -89.75;
   float elat = 89.75;
   float reslat = 0.5;
-  float lat;
   int ny, iy;
   int it;
   

@@ -16,6 +16,9 @@ makeNetcdfOut <- function(mask) {
   dimsizes<-c(length(mask$xyCoords$x),length(mask$xyCoords$y),metGen$derived$nrec_out)
   ################
   for (var in names(settings$outVars)) {
+    ## Create folder
+    dir.create(file.path(getwd(), basename(dirname(settings$outVars[[var]]$filename))), showWarnings = FALSE)
+    
     dataVar <- ncvar_def(name=var, units='', compression = 7, dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
   
     ## SAVE AS NC-DATA

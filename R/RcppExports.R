@@ -13,8 +13,8 @@ set_max_min_lonlat_cr <- function(tmin_map, tmax_map, yday, nrec) {
     .Call('_metGeneratoR_set_max_min_lonlat_cr', PACKAGE = 'metGeneratoR', tmin_map, tmax_map, yday, nrec)
 }
 
-rad_map_final_cr <- function(nrec, yday, nx_parts, gmt_float) {
-    .Call('_metGeneratoR_rad_map_final_cr', PACKAGE = 'metGeneratoR', nrec, yday, nx_parts, gmt_float)
+rad_map_final_cr <- function(nrec, yday, gmt_float, lonlatbox) {
+    .Call('_metGeneratoR_rad_map_final_cr', PACKAGE = 'metGeneratoR', nrec, yday, gmt_float, lonlatbox)
 }
 
 rad_map_lats_cr <- function(nt, yday) {

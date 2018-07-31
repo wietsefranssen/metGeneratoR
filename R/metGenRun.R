@@ -55,7 +55,7 @@ metGenRun <- function() {
     # /*************************************************
     #   Shortwave radiation
     # *************************************************/
-    radfrac<-rad_map_final_cr(metGen$derived$nOutStepDay, yday, nx_parts = 720, gmt_float = 0)
+    radfrac<-rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$lonlatbox)
     
     if(!is.null(metGen$settings$inVar$shortwave) && !is.null(outData$shortwave)) {
       for(rec in 1:metGen$derived$nOutStepDay) {

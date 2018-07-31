@@ -47,16 +47,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // rad_map_final_cr
-NumericVector rad_map_final_cr(int nrec, int yday, int nx_parts, double gmt_float);
-RcppExport SEXP _metGeneratoR_rad_map_final_cr(SEXP nrecSEXP, SEXP ydaySEXP, SEXP nx_partsSEXP, SEXP gmt_floatSEXP) {
+NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVector lonlatbox);
+RcppExport SEXP _metGeneratoR_rad_map_final_cr(SEXP nrecSEXP, SEXP ydaySEXP, SEXP gmt_floatSEXP, SEXP lonlatboxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type nrec(nrecSEXP);
     Rcpp::traits::input_parameter< int >::type yday(ydaySEXP);
-    Rcpp::traits::input_parameter< int >::type nx_parts(nx_partsSEXP);
     Rcpp::traits::input_parameter< double >::type gmt_float(gmt_floatSEXP);
-    rcpp_result_gen = Rcpp::wrap(rad_map_final_cr(nrec, yday, nx_parts, gmt_float));
+    Rcpp::traits::input_parameter< NumericVector >::type lonlatbox(lonlatboxSEXP);
+    rcpp_result_gen = Rcpp::wrap(rad_map_final_cr(nrec, yday, gmt_float, lonlatbox));
     return rcpp_result_gen;
 END_RCPP
 }

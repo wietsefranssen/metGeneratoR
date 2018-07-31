@@ -29,3 +29,4 @@ mgsetOutVars(c( "shortwave", "longwave", "tas", "pr", "pressure", "wind", "vp"))
 
 ## Run metGen
 metGenRun()
+

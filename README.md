@@ -15,15 +15,15 @@ A file called `example_output_Mekong.nc` should be written in the working direct
     ## Load the library
     library(metGeneratoR)
     
-    ## Fill struct with settings
-    settings <- mtclim_getSettings()
+    ## Init standard settings
+    mgsetInit()
 
-    ## Run the main routine
-    mtclim_run(settings)
+    ## Run metGen
+    metGenRun()
 
 ## Usage
 
-TODO: make this better! foar from complete!
+TODO: make this better! far from complete!
 
 Below is an example of how you can run the script with settings you define yourself. 
 

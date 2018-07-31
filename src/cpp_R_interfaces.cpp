@@ -35,7 +35,7 @@ using namespace Rcpp;
   for (irec = 0; irec < nrec; irec++) {
     for (iy = 0; iy < ny; iy++) {
       for (ix = 0; ix < nx; ix++) {
-        vp_r[count] = svp(tair_r[count]) * relhum_c[ix][iy] / 100 ;
+        vp_r[count] = svp(tair_r[count]) * relhum_c[ix][iy] / 1000 ;
         count++;
       }
     }

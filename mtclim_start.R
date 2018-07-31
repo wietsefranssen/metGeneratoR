@@ -6,7 +6,6 @@
 ## check base_offset it is now right for 6hourly calculations but maybe not for others like 3 hourly
 ## unitconversion
 
-
 rm(list=ls(all=TRUE))
 
 library(metGeneratoR)
@@ -17,7 +16,7 @@ profile<-NULL
 # mgsetLonlatbox(c(92.25, 92.25, -8.25, -8.25))
 # mgsetLonlatbox(c(92.25, 92.75, 34.25, 36.75))
 mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
-mgsetPeriod(startdate = "1998-6-1", enddate = "1998-6-10")
+mgsetPeriod(startdate = "1998-6-1", enddate = "1998-6-1")
 # mgsetPeriod(startdate = "1965-01-01", enddate = "1965-06-2")
 mgsetInDt(24) # Set N hours per timestep
 mgsetOutDt(6) # Set N hours per timestep
@@ -136,10 +135,11 @@ for (iday in 1:metGen$derived$nday) {
   if(!is.null(metGen$settings$inVar$tasmin) && !is.null(metGen$settings$inVar$tasmin) && !is.null(outData$tas)) {
     outData$tas<- set_max_min_lonlat_cr(inData$tasmin[,,1], inData$tasmax[,,1], yday, metGen$derived$nOutStepDay)
   }
- 
+  outData$tas<- outData$tas - 273.15
   # /*************************************************
   #   Vapor pressure
   # *************************************************/
+  inData$relhum <- inData$relhum / 100
   if(!is.null(metGen$settings$inVar$relhum) && !is.null(outData$vp)) {
     for(rec in 1:metGen$derived$nOutStepDay) {
       outData$vp <- set_vp_cr(outData$tas, inData$relhum[,,1], nx, ny, metGen$derived$nOutStepDay)
@@ -160,11 +160,10 @@ for (iday in 1:metGen$derived$nday) {
   }
 }
 
-ncellsTotal <- dim(mask$Data)[1] * dim(mask$Data)[2]
+## Stats
 ncellsTotal <- sum(mask$Data, na.rm = TRUE)
 profile$end.time.total <- Sys.time()
 totTime<-as.numeric(profile$end.time.total   - profile$start.time.total, units = "secs")
 cat(sprintf("  Total: %.1f seconds for %d x %d = %d cells. So: 100 years (67420 cels) will take: %.1f days\n", totTime, metGen$derived$nday, ncellsTotal, 
-            (metGen$derived$nday * ncellsTotal), ((totTime * 67420 * 365.25 * 100) / (metGen$derived$nday * ncellsTotal) / 86400
+            (metGen$derived$nday * ncellsTotal), ((totTime * 94742 * 365.25 * 100) / (metGen$derived$nday * ncellsTotal) / 86400
             )))
-

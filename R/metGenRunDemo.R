@@ -13,7 +13,7 @@ metGenRunDemo <- function() {
     pr         = list(ncname = "pr",      filename = metGen$internal$ncFileNamePr),
     tasmin     = list(ncname = "tasmin",  filename = metGen$internal$ncFileNameTasmin),
     tasmax     = list(ncname = "tasmax",  filename = metGen$internal$ncFileNameTasmax),
-    pressure   = list(ncname = "ps",      filename = metGen$internal$ncFileNameWind)
+    wind       = list(ncname = "wind",      filename = metGen$internal$ncFileNameWind)
   ))
   
   ## Define elevation file

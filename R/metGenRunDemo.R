@@ -1,4 +1,4 @@
-mgsetInit <- function() {
+metGenRunDemo <- function() {
   
   mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
   mgsetLonlatbox(c(92.25, 110.25, 7.25, 36.25))
@@ -23,4 +23,5 @@ mgsetInit <- function() {
                  "pr",
                  "wind"))
   
+  metGenRun()
 }

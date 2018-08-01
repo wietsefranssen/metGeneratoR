@@ -17,7 +17,7 @@ makeNetcdfOut <- function(mask) {
   ################
   for (var in names(settings$outVars)) {
     ## Create folder
-    dir.create(file.path(getwd(), basename(dirname(settings$outVars[[var]]$filename))), showWarnings = FALSE)
+    dir.create(file.path(getwd(), dirname(settings$outVars[[var]]$filename)), showWarnings = FALSE, recursive = T)
     
     dataVar <- ncvar_def(name=var, units='', compression = 7, dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
   

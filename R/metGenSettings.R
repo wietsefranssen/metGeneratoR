@@ -4,11 +4,6 @@ mgsetLonlatbox <- function(lonlatbox) {
   metGen$settings$lonlatbox <- lonlatbox
 }
 
-mgsetSwRadDt <- function(swRadDt) {
-  metGen$derived$swRadDt <- metGen$settings$swRadDt <- swRadDt
-  metGen$derived$nSwRadDay  <- 86400 / metGen$derived$swRadDt
-}
-
 mgsetInDt <- function(inDt) {
   metGen$derived$inDt <- metGen$settings$inDt <- inDt
   metGen$derived$nInStepDay  <- 24 / metGen$derived$inDt
@@ -23,7 +18,7 @@ mgsetInDt <- function(inDt) {
 mgsetOutDt <- function(outDt) {
   metGen$derived$outDt <- metGen$settings$outDt <- outDt
   metGen$derived$nOutStepDay  <- 24 / metGen$derived$outDt
-
+  
   ## Update mgsetPeriod
   if (!is.null(metGen$settings$startDate) && !is.null(metGen$settings$endDate))
   {
@@ -36,34 +31,18 @@ mgsetPeriod <- function(startdate, enddate) {
   metGen$settings$endDate <- enddate
   metGen$derived$startDate <- as.POSIXlt(startdate, tz = "GMT")
   metGen$derived$endDate <- as.POSIXlt(enddate, tz = "GMT")
-    
+  
   
   metGen$derived$nday <- as.numeric(metGen$derived$endDate - metGen$derived$startDate + 1)
   metGen$derived$nrec_in <- metGen$derived$nday * metGen$derived$nInStepDay
   metGen$derived$nrec_out <- metGen$derived$nday * metGen$derived$nOutStepDay
-
+  
   by <- paste(metGen$derived$inDt, "hours")
   metGen$derived$inDates = seq(metGen$derived$startDate, length = metGen$derived$nrec_in, by = by)
   metGen$derived$inYDays = as.POSIXlt(metGen$derived$inDates)$yday + 1
   by <- paste(metGen$derived$outDt, "hours")
   metGen$derived$outDates = seq(metGen$derived$startDate, length = metGen$derived$nrec_out, by = by)
   metGen$derived$outYDays = as.POSIXlt(metGen$derived$outDates)$yday + 1
-  
-  # ymdStart<-as.numeric(strsplit(as.character(metGen$derived$startDate), "-")[[1]])
-  # ymdEnd<-as.numeric(strsplit(as.character(metGen$derived$endDate), "-")[[1]])
-  # 
-  # metGen$derived$startyear = ymdStart[1]
-  # metGen$derived$startmonth = ymdStart[2]
-  # metGen$derived$startday = ymdStart[3]
-  # 
-  # metGen$derived$endyear = ymdEnd[1]
-  # metGen$derived$endmonth = ymdEnd[2]
-  # metGen$derived$endday = ymdEnd[3]
-
-}
-
-mgsetNCores <- function(nCores) {
-  metGen$settings$nCores <- nCores
 }
 
 mgsetElevation <- function(ncname, filename) {
@@ -111,13 +90,41 @@ mgsetOutVars <- function(varnames) {
                    "        Ingoring: ", var, "\n"))
       } else {
         metGen$settings$outVars[[var]]$name <- var
-        metGen$settings$outVars[[var]]$filename <- paste0("output/", var, ".nc")
         metGen$settings$outVars[[var]]$longName <- metGen$metadata$outvars[[var]]$longName
         metGen$settings$outVars[[var]]$units <- metGen$metadata$outvars[[var]]$units
       }
     }
   }
+  mgsetOutName(nameString = "output/<VAR>/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = F)
 }
+
+mgsetOutName <- function(nameString, message = F) {
+  # nameString <- "output/<VAR>/<VAR>_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_<SYEAR>.nc"
+  
+  for (var in names(metGen$settings$outVars)) {
+    nameStringTmp <- nameString
+    ## Substitute Dates
+    nameStringTmp <- gsub("<SYEAR>", format(metGen$derived$startDate,format="%Y"), nameStringTmp, ignore.case = T)
+    nameStringTmp <- gsub("<EYEAR>", format(metGen$derived$endDate,format="%Y"), nameStringTmp, ignore.case = T)
+    nameStringTmp <- gsub("<SMONTH>", format(metGen$derived$startDate,format="%m"), nameStringTmp, ignore.case = T)
+    nameStringTmp <- gsub("<EMONTH>", format(metGen$derived$endDate,format="%m"), nameStringTmp, ignore.case = T)
+    nameStringTmp <- gsub("<SDAY>", format(metGen$derived$startDate,format="%m"), nameStringTmp, ignore.case = T)
+    nameStringTmp <- gsub("<EDAY>", format(metGen$derived$endDate,format="%m"), nameStringTmp, ignore.case = T)
+    ## Substitute Variable name
+    nameStringTmp <- gsub("<VAR>", var, nameStringTmp, ignore.case = T)
+    
+    metGen$settings$outVars[[var]]$filename <- nameStringTmp
+  }
+  
+  ## print results
+  if (message) {
+    printf("Output file(s):\n")
+    for (var in names(metGen$settings$outVars)) {
+      printf("%15s = %s\n", var, metGen$settings$outVars[[var]]$filename)
+    }
+  }
+}
+
 
 mgsetInit<- function() {
   mgsetInitSettings()
@@ -126,19 +133,13 @@ mgsetInit<- function() {
 }
 
 mgsetInitSettings <- function() {
-#  metGen$cnst <- setConstants()
   metGen$constants <-setConstants()
   metGen$settings <- NULL
-  
   metGen$settings$startDate <- NULL
   metGen$settings$endDate <- NULL
-  # assign("settings", list(), env=metGen)
-  # unlockBinding("settings", metGen)
-  mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
+  
   mgsetInDt(24) # Set N hours per timestep
-  mgsetOutDt(24) # Set N hours per timestep
-  mgsetNCores(1) # Set N hours per timestep
-  mgsetSwRadDt(30) # Set timestep for radiation routine (seconds)
+  mgsetOutDt(6) # Set N hours per timestep
   
 }
 

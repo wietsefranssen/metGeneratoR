@@ -78,21 +78,21 @@ NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx) {
 
 
 // [[Rcpp::export]]
-NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec) {
-  float slon = -179.75;
-  float elon = 179.75;
+NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec, NumericVector lonlatbox) {
   float reslon = 0.5;
   float lon;
   int nx, ix;
-  float slat = -89.75;
-  float elat = 89.75;
+  float slon = lonlatbox[0];
+  float elon = lonlatbox[1];
+  float slat = lonlatbox[2];
+  float elat = lonlatbox[3];
   float reslat = 0.5;
   float lat;
   int ny, iy;
-  int nt;
-  // int it;
-  // int ixx ;
+  // int nt;
+  int nTinyStepsPerDay;
   
+
   int irec;
   
   ny = ((elat - slat) / reslat) + 1;
@@ -107,7 +107,9 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   
   // double tmin_hour_ix;
   // double tmax_hour_ix;
-  nt = nx;
+  // nt = nx;
+  nTinyStepsPerDay = 360 / reslon; // 360 degress in lon direction
+  
   // double *radfrac_c = (double*)malloc(nx * sizeof(double));
   double tmin_hour = -999;
   double tmax_hour = -999;;
@@ -115,7 +117,7 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   // Define and allocate
   double **rad_fract_map_org = (double**)malloc(ny * sizeof(double));
   for (iy = 0; iy < ny; iy++) {
-    rad_fract_map_org[iy] = (double*)malloc(nt * sizeof(double));
+    rad_fract_map_org[iy] = (double*)malloc(nTinyStepsPerDay * sizeof(double));
   }
   
   // Define and allocate
@@ -130,13 +132,13 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   double *Tair = (double*)malloc(nrec * sizeof(double));
   
   // run the function
-  rad_fract_lats_c(rad_fract_map_org, nt, yday, slat, elat);
+  rad_fract_lats_c(rad_fract_map_org, nTinyStepsPerDay, yday, slat, elat);
   
   int ix_offset;
   float tmin_hour_new;
   float tmax_hour_new;
   for (iy = 0; iy < ny; iy++) {
-    set_min_max_hour_c(rad_fract_map_org[iy], &tmin_hour, &tmax_hour, nx);
+    set_min_max_hour_c(rad_fract_map_org[iy], &tmin_hour, &tmax_hour, nTinyStepsPerDay);
     lat = slat + (iy*reslat);
     if (lat < 0 && tmin_hour == 99) {
       tmin_hour = 0;
@@ -146,20 +148,20 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
       tmin_hour = 11 - (24/(360/reslat));
       tmax_hour = 12 + (24/(360/reslat));
     }
-    double sum = 0;
-    for (ix = 0; ix < nx; ix++) {
-      sum += rad_fract_map_org[iy][ix];
-    }
+    float iXoffset = (slon - -179.75) / reslon;
+    
     // printf("iy: %d, tmin: %f, tmax: %f, radfrac: %f\n", iy, tmin_hour, tmax_hour, sum);
     for (ix = 0; ix < nx; ix++) {
       lon = slon + (ix*reslon);
       ix_offset = (lon / 0.5) - 0.5;
-      tmin_hour_new = tmin_hour - (24.0/(float)nx * (float)ix_offset);
+      // float iXoffset = (slon - -179.75) / reslon;
+      tmin_hour_new = tmin_hour - (24.0/(float)nTinyStepsPerDay * (float)ix_offset);
+      // printf("ix_offset: %d, iXoffset: %f\n", ix_offset,iXoffset);
       // if (tmin_hour_new<0) tmin_hour_new +=24;
-      tmax_hour_new = tmax_hour - (24.0/(float)nx * (float)ix_offset);
+      tmax_hour_new = tmax_hour - (24.0/(float)nTinyStepsPerDay * (float)ix_offset);
       // if (tmax_hour_new<0) tmax_hour_new +=24;
       // if (iy == 200)
-      // printf("blaat: iy: %d, ix: %d, ix_offset: %d, tmin: %f, tmax: %f\n", iy, ix, ix_offset,tmin_hour_new, tmax_hour_new);
+      // printf("blaat: lon: %5.2f, iy: %d, ix: %d, ix_offset: %d, tmin: %f, tmax: %f, tminhour: %f\n", lon, iy, ix, ix_offset,tmin_hour_new, tmax_hour_new, tmin_hour);
       
       // double Tmin = 15;
       // double tmax = 30;

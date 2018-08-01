@@ -33,8 +33,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // set_max_min_lonlat_cr
-NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec);
-RcppExport SEXP _metGeneratoR_set_max_min_lonlat_cr(SEXP tmin_mapSEXP, SEXP tmax_mapSEXP, SEXP ydaySEXP, SEXP nrecSEXP) {
+NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec, NumericVector lonlatbox);
+RcppExport SEXP _metGeneratoR_set_max_min_lonlat_cr(SEXP tmin_mapSEXP, SEXP tmax_mapSEXP, SEXP ydaySEXP, SEXP nrecSEXP, SEXP lonlatboxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -42,7 +42,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type tmax_map(tmax_mapSEXP);
     Rcpp::traits::input_parameter< int >::type yday(ydaySEXP);
     Rcpp::traits::input_parameter< int >::type nrec(nrecSEXP);
-    rcpp_result_gen = Rcpp::wrap(set_max_min_lonlat_cr(tmin_map, tmax_map, yday, nrec));
+    Rcpp::traits::input_parameter< NumericVector >::type lonlatbox(lonlatboxSEXP);
+    rcpp_result_gen = Rcpp::wrap(set_max_min_lonlat_cr(tmin_map, tmax_map, yday, nrec, lonlatbox));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -89,7 +90,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_metGeneratoR_set_vp_cr", (DL_FUNC) &_metGeneratoR_set_vp_cr, 5},
     {"_metGeneratoR_set_min_max_hour_cr", (DL_FUNC) &_metGeneratoR_set_min_max_hour_cr, 2},
-    {"_metGeneratoR_set_max_min_lonlat_cr", (DL_FUNC) &_metGeneratoR_set_max_min_lonlat_cr, 4},
+    {"_metGeneratoR_set_max_min_lonlat_cr", (DL_FUNC) &_metGeneratoR_set_max_min_lonlat_cr, 5},
     {"_metGeneratoR_rad_map_final_cr", (DL_FUNC) &_metGeneratoR_rad_map_final_cr, 4},
     {"_metGeneratoR_rad_map_lats_cr", (DL_FUNC) &_metGeneratoR_rad_map_lats_cr, 2},
     {"_metGeneratoR_solar_geom_cr", (DL_FUNC) &_metGeneratoR_solar_geom_cr, 3},

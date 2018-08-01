@@ -1,6 +1,5 @@
 metGenRunDemo <- function() {
   
-  mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
   mgsetLonlatbox(c(92.25, 110.25, 7.25, 36.25))
   mgsetPeriod(startdate = "1950-1-1", enddate = "1950-1-31")
   mgsetInDt(24) # Set N hours per timestep

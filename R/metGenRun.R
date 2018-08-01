@@ -40,7 +40,6 @@ metGenRun <- function() {
     ## LOAD WHOLE DOMAIN FROM NETCDF
     profile$start.time.read <- Sys.time()
     inData <- readAllForcing(mask, yday)
-    inData$shortwave[,,1] <- mask$Data * inData$shortwave[,,1]
     profile$end.time.read <- Sys.time()
     
     # /*************************************************

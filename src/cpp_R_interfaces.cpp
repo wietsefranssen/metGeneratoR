@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-  NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, int ny, int nrec) {
-    int irec,ix,iy;
+NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, int ny, int nrec) {
+  int irec,ix,iy;
   NumericVector vp_r(nx*ny*nrec);
   IntegerVector dims(3);
   dims[0] = nx;
@@ -20,16 +20,16 @@ using namespace Rcpp;
   for (ix = 0; ix < nx; ix++) {
     relhum_c[ix] = (double*)malloc(ny * sizeof(double));
   }
-
+  
   // Copy from R array
   size_t count = 0;
-    for (iy = 0; iy < ny; iy++) {
-      for (ix = 0; ix < nx; ix++) {
-        relhum_c[ix][iy] = relhum_r[count];
-        count++;
-      }
+  for (iy = 0; iy < ny; iy++) {
+    for (ix = 0; ix < nx; ix++) {
+      relhum_c[ix][iy] = relhum_r[count];
+      count++;
     }
-
+  }
+  
   // Dooo
   count = 0;
   for (irec = 0; irec < nrec; irec++) {
@@ -47,9 +47,9 @@ using namespace Rcpp;
   }
   free(relhum_c);
   
-
   
- return vp_r; 
+  
+  return vp_r; 
 }  
 
 
@@ -97,7 +97,7 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   
   ny = ((elat - slat) / reslat) + 1;
   nx = ((elon - slon) / reslon) + 1;
-
+  
   NumericVector tair_map_r(nrec * ny * nx);
   IntegerVector dims(3);
   dims[0] = nx;
@@ -130,7 +130,7 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   double *Tair = (double*)malloc(nrec * sizeof(double));
   
   // run the function
-  rad_fract_lats_c(rad_fract_map_org, nt, yday);
+  rad_fract_lats_c(rad_fract_map_org, nt, yday, slat, elat);
   
   int ix_offset;
   float tmin_hour_new;
@@ -160,12 +160,12 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
       // if (tmax_hour_new<0) tmax_hour_new +=24;
       // if (iy == 200)
       // printf("blaat: iy: %d, ix: %d, ix_offset: %d, tmin: %f, tmax: %f\n", iy, ix, ix_offset,tmin_hour_new, tmax_hour_new);
-
+      
       // double Tmin = 15;
       // double tmax = 30;
       // HourlyT_c(nrec, tmin_hour_new, Tmin, tmax_hour_new, tmax, Tair);
       HourlyT_c(nrec, tmin_hour_new, tmin_map[iy*nx+ix], tmax_hour_new, tmax_map[iy*nx+ix], Tair);
-
+      
       // Copy back to R array
       for (irec = 0; irec < nrec; irec++) {
         tair_map[ix][iy][irec] = Tair[irec];
@@ -200,7 +200,7 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   }
   free(Tair);
   free(rad_fract_map_org);
-
+  
   return tair_map_r;
 }
 
@@ -210,7 +210,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   int nx, ix;
   int ny, iy;
   int it;
-  int ixx ;
+  // int ixx ;
   int irec;
   int idx;
   int iGmtOffset;
@@ -226,7 +226,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   float slat = lonlatbox[2];
   float elat = lonlatbox[3];
   
-  nTinyStepsPerDay = 360 / reslon;
+  nTinyStepsPerDay = 360 / reslon; // 360 degress in lon direction
   dt = nTinyStepsPerDay / nrec;
   ny = ((elat - slat) / reslat) + 1;
   nx = ((elon - slon) / reslon) + 1;
@@ -270,7 +270,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   }
   
   // run the function
-  rad_fract_lats_c(rad_fract_map_org, nTinyStepsPerDay, yday);
+  rad_fract_lats_c(rad_fract_map_org, nTinyStepsPerDay, yday, slat, elat);
   
   // ## Check and correct gmt_float 
   // if(gmt_float < -12 || gmt_float > 12) stop("cannot be lower than -12 and higher than 12")
@@ -282,28 +282,48 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   if (iGmtOffset < 0) iGmtOffset = iGmtOffset + nTinyStepsPerDay;
   // printf("gmt: %d\n", iGmtOffset);
   
-  // Do everything for rec 0
+  // iXoffset is for a smaller domain...
+  float iXoffset = (slon - -179.75) / reslon;
   for (ix = 0; ix < nx; ix++) {
-    idx = (floor((float)ix * ( (float)nTinyStepsPerDay / (float)nx) )) + iGmtOffset;
-    for (int id = 0; id < dt; id++) {
-      if (idx >= nTinyStepsPerDay) idx -= nTinyStepsPerDay;
-      for (iy = 0; iy < ny; iy++) {
-        rad_fract_map[ix][iy][0] += rad_fract_map_org[iy][idx] * nrec;
+    // idx = (floor((float)ix * ( (float)nTinyStepsPerDay / (float)nx) )) + iGmtOffset;
+    idx = floor((float)ix) + iGmtOffset + ((float)1 * (float)iXoffset);
+    for (irec = 0; irec < nrec; irec++) {
+      for (int id = 0; id < dt; id++) {
+        if (idx >= nTinyStepsPerDay) idx -= nTinyStepsPerDay;
+        for (iy = 0; iy < ny; iy++) {
+          rad_fract_map[ix][iy][irec] += rad_fract_map_org[iy][idx] * nrec;
+        }
+        idx++;
       }
-      idx++;
     }
   }
-  
-  // Copy the map of rec 0 and move it for the other recs
-  for (irec = 1; irec < nrec; irec++) {
-    for (ix = 0; ix < nx; ix++) {
-      ixx = ix - ( irec * (nx/nrec));
-      if (ixx < 0) ixx += nx;
-      for (iy = 0; iy < ny; iy++) {
-        rad_fract_map[ixx][iy][irec] = rad_fract_map[ix][iy][0];
-      }  
-    }
-  }
+
+  // Do everything for rec 0
+  // float iXoffset = (slon - -179.75) / reslon;
+  // printf("iXoffset: %f\n", iXoffset);
+  // // Do everything for rec 0
+  // for (ix = 0; ix < nx; ix++) {
+  //   // idx = (floor((float)ix * ( (float)nTinyStepsPerDay / (float)nx) )) + iGmtOffset;
+  //   idx = floor((float)ix) + iGmtOffset + ((float)1 * (float)iXoffset);
+  //   for (int id = 0; id < dt; id++) {
+  //     if (idx >= nTinyStepsPerDay) idx -= nTinyStepsPerDay;
+  //     for (iy = 0; iy < ny; iy++) {
+  //       rad_fract_map[ix][iy][0] += rad_fract_map_org[iy][idx] * nrec;
+  //     }
+  //     idx++;
+  //   }
+  // }
+  // 
+  // // Copy the map of rec 0 and move it for the other recs
+  // for (irec = 1; irec < nrec; irec++) {
+  //   for (ix = 0; ix < nx; ix++) {
+  //     ixx = ix - ( irec * (nx/nrec));
+  //     if (ixx < 0) ixx += nx;
+  //     for (iy = 0; iy < ny; iy++) {
+  //       rad_fract_map[ixx][iy][irec] = rad_fract_map[ix][iy][0];
+  //     }  
+  //   }
+  // }
   
   count = 0;
   for (irec = 0; irec < nrec; irec++) {
@@ -355,7 +375,7 @@ NumericVector rad_map_lats_cr(int nt, int yday) {
   }
   
   // run the function
-  rad_fract_lats_c(rad_fract_map, nt, yday);
+  rad_fract_lats_c(rad_fract_map, nt, yday, slat, elat);
   
   // Pass array back to R NumericVector
   for (iy = 0; iy < ny; iy++) {

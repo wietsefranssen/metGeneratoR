@@ -61,8 +61,8 @@ metGenRun <- function() {
       for(rec in 1:metGen$derived$nOutStepDay) {
         outData$shortwave[, , rec] <- radfrac[ , , rec] * inData$shortwave[, ,1]
       }
+      # print(image(outData$shortwave[, , 1]))
     }
-    
     # /*************************************************
     #   Longwave radiation
     # *************************************************/
@@ -94,9 +94,9 @@ metGenRun <- function() {
     #   Temperature
     # **************************************/
     if(!is.null(metGen$settings$inVar$tasmin) && !is.null(metGen$settings$inVar$tasmin) && !is.null(outData$tas)) {
-      outData$tas<- set_max_min_lonlat_cr(inData$tasmin[,,1], inData$tasmax[,,1], yday, metGen$derived$nOutStepDay)
+      outData$tas <- set_max_min_lonlat_cr(inData$tasmin[,,1], inData$tasmax[,,1], yday, metGen$derived$nOutStepDay)
+      outData$tas <- outData$tas - 273.15
     }
-    outData$tas<- outData$tas - 273.15
     # /*************************************************
     #   Vapor pressure
     # *************************************************/
@@ -119,13 +119,22 @@ metGenRun <- function() {
       )
       nc_close(metGen$settings$outVars[[var]]$ncid)
     }
+    rm(inData)
   }
   
   ## Stats
-  ncellsTotal <- sum(mask$Data, na.rm = TRUE)
+  # ncellsTotal <- sum(mask$Data, na.rm = TRUE)
+  # profile$end.time.total <- Sys.time()
+  # totTime<-as.numeric(profile$end.time.total   - profile$start.time.total, units = "secs")
+  # cat(sprintf("  Total: %.1f seconds for %d x %d = %d cells. So: 100 years (67420 cels) will take: %.1f days\n", totTime, metGen$derived$nday, ncellsTotal, 
+  #             (metGen$derived$nday * ncellsTotal), ((totTime * 94742 * 365.25 * 100) / (metGen$derived$nday * ncellsTotal) / 86400
+  #             )))
+  ncellsTotal <- nx*ny
   profile$end.time.total <- Sys.time()
   totTime<-as.numeric(profile$end.time.total   - profile$start.time.total, units = "secs")
-  cat(sprintf("  Total: %.1f seconds for %d x %d = %d cells. So: 100 years (67420 cels) will take: %.1f days\n", totTime, metGen$derived$nday, ncellsTotal, 
-              (metGen$derived$nday * ncellsTotal), ((totTime * 94742 * 365.25 * 100) / (metGen$derived$nday * ncellsTotal) / 86400
-              )))
+  cat(sprintf("  Total: %.1f seconds for %d day(s). So: 100 years will take: %.2f days\n", 
+              totTime, 
+              metGen$derived$nday, 
+              (totTime * 365.25 * 100) / metGen$derived$nday / 86400
+  ))
 }

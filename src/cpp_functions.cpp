@@ -185,10 +185,10 @@ int solar_geom_c(double *rad_fract_per_timestep, float lat, int yday, int timest
   return 0;
 }
 
-int rad_fract_lats_c(double **rad_fract_map, int nt, int yday) {
+int rad_fract_lats_c(double **rad_fract_map, int nt, int yday, float slat, float elat) {
   
-  float slat = -89.75;
-  float elat = 89.75;
+  // float slat = -89.75;
+  // float elat = 89.75;
   float reslat = 0.5;
   float lat;
   int ny, iy;

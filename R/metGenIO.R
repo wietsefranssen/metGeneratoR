@@ -116,6 +116,7 @@ convertUnit <-function(data, unitIn, unitOut, verbose = F, doConversion = T) {
   if (doConversion) return(data)
 }
 
+##https://cran.r-project.org/web/packages/futureheatwaves/vignettes/starting_from_netcdf.html
 ncLoad <- function(filename, var, lonlatbox, date = NULL) {
   
   lon_range <- c(lonlatbox[1], lonlatbox[2])

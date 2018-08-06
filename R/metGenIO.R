@@ -20,7 +20,7 @@ makeNetcdfOut <- function(mask) {
     dir.create(file.path(getwd(), dirname(settings$outVars[[var]]$filename)), showWarnings = FALSE, recursive = T)
     
     dataVar <- ncvar_def(name=var, units='', compression = 7, dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
-  
+    
     ## SAVE AS NC-DATA
     cat(sprintf("Create output file: %s\n", settings$outVars[[var]]$filename))
     ncid <- nc_create(settings$outVars[[var]]$filename, dataVar, force_v4=TRUE)
@@ -45,29 +45,76 @@ makeNetcdfOut <- function(mask) {
   }
 }
 
+mgcheckInVars <- function() {
+  for (var in names(metGen$settings$inVar)) {
+    printf("Checking \"%s\"... ", var)
+    ## Open the netcdf file
+    ncFile <- nc_open( metGen$settings$inVar[[var]]$filename )
+    attTmp<-ncatt_get( ncFile, metGen$settings$inVar[[var]]$ncname, "units" )
+    if (attTmp$hasatt == TRUE) {
+      metGen$settings$inVar[[var]]$units <- attTmp$value
+    } else {
+      metGen$settings$inVar[[var]]$units <- "missing"
+    }
+
+    ## Close the file
+    nc_close(ncFile)
+    
+    unitIn<-metGen$settings$inVar[[var]]$units
+    ## Correction of some commenly used units
+    if (unitIn == "C") {
+      if (verbose) printf("Unit is \"%s\" assuming that the unit is \"Celsius\". ", unitIn)
+      unitIn <- "Celsius"
+    }
+    if (grepl("kg/m2", unitIn)) {
+      unitInTmp<-gsub("kg/m2", "mm" ,unitIn)
+      if (verbose) printf("Unit contains \"%s\" assuming that the unit is \"%s\". ", unitIn,unitInTmp)
+      unitIn<-unitInTmp
+    }
+    if (grepl("kg m-2", unitIn)) {
+      unitInTmp<-gsub("kg m-2", "mm" ,unitIn)
+      if (verbose) printf("Unit contains \"%s\" assuming that the unit is \"%s\". ", unitIn,unitInTmp)
+      unitIn<-unitInTmp
+    }
+    
+    metGen$settings$inVar[[var]]$units<-unitIn
+    convertUnit(data = NULL, metGen$settings$inVar[[var]]$units, metGen$metadata$invars[[var]]$units, verbose = T, doConversion = F)
+    printf("\n")
+  }
+}
+
 readAllForcing <- function(mask, timestep) {
-  # mask<-elevation
-  nx <- length(mask$xyCoords$x)
-  ny <- length(mask$xyCoords$y)
-  
-  # forcing_dataR <- list()
-  # for (i in 1:length(metGen$settings$inVar)) {
-  #   forcing_dataR[[i]]<- array(0, dim=c(nx, ny, 1))
-  # }
-  
   ## Read data
   forcing_dataR <- NULL
   for (var in names(metGen$settings$inVar)) {
-    # for (var in 1:length(metGen$settings$inVar)) {
-    # forcing_dataR[[var]][] <- ncLoad(file = metGen$settings$inVar[[var]]$filename,
-                                     forcing_dataR[[var]] <- ncLoad(file = metGen$settings$inVar[[var]]$filename,
-                                                                      varName = metGen$settings$inVar[[var]]$ncname,
-                                      # lonlatbox = c(settings$lonlatbox[1],
-                                      #               settings$lonlatbox[2],
-                                      #               settings$lonlatbox[3],
-                                      #               settings$lonlatbox[4]),
-                                      lonlatbox = metGen$settings$lonlatbox,
-                                      timesteps = timestep)$Data
+    
+    forcing_dataR[[var]] <- ncLoad(file = metGen$settings$inVar[[var]]$filename,
+                                   varName = metGen$settings$inVar[[var]]$ncname,
+                                   lonlatbox = metGen$settings$lonlatbox,
+                                   timesteps = timestep 
+                                   )$Data
+    
+    # print(metGen$settings$inVar[[var]]$units)
+    forcing_dataR[[var]] <- convertUnit(forcing_dataR[[var]],
+                                        metGen$settings$inVar[[var]]$units,
+                                        metGen$metadata$invars[[var]]$units)
   }
+  
   return(forcing_dataR)
 }
+
+
+convertUnit <-function(data, unitIn, unitOut, verbose = F, doConversion = T) {
+  if (!unitIn == unitOut) {
+    if (ud.are.convertible(unitIn,unitOut)) {
+      if (verbose) printf("\"%s\" will be converted to \"%s\". ", unitIn, unitOut)
+      if (doConversion) data[]<-ud.convert(data[],unitIn,unitOut)
+    } else {
+      if (verbose) printf("\"%s\" cannot be converted to \"%s\". ", unitIn, unitOut)
+    }
+  } else {
+    if (verbose) printf("\"%s\" does not need to be converted. ", unitIn)
+  }
+  if (doConversion) return(data)
+}
+

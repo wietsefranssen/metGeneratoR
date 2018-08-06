@@ -8,11 +8,8 @@ library(metGeneratoR)
 mgsetInit()
 
 ## Override standard settings
-
-mgsetLonlatbox(c(92.25, 92.75, 34.25, 36.75))
-mgsetLonlatbox(c(-179.75, 17.75, -8.75, 89.75))
-mgsetLonlatbox(c(-178.75, 0.75, -0.75, 89.75))
-# mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
+mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
+# mgsetLonlatbox(c(92.25,110.25,7.25,36.25))
 
 mgsetPeriod(startdate = "1998-1-1", enddate = "1998-1-2")
 

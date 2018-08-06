@@ -62,9 +62,10 @@ mgsetInVars <- function(varlist) {
       metGen$settings$inVar[[var]]$ncname <- varlist[[var]]$ncname
       metGen$settings$inVar[[var]]$filename <- varlist[[var]]$filename
       metGen$settings$inVar[[var]]$longName <- metGen$metadata$invars[[var]]$longName
-      metGen$settings$inVar[[var]]$units <- metGen$metadata$invars[[var]]$units
+      # metGen$settings$inVar[[var]]$units <- metGen$metadata$invars[[var]]$units
     }
   }
+  mgcheckInVars()
 }
 
 mgsetOutVars <- function(varnames) {
@@ -153,18 +154,20 @@ mgsetInitMetadata <- function() {
     pressure   = list(filename = "", enable = FALSE, units = "kPa",       longName = "near surface atmospheric pressure"),
     qair       = list(filename = "", enable = FALSE, units = "kg kg-1",   longName = "specific humidity"),
     vp         = list(filename = "", enable = FALSE, units = "kPa",       longName = "near surface vapor pressure"),
-    relhum     = list(filename = "", enable = FALSE, units = "fraction",  longName = "relative humidity"),
+    # relhum     = list(filename = "", enable = FALSE, units = "%",         longName = "relative humidity"),
+    relhum     = list(filename = "", enable = FALSE, units = "% / 0.01",         longName = "relative humidity"), ## relhum needs to be fraction. Because fraction does not extist in udunits we call it "% / 0.01"
     density    = list(filename = "", enable = FALSE, units = "kg m-3",    longName = "near-surface atmospheric density"),
     wind       = list(filename = "", enable = FALSE, units = "m s-1",     longName = "near surface wind speed")
   )
   
   metGen$metadata$invars <- list(
-    pr         = list(units = "mm",       longName = "incoming precipitation"),
-    tasmin     = list(units = "C",        longName = "minimum air temperature"),
-    tasmax     = list(units = "C",        longName = "maximum air temperature"),
+    pr         = list(units = "mm s-1",       longName = "incoming precipitation"),
+    tasmin     = list(units = "Celsius",        longName = "minimum air temperature"),
+    tasmax     = list(units = "Celsius",        longName = "maximum air temperature"),
     shortwave  = list(units = "W m-2",    longName = "shortwave radiation"),
     vp         = list(units = "kPa",      longName = "near surface vapor pressure"),
-    relhum     = list(units = "fraction", longName = "relative humidity"),
+    relhum     = list(units = "% / 0.01", longName = "relative humidity"), ## relhum needs to be fraction. Because fraction does not extist in udunits we call it "% / 0.01"
+    # relhum     = list(units = "fraction", longName = "relative humidity"),
     longwave   = list(units = "W m-2",    longName = "longwave radiation"),
     pressure   = list(units = "kPa",      longName = "near surface atmospheric pressure"),
     wind       = list(units = "m s-1",    longName = "near surface wind speed")

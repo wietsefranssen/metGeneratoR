@@ -9,12 +9,14 @@
 metGenRun <- function() {
 
   ## Load elevation
-  elev <- ncLoad(file = metGen$internal$ncFileNameElevation,
-                 varName = metGen$settings$elevation$ncname,
+  # elev <- ncLoad(file = metGen$internal$ncFileNameElevation,
+  #                varName = metGen$settings$elevation$ncname,
+  #                lonlatbox = metGen$settings$lonlatbox)
+  mask <- ncLoad(file = metGen$settings$inVar[[1]]$filename,
+                 varName = metGen$settings$inVar[[1]]$ncname,
                  lonlatbox = metGen$settings$lonlatbox)
   
-  ## Load mask (or base it on elevation)
-  mask<-elev
+  ## Load mask (or base it on elevation or the first variable)
   mask$Data[!is.na(mask$Data)]<- 1
   
   nx <- length(mask$xyCoords$x)
@@ -94,12 +96,11 @@ metGenRun <- function() {
     # **************************************/
     if(!is.null(metGen$settings$inVar$tasmin) && !is.null(metGen$settings$inVar$tasmin) && !is.null(outData$tas)) {
       outData$tas <- set_max_min_lonlat_cr(inData$tasmin[,,1], inData$tasmax[,,1], yday, metGen$derived$nOutStepDay, metGen$settings$lonlatbox)
-      outData$tas <- outData$tas - 273.15
     }
+    
     # /*************************************************
     #   Vapor pressure
     # *************************************************/
-    inData$relhum <- inData$relhum / 100
     if(!is.null(metGen$settings$inVar$relhum) && !is.null(outData$vp)) {
       for(rec in 1:metGen$derived$nOutStepDay) {
         outData$vp <- set_vp_cr(outData$tas, inData$relhum[,,1], nx, ny, metGen$derived$nOutStepDay)

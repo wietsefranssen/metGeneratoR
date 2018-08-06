@@ -15,11 +15,8 @@ A file called `example_output_Mekong.nc` should be written in the working direct
     ## Load the library
     library(metGeneratoR)
     
-    ## Init standard settings
-    mgsetInit()
-
     ## Run metGen
-    metGenRun()
+    metGenRunDemo()
 
 ## Usage
 

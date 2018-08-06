@@ -8,22 +8,11 @@
 
 metGenRun <- function() {
 
-  ## Load elevation
-  # elev <- ncLoad(file = metGen$internal$ncFileNameElevation,
-  #                varName = metGen$settings$elevation$ncname,
-  #                lonlatbox = metGen$settings$lonlatbox)
-  mask <- ncLoad(file = metGen$settings$inVar[[1]]$filename,
-                 varName = metGen$settings$inVar[[1]]$ncname,
-                 lonlatbox = metGen$settings$lonlatbox)
-  
-  ## Load mask (or base it on elevation or the first variable)
-  mask$Data[!is.na(mask$Data)]<- 1
-  
-  nx <- length(mask$xyCoords$x)
-  ny <- length(mask$xyCoords$y)
-  
+  nx <- metGen$settings$nx
+  ny <- metGen$settings$ny
+
   ## makeOutputNetCDF
-  makeNetcdfOut(mask)
+  makeNetcdfOut()
   
   ## DEFINE OUTPUT ARRAY
   outData <- NULL
@@ -41,7 +30,7 @@ metGenRun <- function() {
     
     ## LOAD WHOLE DOMAIN FROM NETCDF
     profile$start.time.read <- Sys.time()
-    inData <- readAllForcing(mask, yday)
+    inData <- readAllForcing(metGen$derived$inDates[iday])
     profile$end.time.read <- Sys.time()
     
     # /*************************************************

@@ -11,7 +11,7 @@ mgsetInit()
 mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
 # mgsetLonlatbox(c(92.25,110.25,7.25,36.25))
 
-mgsetPeriod(startdate = "1998-1-1", enddate = "1998-1-2")
+mgsetPeriod(startdate = "1998-1-1", enddate = "1998-1-1")
 
 mgsetInVars(list(
   pr         = list(ncname = "pr",      filename = "../example_data4mtclim/Global/pr_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),

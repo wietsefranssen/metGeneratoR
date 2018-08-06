@@ -1,4 +1,4 @@
-makeNetcdfOut <- function(mask) {
+makeNetcdfOut <- function() {
   
   settings<-metGen$settings
   derived<-metGen$derived
@@ -7,13 +7,13 @@ makeNetcdfOut <- function(mask) {
   FillValue <- 1e20
   
   ## Define dimensions
-  dimX <- ncdim_def("lon", "degrees_east", mask$xyCoords$x)
-  dimY <- ncdim_def("lat", "degrees_north",mask$xyCoords$y)
+  dimX <- ncdim_def("lon", "degrees_east", metGen$settings$x)
+  dimY <- ncdim_def("lat", "degrees_north",metGen$settings$y)
   timeString <-format(strptime(settings$startDate, format = "%Y-%m-%d", tz = "GMT"),format="%Y-%m-%d %T")
   timeArray <-c(0:(metGen$derived$nrec_out-1)) * (24 / (24/metGen$derived$outDt))
   dimT <- ncdim_def("time", paste0("hours since ",timeString), timeArray, unlim = TRUE, calendar = "standard")
   
-  dimsizes<-c(length(mask$xyCoords$x),length(mask$xyCoords$y),metGen$derived$nrec_out)
+  dimsizes<-c(metGen$settings$nx,metGen$settings$ny,metGen$derived$nrec_out)
   ################
   for (var in names(settings$outVars)) {
     ## Create folder
@@ -56,7 +56,7 @@ mgcheckInVars <- function() {
     } else {
       metGen$settings$inVar[[var]]$units <- "missing"
     }
-
+    
     ## Close the file
     nc_close(ncFile)
     
@@ -83,18 +83,16 @@ mgcheckInVars <- function() {
   }
 }
 
-readAllForcing <- function(mask, timestep) {
+readAllForcing <- function(date) {
   ## Read data
   forcing_dataR <- NULL
   for (var in names(metGen$settings$inVar)) {
-    
-    forcing_dataR[[var]] <- ncLoad(file = metGen$settings$inVar[[var]]$filename,
-                                   varName = metGen$settings$inVar[[var]]$ncname,
+
+    forcing_dataR[[var]] <- ncLoad(filename = metGen$settings$inVar[[var]]$filename,
+                                   var = metGen$settings$inVar[[var]]$ncname,
                                    lonlatbox = metGen$settings$lonlatbox,
-                                   timesteps = timestep 
-                                   )$Data
-    
-    # print(metGen$settings$inVar[[var]]$units)
+                                   date = date)
+
     forcing_dataR[[var]] <- convertUnit(forcing_dataR[[var]],
                                         metGen$settings$inVar[[var]]$units,
                                         metGen$metadata$invars[[var]]$units)
@@ -118,3 +116,50 @@ convertUnit <-function(data, unitIn, unitOut, verbose = F, doConversion = T) {
   if (doConversion) return(data)
 }
 
+ncLoad <- function(filename, var, lonlatbox, date = NULL) {
+  
+  lon_range <- c(lonlatbox[1], lonlatbox[2])
+  lat_range <- c(lonlatbox[3], lonlatbox[4])
+  
+  ncid <- nc_open(filename = filename)
+  lons <- ncvar_get(ncid, "lon")
+  lats <- ncvar_get(ncid, "lat")
+  
+  # If requested, limit to certain ranges of latitude and/or longitude
+  if(!is.null(lon_range)){
+    lon_range <- sort(lon_range)
+    lon_index <- which(lon_range[1] <= lons & lons <= lon_range[2]) 
+    # lon <- lons[lon_index]
+    # tas <- tas[lon_index, , ]
+  }
+  if(!is.null(lat_range)){
+    lat_range <- sort(lat_range)
+    lat_index <- which(lat_range[1] <= lats &  lats <= lat_range[2]) 
+    # lat <- lats[lat_index]
+    # tas <- tas[ , lat_index, ]
+  }
+  
+  if (!is.null(date)) {
+    times <- nc.get.time.series(ncid)
+    time_index <- which(format(times, "%Y-%m-%d") == format(date, "%Y-%m-%d"))
+    
+    dataset <- nc.get.var.subset.by.axes(ncid, var,
+                                         axis.indices = list(X = lon_index, 
+                                                             Y = lat_index,
+                                                             T = time_index)
+                                         # axes.map = c(3,2,1)
+    )
+  } else {
+    dataset <- nc.get.var.subset.by.axes(ncid, var,
+                                         axis.indices = list(X = lon_index, 
+                                                             Y = lat_index,
+                                                             T = 1))
+  }
+  nc_close(ncid)
+  
+  ## Flip if needed
+  if (lats[2] < lats[1])
+    dataset[]<-dataset[,c(dim(dataset)[2]:1),]
+  
+  return(dataset)
+}

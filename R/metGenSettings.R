@@ -2,6 +2,10 @@ metGen <- new.env()
 
 mgsetLonlatbox <- function(lonlatbox) {
   metGen$settings$lonlatbox <- lonlatbox
+  metGen$settings$x <- seq(lonlatbox[1],lonlatbox[2], 0.5)
+  metGen$settings$y <- seq(lonlatbox[3],lonlatbox[4], 0.5)
+  metGen$settings$nx <- length(metGen$settings$x)
+  metGen$settings$ny <- length(metGen$settings$y)
 }
 
 mgsetInDt <- function(inDt) {
@@ -147,7 +151,7 @@ mgsetInitSettings <- function() {
 mgsetInitMetadata <- function() {
   assign("metadata", list(), env=metGen)
   metGen$metadata$outvars <- list(
-    pr         = list(filename = "", enable = FALSE, units = "mm",        longName = "incoming precipitation"),
+    pr         = list(filename = "", enable = FALSE, units = "mm s-1",    longName = "incoming precipitation"),
     tas        = list(filename = "", enable = FALSE, units = "C",         longName = "air temperature"),
     shortwave  = list(filename = "", enable = FALSE, units = "W m-2",     longName = "incoming shortwave"),
     longwave   = list(filename = "", enable = FALSE, units = "W m-2",     longName = "incoming longwave"),
@@ -161,9 +165,9 @@ mgsetInitMetadata <- function() {
   )
   
   metGen$metadata$invars <- list(
-    pr         = list(units = "mm s-1",       longName = "incoming precipitation"),
-    tasmin     = list(units = "Celsius",        longName = "minimum air temperature"),
-    tasmax     = list(units = "Celsius",        longName = "maximum air temperature"),
+    pr         = list(units = "mm s-1",   longName = "incoming precipitation"),
+    tasmin     = list(units = "Celsius",  longName = "minimum air temperature"),
+    tasmax     = list(units = "Celsius",  longName = "maximum air temperature"),
     shortwave  = list(units = "W m-2",    longName = "shortwave radiation"),
     vp         = list(units = "kPa",      longName = "near surface vapor pressure"),
     relhum     = list(units = "% / 0.01", longName = "relative humidity"), ## relhum needs to be fraction. Because fraction does not extist in udunits we call it "% / 0.01"

@@ -8,6 +8,8 @@
 
 metGenRun <- function() {
 
+  mgcheckVariables()
+  
   nx <- metGen$settings$nx
   ny <- metGen$settings$ny
 
@@ -93,6 +95,11 @@ metGenRun <- function() {
     if(!is.null(metGen$settings$inVar$relhum) && !is.null(outData$vp)) {
       for(rec in 1:metGen$derived$nOutStepDay) {
         outData$vp <- set_vp_cr(outData$tas, inData$relhum[,,1], nx, ny, metGen$derived$nOutStepDay)
+      }
+    }
+    if(!is.null(metGen$settings$inVar$qair) && !is.null(outData$vp)) {
+      for(rec in 1:metGen$derived$nOutStepDay) {
+        outData$vp[,,1] <- inData$qair[,,1] * inData$pressure[,,1]  / metGen$constants$EPS
       }
     }
     

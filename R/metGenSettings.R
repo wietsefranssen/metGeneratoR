@@ -1,5 +1,18 @@
 metGen <- new.env()
 
+mgcheckVariables <- function() {
+  if (!is.null(metGen$settings$outVars[["vp"]])) {
+    if (!is.null(metGen$settings$inVar[["relhum"]]) && !is.null(metGen$settings$inVar[["qair"]])) {
+      stop(paste0("Both ", metGen$metadata$invars$relhum$longName, " and ", metGen$settings$inVar$qair$longName, " are provided as input. \n",
+                  "Select only of the two variables for the calculation of ", metGen$metadata$invars$vp$longName))
+    }
+    if (is.null(metGen$settings$inVar[["relhum"]]) && is.null(metGen$settings$inVar[["qair"]])) {
+      stop(paste0(metGen$metadata$invars$relhum$longName, " or ", metGen$metadata$invars$qair$longName,
+                  " need to be provided as input for the calculation of ", metGen$metadata$invars$vp$longName))
+    }
+  }
+}
+
 mgsetLonlatbox <- function(lonlatbox) {
   metGen$settings$lonlatbox <- lonlatbox
   metGen$settings$x <- seq(lonlatbox[1],lonlatbox[2], 0.5)
@@ -172,6 +185,7 @@ mgsetInitMetadata <- function() {
     vp         = list(units = "kPa",      longName = "near surface vapor pressure"),
     relhum     = list(units = "% / 0.01", longName = "relative humidity"), ## relhum needs to be fraction. Because fraction does not extist in udunits we call it "% / 0.01"
     # relhum     = list(units = "fraction", longName = "relative humidity"),
+    qair       = list(units = "kg/kg",    longName = "near surface specific humidity"),
     longwave   = list(units = "W m-2",    longName = "longwave radiation"),
     pressure   = list(units = "kPa",      longName = "near surface atmospheric pressure"),
     wind       = list(units = "m s-1",    longName = "near surface wind speed")

@@ -89,6 +89,8 @@ setConstants <- function() {
   constants$SC_INT <- 1.32       # (MJ/m2/day) snow correction intercept
   constants$SC_SLOPE <- 0.096    # (MJ/m2/day/cm) snow correction slope
   
+  constants$EPS <- 0.62196351 # Ratio of molecular weights: M_water_vapor/M_dry_air
+    
   # Allocate the radiation arrays
   tiny_step_per_day <- constants$SEC_PER_DAY / constants$SW_RAD_DT
   

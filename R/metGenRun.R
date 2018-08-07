@@ -99,7 +99,7 @@ metGenRun <- function() {
     }
     if(!is.null(metGen$settings$inVar$qair) && !is.null(outData$vp)) {
       for(rec in 1:metGen$derived$nOutStepDay) {
-        outData$vp[,,1] <- inData$qair[,,1] * inData$pressure[,,1]  / metGen$constants$EPS
+        outData$vp[,,rec] <- inData$qair[,,1] * inData$pressure[,,1]  / metGen$constants$EPS
       }
     }
     

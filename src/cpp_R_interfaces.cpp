@@ -51,6 +51,29 @@ NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, in
   
   return vp_r; 
 }  
+// [[Rcpp::export]]
+NumericVector sh2vp(NumericVector q, NumericVector p) {
+  size_t i;
+  size_t n = q.length();
+
+  NumericVector t = p;
+  
+  if(q.length() != t.length() || q.length() != p.length()) {
+    // if(q.length() != t.length() || q.length() != p.length()) {
+    printf("q and p should have the same length!\n");
+    // printf("q, t and p should all have the same length!\n");
+    return(1);
+  }
+
+  NumericVector vp(n);
+  vp.attr("dim") = q.attr("dim");
+
+  for (i = 0; i < n; i++) {
+    vp[i] = sh2vp(q[i], t[i], p[i]);
+  }
+
+  return vp;
+}  
 
 
 // [[Rcpp::export]]

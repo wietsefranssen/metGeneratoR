@@ -69,7 +69,7 @@ NumericVector sh2vp(NumericVector q, NumericVector p) {
   vp.attr("dim") = q.attr("dim");
 
   for (i = 0; i < n; i++) {
-    vp[i] = sh2vp(q[i], t[i], p[i]);
+    vp[i] = sh2vp_c(q[i], t[i], p[i]);
   }
 
   return vp;

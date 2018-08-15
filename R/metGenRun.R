@@ -101,6 +101,7 @@ metGenRun <- function() {
       for(rec in 1:metGen$derived$nOutStepDay) {
         # outData$vp[,,rec] <- inData$qair[,,1] * inData$pressure[,,1]  / metGen$constants$EPS
         # outData$vp[,,rec] <- mg_sh2vp(inData$qair[,,1], outData$tas[,,rec], inData$pressure[,,1])
+        # outData$vp[,,rec] <- sh2vp(inData$qair[,,1], inData$pressure[,,1])
         outData$vp[,,rec] <- sh2vp(inData$qair[,,1], inData$pressure[,,1])
       }
     }

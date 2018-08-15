@@ -20,6 +20,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sh2vp
+NumericVector sh2vp(NumericVector q, NumericVector p);
+RcppExport SEXP _metGeneratoR_sh2vp(SEXP qSEXP, SEXP pSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type q(qSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
+    rcpp_result_gen = Rcpp::wrap(sh2vp(q, p));
+    return rcpp_result_gen;
+END_RCPP
+}
 // set_min_max_hour_cr
 NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx);
 RcppExport SEXP _metGeneratoR_set_min_max_hour_cr(SEXP radfracSEXP, SEXP nxSEXP) {
@@ -89,6 +101,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_metGeneratoR_set_vp_cr", (DL_FUNC) &_metGeneratoR_set_vp_cr, 5},
+    {"_metGeneratoR_sh2vp", (DL_FUNC) &_metGeneratoR_sh2vp, 2},
     {"_metGeneratoR_set_min_max_hour_cr", (DL_FUNC) &_metGeneratoR_set_min_max_hour_cr, 2},
     {"_metGeneratoR_set_max_min_lonlat_cr", (DL_FUNC) &_metGeneratoR_set_max_min_lonlat_cr, 5},
     {"_metGeneratoR_rad_map_final_cr", (DL_FUNC) &_metGeneratoR_rad_map_final_cr, 4},

@@ -37,7 +37,7 @@ setConstants <- function() {
   constants$G_STD  <-  9.80665       #  /* (m s-2) standard gravitational accel. */ 
   constants$P_STD  <-  101325.0   #     /* (Pa) standard pressure at 0.0 m elevation */
   constants$T_STD   <- 288.15      #    /* (K) standard temp at 0.0 m elevation  */
-    constants$CP   <-    1010.0    #      /* (J kg-1 K-1) specific heat of air */
+  constants$CP   <-    1010.0    #      /* (J kg-1 K-1) specific heat of air */
   constants$LR_STD <-  0.0065      #    /* (-K m-1) standard temperature lapse rate */
   constants$T_LAPSE   <-   -0.0065   # /* temperature lapse rate of US Std Atmos in C/km */
   constants$METERS_PER_KM <- 1000. #

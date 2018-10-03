@@ -17,8 +17,8 @@ metGenRunDemo <- function() {
   mgsetInDt(24) # Set N hours per timestep
   mgsetOutDt(6) # Set N hours per timestep
   
-  metGen$constants <- setConstants()
-  constants <- metGen$constants
+#  metGen$constants <- setConstants()
+#  constants <- metGen$constants
   
   mgsetInVars(list(
     pr         = list(ncname = "pr",      filename = metGen$internal$ncFileNamePr),

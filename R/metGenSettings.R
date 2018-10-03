@@ -1,3 +1,4 @@
+#' @export
 metGen <- new.env()
 
 mgcheckVariables <- function() {
@@ -22,6 +23,7 @@ mgsetLonlatbox <- function(lonlatbox) {
   metGen$settings$ny <- length(metGen$settings$y)
 }
 
+#' @export
 mgsetInDt <- function(inDt) {
   metGen$derived$inDt <- metGen$settings$inDt <- inDt
   metGen$derived$nInStepDay  <- 24 / metGen$derived$inDt
@@ -33,6 +35,7 @@ mgsetInDt <- function(inDt) {
   }
 }
 
+#' @export
 mgsetOutDt <- function(outDt) {
   metGen$derived$outDt <- metGen$settings$outDt <- outDt
   metGen$derived$nOutStepDay  <- 24 / metGen$derived$outDt
@@ -64,6 +67,7 @@ mgsetPeriod <- function(startdate, enddate) {
   metGen$derived$outYDays = as.POSIXlt(metGen$derived$outDates)$yday + 1
 }
 
+#' @export
 mgsetElevation <- function(ncname, filename) {
   metGen$settings$elevation$ncname <- ncname
   metGen$settings$elevation$filename <- filename
@@ -159,17 +163,17 @@ mgsetInit <- function() {
   mgsetInitSettings()
   mgsetInitMetadata()
   mgsetInitInternal()
+  mgsetInitConstants()
 }
 
 mgsetInitSettings <- function() {
-  metGen$constants <-setConstants()
+  # metGen$constants <- setConstants()
   metGen$settings <- NULL
   metGen$settings$startDate <- NULL
   metGen$settings$endDate <- NULL
   
   mgsetInDt(24) # Set N hours per timestep
   mgsetOutDt(6) # Set N hours per timestep
-  
 }
 
 mgsetInitMetadata <- function() {
@@ -217,4 +221,7 @@ mgsetInitInternal <- function() {
   metGen$internal$ncFileNameWind       <- system.file("extdata", "wind_Mekong.nc4", package = "metGeneratoR")
 }
 
-mgsetInit()
+mgsetInitConstants <- function() {
+  metGen$constants <- setConstants()
+}
+

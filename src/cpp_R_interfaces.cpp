@@ -226,7 +226,6 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   return tair_map_r;
 }
 
-//' @useDynLib metGeneratoR
 // [[Rcpp::export]]
 NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVector lonlatbox) {
   // Define and allocate

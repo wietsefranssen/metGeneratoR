@@ -12,9 +12,6 @@ rm(list=ls(all=TRUE))
 ## Load the library
 library(metGeneratoR)
 
-## Init standard settings
-mgsetInit()
-
 ## Override standard settings
 mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
 # mgsetLonlatbox(c(92.25,110.25,7.25,36.25))

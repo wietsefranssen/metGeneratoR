@@ -1,11 +1,4 @@
-## ISSUES/TODO
-## if eg prev_pr is used than the map is moved one gridcell upwards 
-## vapor pressure is too high???
-## shortwave can only be done globally: fix this!
-## check if start yday is correct
-## check base_offset it is now right for 6hourly calculations but maybe not for others like 3 hourly
-## unitconversion
-
+#' @export
 metGenRun <- function() {
 
   mgcheckVariables()
@@ -47,7 +40,7 @@ metGenRun <- function() {
     # /*************************************************
     #   Shortwave radiation
     # *************************************************/
-    radfrac<-rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$lonlatbox)
+    radfrac <- rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$lonlatbox)
     
     if(!is.null(metGen$settings$inVar$shortwave) && !is.null(outData$shortwave)) {
       for(rec in 1:metGen$derived$nOutStepDay) {

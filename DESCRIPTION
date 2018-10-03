@@ -11,4 +11,6 @@ License: GPL
 Encoding: UTF-8
 LazyData: true
 LinkingTo: Rcpp
+RoxygenNote: 6.1.0
+Roxygen: list(markdown = TRUE)
 

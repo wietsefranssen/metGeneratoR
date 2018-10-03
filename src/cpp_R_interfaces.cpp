@@ -30,7 +30,7 @@ NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, in
     }
   }
   
-  // Dooo
+  // Do the thing
   count = 0;
   for (irec = 0; irec < nrec; irec++) {
     for (iy = 0; iy < ny; iy++) {
@@ -51,6 +51,7 @@ NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, in
   
   return vp_r; 
 }  
+
 // [[Rcpp::export]]
 NumericVector sh2vp(NumericVector q, NumericVector p) {
   size_t i;
@@ -95,10 +96,6 @@ NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx) {
   result[1] = tmax_hour;
   return result;
 }
-// qq<-set_max_min_hour_cr(solar_geom_cr(-89.75,1,720), 720)
-// plot(solar_geom_cr(-89.75,1,720))
-// plot(HourlyT(TmaxHour = qq[2],Tmax = 30,TminHour = 0,Tmin = 15)) 
-
 
 // [[Rcpp::export]]
 NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec, NumericVector lonlatbox) {
@@ -229,6 +226,7 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   return tair_map_r;
 }
 
+//' @useDynLib metGeneratoR
 // [[Rcpp::export]]
 NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVector lonlatbox) {
   // Define and allocate

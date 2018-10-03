@@ -1,3 +1,11 @@
+## ISSUES/TODO
+## if eg prev_pr is used than the map is moved one gridcell upwards 
+## vapor pressure is too high???
+## shortwave can only be done globally: fix this!
+## check if start yday is correct
+## check base_offset it is now right for 6hourly calculations but maybe not for others like 3 hourly
+## unitconversion
+
 ## Cleanup
 rm(list=ls(all=TRUE))
 
@@ -8,8 +16,8 @@ library(metGeneratoR)
 mgsetInit()
 
 ## Override standard settings
-# mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
-mgsetLonlatbox(c(92.25,110.25,7.25,36.25))
+mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
+# mgsetLonlatbox(c(92.25,110.25,7.25,36.25))
 
 mgsetPeriod(startdate = "1998-1-1", enddate = "1998-1-1")
 
@@ -36,14 +44,3 @@ mgsetOutName("./output/<VAR>/<VAR>_6hourly2_HadGEM2-ES_historical_r1i1p1_EWEMBI_
 ## Run metGen
 metGenRun()
 # metGenRunDemo()
-
-library(humidity)
-
-# q <- 5
-# t <- 100
-# p <- 101325
-# # 
-# RH <- SH2RH(q, t, p, isK = F)
-# vp <- WVP2(RH, SVP(t, isK = F))
-# vp
-# sh2vp(q,p)

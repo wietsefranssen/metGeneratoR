@@ -13,6 +13,7 @@ mgcheckVariables <- function() {
   }
 }
 
+#' @export
 mgsetLonlatbox <- function(lonlatbox) {
   metGen$settings$lonlatbox <- lonlatbox
   metGen$settings$x <- seq(lonlatbox[1],lonlatbox[2], 0.5)
@@ -43,6 +44,7 @@ mgsetOutDt <- function(outDt) {
   }
 }
 
+#' @export
 mgsetPeriod <- function(startdate, enddate) {
   metGen$settings$startDate <- startdate
   metGen$settings$endDate <- enddate
@@ -67,6 +69,7 @@ mgsetElevation <- function(ncname, filename) {
   metGen$settings$elevation$filename <- filename
 }
 
+#' @export
 mgsetInVars <- function(varlist) {
   metGen$settings$inVar <- NULL
   for (var in names(varlist)) {
@@ -85,6 +88,7 @@ mgsetInVars <- function(varlist) {
   mgcheckInVars()
 }
 
+#' @export
 mgsetOutVars <- function(varnames) {
   ## Check if inputvars are already defined
   if (length(metGen$settings$inVar) <= 0) {
@@ -116,6 +120,7 @@ mgsetOutVars <- function(varnames) {
   mgsetOutName(nameString = "output/<VAR>/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = F)
 }
 
+#' @export
 mgsetOutName <- function(nameString, message = F) {
   # nameString <- "output/<VAR>/<VAR>_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_<SYEAR>.nc"
   
@@ -144,7 +149,13 @@ mgsetOutName <- function(nameString, message = F) {
 }
 
 
-mgsetInit<- function() {
+#'Initialize and set some settings required for the metGen package to run
+#'
+#' @return nothing dfgdg
+#' @examples 
+#' mgsetInit()
+#' @export
+mgsetInit <- function() {
   mgsetInitSettings()
   mgsetInitMetadata()
   mgsetInitInternal()

@@ -2,7 +2,6 @@
 
 export(metGen)
 export(metGenRun)
-export(metGenRunDemo)
 export(mgsetElevation)
 export(mgsetInDt)
 export(mgsetInVars)

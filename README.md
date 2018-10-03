@@ -14,19 +14,16 @@ Start R and run the following commands:
 
 ## Loading
 
-    ## Load the library
     library(metGeneratoR)
 
 ## Help
 
-    ## Show help
     ?metGenerator
     
 ## Usage
 
 Run the following command to test if the package is working properly.
 
-    ## Run the demos from help
     example("metGeneratoR", echo = F)
 
 ## LICENSE

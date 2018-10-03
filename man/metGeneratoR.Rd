@@ -29,9 +29,6 @@ mgsetInVars(list(
   wind       = list(ncname = "wind",    filename = metGen$internal$ncFileNameWind)
 ))
 
-## Set the mask/elevation
-mgsetElevation(ncname = "elevation", filename = metGen$internal$ncFileNameElevation)
-
 ## Set the output variables
 mgsetOutVars(c("tas", "pr", "wind"))
 

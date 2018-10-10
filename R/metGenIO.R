@@ -47,20 +47,21 @@ makeNetcdfOut <- function() {
 
 mgcheckInVars <- function() {
   for (var in names(metGen$settings$inVar)) {
-    printf("Checking \"%s\"... ", var)
+    printf("Checking input variable \"%s\". ", var)
     ## Open the netcdf file
     ncFile <- nc_open( metGen$settings$inVar[[var]]$filename )
-    attTmp<-ncatt_get( ncFile, metGen$settings$inVar[[var]]$ncname, "units" )
+    attTmp <- ncatt_get( ncFile, metGen$settings$inVar[[var]]$ncname, "units" )
     if (attTmp$hasatt == TRUE) {
-      metGen$settings$inVar[[var]]$units <- attTmp$value
+      metGen$metadata$invars[[var]]$input_units <- attTmp$value
     } else {
-      metGen$settings$inVar[[var]]$units <- "missing"
+      metGen$metadata$invars[[var]]$input_units <- "missing"
     }
     
     ## Close the file
     nc_close(ncFile)
     
-    unitIn<-metGen$settings$inVar[[var]]$units
+    unitIn<-metGen$metadata$invars[[var]]$input_units
+    
     ## Correction of some commenly used units
     if (unitIn == "C") {
       if (verbose) printf("Unit is \"%s\" assuming that the unit is \"Celsius\". ", unitIn)
@@ -77,8 +78,18 @@ mgcheckInVars <- function() {
       unitIn<-unitInTmp
     }
     
-    metGen$settings$inVar[[var]]$units<-unitIn
-    convertUnit(data = NULL, metGen$settings$inVar[[var]]$units, metGen$metadata$invars[[var]]$units, verbose = T, doConversion = F)
+    metGen$metadata$invars[[var]]$input_units <- unitIn
+    
+    convertUnit(data = NULL, metGen$metadata$invars[[var]]$input_units, metGen$metadata$invars[[var]]$internal_units, verbose = T, doConversion = F)
+    printf("\n")
+  }
+}
+mgcheckOutVars <- function() {
+  for (var in names(metGen$settings$outVar)) {
+    printf("Checking output variable \"%s\". ", var)
+
+    convertUnit(outData[[var]], metGen$metadata$outvars[[var]]$internal_units, metGen$metadata$outvars[[var]]$output_units, verbose = T, doConversion = F)
+    
     printf("\n")
   }
 }
@@ -87,28 +98,37 @@ readAllForcing <- function(date) {
   ## Read data
   forcing_dataR <- NULL
   for (var in names(metGen$settings$inVar)) {
-
+    
     forcing_dataR[[var]] <- ncLoad(filename = metGen$settings$inVar[[var]]$filename,
                                    var = metGen$settings$inVar[[var]]$ncname,
                                    lonlatbox = metGen$settings$lonlatbox,
                                    date = date)
-
+    
     forcing_dataR[[var]] <- convertUnit(forcing_dataR[[var]],
-                                        metGen$settings$inVar[[var]]$units,
-                                        metGen$metadata$invars[[var]]$units)
+                                        metGen$metadata$invars[[var]]$input_units,
+                                        metGen$metadata$invars[[var]]$internal_units)
   }
   
   return(forcing_dataR)
 }
 
-
-convertUnit <-function(data, unitIn, unitOut, verbose = F, doConversion = T) {
+convertUnit <- function(data, unitIn, unitOut, verbose = F, doConversion = T) {
   if (!unitIn == unitOut) {
-    if (ud.are.convertible(unitIn,unitOut)) {
+    if (ud.are.convertible(unitIn, unitOut)) {
       if (verbose) printf("\"%s\" will be converted to \"%s\". ", unitIn, unitOut)
-      if (doConversion) data[]<-ud.convert(data[],unitIn,unitOut)
+      if (doConversion) data[] <- ud.convert(data[],unitIn,unitOut)
     } else {
-      if (verbose) printf("\"%s\" cannot be converted to \"%s\". ", unitIn, unitOut)
+      if (unitIn == "mm s-1" && unitOut == "mm") {
+        if (verbose) printf("\"%s\" will be converted to \"%s\". ", unitIn, unitOut)
+        if (doConversion) {
+          # print(data[5:10,312:315,1])
+          # data[] <- ud.convert(data[],unitIn,unitOut)
+          data[] <- data[] * 3600 * metGen$settings$outDt
+          # print(data[5:10,312:315,1])
+        }
+      } else {
+        if (verbose) printf("\"%s\" cannot be converted to \"%s\". ", unitIn, unitOut)
+      }
     }
   } else {
     if (verbose) printf("\"%s\" does not need to be converted. ", unitIn)

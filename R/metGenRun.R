@@ -99,6 +99,11 @@ metGenRun <- function() {
       }
     }
     
+    ## Convert to desired output unit
+    for (var in names(metGen$settings$outVars)) {
+        outData[[var]] <- convertUnit(outData[[var]], metGen$metadata$outvars[[var]]$internal_units, metGen$metadata$outvars[[var]]$output_units)
+    }
+
     ## ADD OUTPUT TO NETCDF
     for (var in names(metGen$settings$outVars)) {
       timeIndex <- metGen$derived$nOutStepDay*(iday-1)+1

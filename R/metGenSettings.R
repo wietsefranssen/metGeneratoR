@@ -86,7 +86,6 @@ mgsetInVars <- function(varlist) {
       metGen$settings$inVar[[var]]$ncname <- varlist[[var]]$ncname
       metGen$settings$inVar[[var]]$filename <- varlist[[var]]$filename
       metGen$settings$inVar[[var]]$longName <- metGen$metadata$invars[[var]]$longName
-      # metGen$settings$inVar[[var]]$units <- metGen$metadata$invars[[var]]$units
     }
   }
   mgcheckInVars()
@@ -103,10 +102,10 @@ mgsetOutVars <- function(varnames) {
     for (var in varnames) {
       ## Check input variables
       if (var == "shortwave" && is.null(metGen$settings$inVar[["shortwave"]])) {
-        stop(paste0("Shortwave output can only be generated if shortwave is provided as input\nOn the mmoment, only the following input variables are defined: ", paste(names(metGen$settings$inVar), collapse=", "), "\n"), call. = FALSE)
+        stop(paste0("Shortwave output can only be generated if shortwave is provided as input\nOn the moment, only the following input variables are defined: ", paste(names(metGen$settings$inVar), collapse=", "), "\n"), call. = FALSE)
       }
       if (var == "pr" && is.null(metGen$settings$inVar[["pr"]])) {
-        stop(paste0("Precipitation output can only be generated if precipitation is provided as input\nOn the mmoment, only the following input variables are defined: ", paste(names(metGen$settings$inVar), collapse=", "), "\n"), call. = FALSE)
+        stop(paste0("Precipitation output can only be generated if precipitation is provided as input\nOn the moment, only the following input variables are defined: ", paste(names(metGen$settings$inVar), collapse=", "), "\n"), call. = FALSE)
       }
       
       ## Check if output var exists
@@ -117,11 +116,13 @@ mgsetOutVars <- function(varnames) {
       } else {
         metGen$settings$outVars[[var]]$name <- var
         metGen$settings$outVars[[var]]$longName <- metGen$metadata$outvars[[var]]$longName
-        metGen$settings$outVars[[var]]$units <- metGen$metadata$outvars[[var]]$units
+        metGen$settings$outVars[[var]]$units <- metGen$metadata$outvars[[var]]$output_units
       }
     }
   }
   mgsetOutName(nameString = "output/<VAR>/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = F)
+  mgcheckOutVars()
+  
 }
 
 #' @export
@@ -178,34 +179,37 @@ mgsetInitSettings <- function() {
 
 mgsetInitMetadata <- function() {
   assign("metadata", list(), env=metGen)
-  metGen$metadata$outvars <- list(
-    pr         = list(filename = "", enable = FALSE, units = "mm s-1",    longName = "incoming precipitation"),
-    tas        = list(filename = "", enable = FALSE, units = "C",         longName = "air temperature"),
-    shortwave  = list(filename = "", enable = FALSE, units = "W m-2",     longName = "incoming shortwave"),
-    longwave   = list(filename = "", enable = FALSE, units = "W m-2",     longName = "incoming longwave"),
-    pressure   = list(filename = "", enable = FALSE, units = "kPa",       longName = "near surface atmospheric pressure"),
-    qair       = list(filename = "", enable = FALSE, units = "kg kg-1",   longName = "specific humidity"),
-    vp         = list(filename = "", enable = FALSE, units = "kPa",       longName = "near surface vapor pressure"),
-    # relhum     = list(filename = "", enable = FALSE, units = "%",         longName = "relative humidity"),
-    relhum     = list(filename = "", enable = FALSE, units = "% / 0.01",         longName = "relative humidity"), ## relhum needs to be fraction. Because fraction does not extist in udunits we call it "% / 0.01"
-    density    = list(filename = "", enable = FALSE, units = "kg m-3",    longName = "near-surface atmospheric density"),
-    wind       = list(filename = "", enable = FALSE, units = "m s-1",     longName = "near surface wind speed")
-  )
   
+  ## Needed input unit
   metGen$metadata$invars <- list(
-    pr         = list(units = "mm s-1",   longName = "incoming precipitation"),
-    tasmin     = list(units = "Celsius",  longName = "minimum air temperature"),
-    tasmax     = list(units = "Celsius",  longName = "maximum air temperature"),
-    shortwave  = list(units = "W m-2",    longName = "shortwave radiation"),
-    vp         = list(units = "kPa",      longName = "near surface vapor pressure"),
-    relhum     = list(units = "% / 0.01", longName = "relative humidity"), ## relhum needs to be fraction. Because fraction does not extist in udunits we call it "% / 0.01"
-    # relhum     = list(units = "fraction", longName = "relative humidity"),
-    qair       = list(units = "kg/kg",    longName = "near surface specific humidity"),
-    longwave   = list(units = "W m-2",    longName = "longwave radiation"),
-    pressure   = list(units = "kPa",      longName = "near surface atmospheric pressure"),
-    wind       = list(units = "m s-1",    longName = "near surface wind speed")
+    pr         = list(input_units = "", internal_units = "mm s-1"),   # incoming precipitation 
+    tasmin     = list(input_units = "", internal_units  = "Celsius"),  # minimum air temperature 
+    tasmax     = list(input_units = "", internal_units  = "Celsius"),  # maximum air temperature 
+    shortwave  = list(input_units = "", internal_units  = "W m-2"),    # shortwave radiation 
+    vp         = list(input_units = "", internal_units  = "kPa"),      # near surface vapor pressure 
+    relhum     = list(input_units = "", internal_units  = "% / 0.01"), # relative humidity  ## relhum needs to be fraction. Because fraction does not extist in udunits  we call it "% / 0.01"
+    # relhum     = list(input_units = "", internal_units  = "fraction"), # relative humidity 
+    qair       = list(input_units = "", internal_units  = "kg/kg"),   # near surface specific humidity 
+    longwave   = list(input_units = "", internal_units  = "W m-2"),   # longwave radiation 
+    pressure   = list(input_units = "", internal_units  = "kPa"),     # near surface atmospheric pressure 
+    wind       = list(input_units = "", internal_units  = "m s-1")    # near surface wind speed
   )
-  
+
+  ## Output metadata (output_units)
+  metGen$metadata$outvars <- list(
+    pr         = list(filename = "", enable = FALSE, internal_units = "mm s-1",    output_units = "mm",    longName = "incoming precipitation"),
+    tas        = list(filename = "", enable = FALSE, internal_units = "C",         output_units = "C",         longName = "air temperature"),
+    shortwave  = list(filename = "", enable = FALSE, internal_units = "W m-2",     output_units = "W m-2",     longName = "incoming shortwave"),
+    longwave   = list(filename = "", enable = FALSE, internal_units = "W m-2",     output_units = "W m-2",     longName = "incoming longwave"),
+    pressure   = list(filename = "", enable = FALSE, internal_units = "kPa",       output_units = "kPa",       longName = "near surface atmospheric pressure"),
+    qair       = list(filename = "", enable = FALSE, internal_units = "kg kg-1",   output_units = "kg kg-1",   longName = "specific humidity"),
+    vp         = list(filename = "", enable = FALSE, internal_units = "kPa",       output_units = "kPa",       longName = "near surface vapor pressure"),
+    # relhum     = list(filename = "", enable = FALSE, internal_units = "%",         output_units = "%",         longName = "relative humidity"),
+    relhum     = list(filename = "", enable = FALSE, internal_units = "% / 0.01",  output_units = "% / 0.01",  longName = "relative humidity"), ## relhum needs to be fraction. Because fraction does not extist in udunits we call it "% / 0.01"
+    density    = list(filename = "", enable = FALSE, internal_units = "kg m-3",    output_units = "kg m-3",    longName = "near-surface atmospheric density"),
+    wind       = list(filename = "", enable = FALSE, internal_units = "m s-1",     output_units = "m s-1",     longName = "near surface wind speed")
+  )
+
   metGen$metadata$elevation <- list(ncName = "elevation")
   # settings$elevation <- list(ncFileName = ncFileNameElevation, ncName = "elevation")
 }

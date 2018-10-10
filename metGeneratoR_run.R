@@ -30,14 +30,13 @@ mgsetInVars(list(
   wind       = list(ncname = "sfcWind", filename = "../example_data4mtclim/Global/wind_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc")
 ))
 
-# mgsetOutDt(outDt = 24)
+mgsetOutDt(outDt = 3)
 
 mgsetOutVars(c("shortwave", "longwave", "tas", "pr", "pressure", "wind", "vp"))
 # mgsetOutVars(c( "shortwave"))
 # mgsetOutVars(c( "vp"))
 
-mgsetOutName("./output/<VAR>/<VAR>_6hourly2_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_<SYEAR>_local.nc")
+mgsetOutName("./output/<VAR>/<VAR>_3hourly2_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_<SYEAR>_local.nc")
 
 ## Run metGen
 metGenRun()
-# metGenRunDemo()

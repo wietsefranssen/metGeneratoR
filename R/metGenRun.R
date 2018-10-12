@@ -19,24 +19,43 @@ metGenRun <- function() {
   profile<-NULL
   profile$start.time.total <- Sys.time()
   for (iday in 1:metGen$derived$nday) {
-    metGen$current$timestep <- iday
+    metGen$current$timestep <- (metGen$derived$nInStepDay * (iday-1)) + 1
     yday            <- metGen$derived$inYDays[iday]
-    printf("Day: %d, date: %s\n", iday, metGen$derived$inDates[iday])
+    printf("Day: %d, date: %s\n", iday, metGen$derived$inDates[metGen$current$timestep])
     
     ## LOAD WHOLE DOMAIN FROM NETCDF
     profile$start.time.read <- Sys.time()
-    inData <- readAllForcing(metGen$derived$inDates[iday])
+    inData <- readAllForcing(metGen$derived$inDates[metGen$current$timestep])
     profile$end.time.read <- Sys.time()
     
     # /*************************************************
     #   Precipitation
     # *************************************************/
     if(!is.null(metGen$settings$inVar$pr) && !is.null(outData$pr)) {
-      for(rec in 1:metGen$derived$nOutStepDay) {
-        outData$pr[, , rec] <- inData$pr[, ,1]
+      nInStep <- metGen$derived$nInStepDay
+      nOutStep <- metGen$derived$nOutStepDay
+      outData$pr[]<-0
+      if (nInStep <= nOutStep) {
+        print("nOutStep is higher")
+        inrec <- 1
+        for(outrec in 1:nOutStep) {
+          outData$pr[, , outrec] <- inData$pr[, , inrec]
+          print(paste(outrec, inrec))
+          if (!outrec%%(nOutStep/nInStep)) inrec <- inrec + 1
+        }
+      } else {
+        print("nInStep is higher")
+        outrec <- 1
+        for(inrec in 1:nInStep) {
+          outData$pr[, , outrec] <- outData$pr[, , outrec] + inData$pr[, , inrec]
+          print(paste(outrec, inrec))
+          if (!inrec%%(nInStep/nOutStep)) {
+            outData$pr[, , outrec] <- outData$pr[, , outrec] / (nInStep/nOutStep)
+            outrec <- outrec + 1
+          }
+        }
       }
     }
-    
     # /*************************************************
     #   Shortwave radiation
     # *************************************************/
@@ -44,7 +63,7 @@ metGenRun <- function() {
     
     if(!is.null(metGen$settings$inVar$shortwave) && !is.null(outData$shortwave)) {
       for(rec in 1:metGen$derived$nOutStepDay) {
-        outData$shortwave[, , rec] <- radfrac[ , , rec] * inData$shortwave[, ,1]
+        outData$shortwave[, , rec] <- radfrac[ , , rec] * inData$shortwave[, , 1]
       }
       # print(image(outData$shortwave[, , 1]))
     }
@@ -53,8 +72,9 @@ metGenRun <- function() {
     # *************************************************/
     if(!is.null(metGen$settings$inVar$longwave) && !is.null(outData$longwave)) {
       for(rec in 1:metGen$derived$nOutStepDay) {
-        outData$longwave[, , rec] <- inData$longwave[, ,1]
+        outData$longwave[, , rec] <- inData$longwave[, , 1]
       }
+      
     }
     
     # /*************************************************
@@ -62,7 +82,7 @@ metGenRun <- function() {
     # *************************************************/
     if(!is.null(metGen$settings$inVar$wind) && !is.null(outData$wind)) {
       for(rec in 1:metGen$derived$nOutStepDay) {
-        outData$wind[, , rec] <- inData$wind[, ,1]
+        outData$wind[, , rec] <- inData$wind[, , 1]
       }
     }
     
@@ -71,7 +91,7 @@ metGenRun <- function() {
     # **************************************/
     if(!is.null(metGen$settings$inVar$pressure) && !is.null(outData$pressure)) {
       for(rec in 1:metGen$derived$nOutStepDay) {
-        outData$pressure[, , rec] <- inData$pressure[, ,1]
+        outData$pressure[, , rec] <- inData$pressure[, , 1]
       }
     }
     

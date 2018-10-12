@@ -1,6 +1,7 @@
 #' @export
 metGen <- new.env()
 
+#' @export
 mgcheckVariables <- function() {
   if (!is.null(metGen$settings$outVars[["vp"]])) {
     if (!is.null(metGen$settings$inVar[["relhum"]]) && !is.null(metGen$settings$inVar[["qair"]])) {
@@ -167,6 +168,7 @@ mgsetInit <- function() {
   mgsetInitConstants()
 }
 
+#' @export
 mgsetInitSettings <- function() {
   # metGen$constants <- setConstants()
   metGen$settings <- NULL
@@ -177,6 +179,7 @@ mgsetInitSettings <- function() {
   mgsetOutDt(6) # Set N hours per timestep
 }
 
+#' @export
 mgsetInitMetadata <- function() {
   assign("metadata", list(), env=metGen)
   
@@ -214,6 +217,7 @@ mgsetInitMetadata <- function() {
   # settings$elevation <- list(ncFileName = ncFileNameElevation, ncName = "elevation")
 }
 
+#' @export
 mgsetInitInternal <- function() {
   assign("internal", list(), env=metGen)
   
@@ -225,6 +229,7 @@ mgsetInitInternal <- function() {
   metGen$internal$ncFileNameWind       <- system.file("extdata", "wind_Mekong.nc4", package = "metGeneratoR")
 }
 
+#' @export
 mgsetInitConstants <- function() {
   metGen$constants <- setConstants()
 }

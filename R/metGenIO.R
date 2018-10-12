@@ -1,3 +1,4 @@
+#' @export
 makeNetcdfOut <- function() {
   
   settings<-metGen$settings
@@ -67,13 +68,18 @@ mgcheckInVars <- function() {
       if (verbose) printf("Unit is \"%s\" assuming that the unit is \"Celsius\". ", unitIn)
       unitIn <- "Celsius"
     }
+    if (grepl("kg/m2s", unitIn)) {
+      unitInTmp <- gsub("kg/m2s", "mm s-1" ,unitIn)
+      if (verbose) printf("Unit contains \"%s\" assuming that the unit is \"%s\". ", unitIn,unitInTmp)
+      unitIn<-unitInTmp
+    }
     if (grepl("kg/m2", unitIn)) {
-      unitInTmp<-gsub("kg/m2", "mm" ,unitIn)
+      unitInTmp <- gsub("kg/m2", "mm" ,unitIn)
       if (verbose) printf("Unit contains \"%s\" assuming that the unit is \"%s\". ", unitIn,unitInTmp)
       unitIn<-unitInTmp
     }
     if (grepl("kg m-2", unitIn)) {
-      unitInTmp<-gsub("kg m-2", "mm" ,unitIn)
+      unitInTmp <- gsub("kg m-2", "mm" ,unitIn)
       if (verbose) printf("Unit contains \"%s\" assuming that the unit is \"%s\". ", unitIn,unitInTmp)
       unitIn<-unitInTmp
     }
@@ -94,11 +100,11 @@ mgcheckOutVars <- function() {
   }
 }
 
+#' @export
 readAllForcing <- function(date) {
   ## Read data
   forcing_dataR <- NULL
   for (var in names(metGen$settings$inVar)) {
-    
     forcing_dataR[[var]] <- ncLoad(filename = metGen$settings$inVar[[var]]$filename,
                                    var = metGen$settings$inVar[[var]]$ncname,
                                    lonlatbox = metGen$settings$lonlatbox,
@@ -137,6 +143,7 @@ convertUnit <- function(data, unitIn, unitOut, verbose = F, doConversion = T) {
 }
 
 ##https://cran.r-project.org/web/packages/futureheatwaves/vignettes/starting_from_netcdf.html
+#' @export
 ncLoad <- function(filename, var, lonlatbox, date = NULL) {
   
   lon_range <- c(lonlatbox[1], lonlatbox[2])
@@ -161,7 +168,16 @@ ncLoad <- function(filename, var, lonlatbox, date = NULL) {
   }
   
   if (!is.null(date)) {
-    times <- nc.get.time.series(ncid)
+    ## Move this part to a general part like check input data
+    ## mgsetInDt(inDt = 3) this function can then also be filled automatically
+    if (strsplit(ncid$dim$time$units,split=" ")[[1]][1] == "seconds") {
+      datetmp <- strsplit(ncid$dim$time$units,split=" ")[[1]][3]
+      timetmp <- strsplit(ncid$dim$time$units,split=" ")[[1]][4]
+      times <- as.PCICt(paste(datetmp,timetmp), cal = "gregorian")+ncid$dim$time$vals
+    } else {
+      times <- nc.get.time.series(ncid)
+    }
+    
     time_index <- which(format(times, "%Y-%m-%d") == format(date, "%Y-%m-%d"))
     
     dataset <- nc.get.var.subset.by.axes(ncid, var,

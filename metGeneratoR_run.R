@@ -31,14 +31,14 @@ mgsetInVars(list(
 ))
 
 mgsetInDt(inDt = 24)
-mgsetOutDt(outDt = 3)
+mgsetOutDt(outDt = 6)
 
 mgsetOutVars(c("shortwave", "longwave", "tas", "pr", "pressure", "wind", "vp"))
 # mgsetOutVars(c( "shortwave"))
-# mgsetOutVars(c( "vp"))
-mgsetOutVars(c( "pr"))
+mgsetOutVars(c( "tas"))
+# mgsetOutVars(c( "pr"))
 
-mgsetOutName("./output/<VAR>/<VAR>_3hourly2_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_<SYEAR>_local.nc")
+mgsetOutName("./output/<VAR>/<VAR>_6hourly2_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_<SYEAR>_local.nc")
 
 ## Run metGen
 metGenRun()

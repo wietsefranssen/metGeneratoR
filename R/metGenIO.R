@@ -118,6 +118,7 @@ readAllForcing <- function(date) {
   return(forcing_dataR)
 }
 
+#' @export
 convertUnit <- function(data, unitIn, unitOut, verbose = F, doConversion = T) {
   if (!unitIn == unitOut) {
     if (ud.are.convertible(unitIn, unitOut)) {
@@ -168,7 +169,7 @@ ncLoad <- function(filename, var, lonlatbox, date = NULL) {
   }
   
   if (!is.null(date)) {
-    ## Move this part to a general part like check input data
+    ## TODO Move this part to a general part like check input data
     ## mgsetInDt(inDt = 3) this function can then also be filled automatically
     if (strsplit(ncid$dim$time$units,split=" ")[[1]][1] == "seconds") {
       datetmp <- strsplit(ncid$dim$time$units,split=" ")[[1]][3]

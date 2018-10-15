@@ -5,12 +5,12 @@ metGen <- new.env()
 mgcheckVariables <- function() {
   if (!is.null(metGen$settings$outVars[["vp"]])) {
     if (!is.null(metGen$settings$inVar[["relhum"]]) && !is.null(metGen$settings$inVar[["qair"]])) {
-      stop(paste0("Both ", metGen$metadata$invars$relhum$longName, " and ", metGen$settings$inVar$qair$longName, " are provided as input. \n",
-                  "Select only of the two variables for the calculation of ", metGen$metadata$invars$vp$longName))
+      stop(paste0("Both \"relhum\" and \"qair\" are provided as input. \n",
+                  "Select only of the two variables for the calculation of \"vp\""))
     }
     if (is.null(metGen$settings$inVar[["relhum"]]) && is.null(metGen$settings$inVar[["qair"]])) {
-      stop(paste0(metGen$metadata$invars$relhum$longName, " or ", metGen$metadata$invars$qair$longName,
-                  " need to be provided as input for the calculation of ", metGen$metadata$invars$vp$longName))
+      stop(paste0("\"relhum\" or \"qair\"",
+                  " need to be provided as input for the calculation of \"vp\""))
     }
   }
 }

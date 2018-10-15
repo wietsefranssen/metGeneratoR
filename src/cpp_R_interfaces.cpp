@@ -76,7 +76,6 @@ NumericVector sh2vp(NumericVector q, NumericVector p) {
   return vp;
 }  
 
-
 // [[Rcpp::export]]
 NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx) {
   NumericVector result(2);
@@ -226,6 +225,7 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   return tair_map_r;
 }
 
+//' @export
 // [[Rcpp::export]]
 NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVector lonlatbox) {
   // Define and allocate

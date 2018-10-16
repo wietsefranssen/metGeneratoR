@@ -33,7 +33,7 @@
 #' mgsetOutVars(c("tas", "pr", "wind"))
 #' 
 #' ## Set the output filename(s) structure and path(s) 
-#' mgsetOutName("output/<VAR>/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc")
+#' mgsetOutName("output/<VAR>/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = TRUE)
 #'
 #' ## Run the metGeneratoR based on the settings above
 #' metGenRun()

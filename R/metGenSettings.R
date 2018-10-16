@@ -137,8 +137,8 @@ mgsetOutName <- function(nameString, message = F) {
     nameStringTmp <- gsub("<EYEAR>", format(metGen$derived$endDate,format="%Y"), nameStringTmp, ignore.case = T)
     nameStringTmp <- gsub("<SMONTH>", format(metGen$derived$startDate,format="%m"), nameStringTmp, ignore.case = T)
     nameStringTmp <- gsub("<EMONTH>", format(metGen$derived$endDate,format="%m"), nameStringTmp, ignore.case = T)
-    nameStringTmp <- gsub("<SDAY>", format(metGen$derived$startDate,format="%m"), nameStringTmp, ignore.case = T)
-    nameStringTmp <- gsub("<EDAY>", format(metGen$derived$endDate,format="%m"), nameStringTmp, ignore.case = T)
+    nameStringTmp <- gsub("<SDAY>", format(metGen$derived$startDate,format="%d"), nameStringTmp, ignore.case = T)
+    nameStringTmp <- gsub("<EDAY>", format(metGen$derived$endDate,format="%d"), nameStringTmp, ignore.case = T)
     ## Substitute Variable name
     nameStringTmp <- gsub("<VAR>", var, nameStringTmp, ignore.case = T)
     

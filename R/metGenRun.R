@@ -197,6 +197,13 @@ metGenRun <- function() {
           outData$vp[] <- 0
           for(i in 1:maxStep) outData$vp[, , outrecs[i]] <- outData$vp[, , outrecs[i]] +  ( sh2vp(inData$qair[,,inrecs[i]], inData$pressure[,,inrecs[i]]) /  (nInStep/nOutStep) )
         }
+      } else if(metGen$metadata$inVars$vp$enabled) {
+            if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
+              for(i in 1:maxStep) outData$vp[, ,outrecs[i]] <- inData$vp[, , inrecs[i]]
+            } else { ## aggregate to lower number of timesteps
+              outData$vp[] <- 0
+              for(i in 1:maxStep) outData$vp[, , outrecs[i]] <- outData$vp[, , outrecs[i]] + ( inData$vp[, , inrecs[i]] / (nInStep/nOutStep) )
+            }
       } else {
         if (nInStep > 1) stop(printf("Cannot convert to vp!"))
       }

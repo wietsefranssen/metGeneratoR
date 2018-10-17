@@ -8,7 +8,7 @@ mgcheckVariables <- function() {
       stop(paste0("Both \"relhum\" and \"qair\" are provided as input. \n",
                   "Select only of the two variables for the calculation of \"vp\""))
     }
-    if (!metGen$metadata$inVars$relhum$enabled && !metGen$metadata$inVars$qair$enabled) {
+    if (!metGen$metadata$inVars$relhum$enabled && !metGen$metadata$inVars$qair$enabled && !metGen$metadata$inVars$vp$enabled ) {
       stop(paste0("\"relhum\" or \"qair\"",
                   " need to be provided as input for the calculation of \"vp\""))
     }

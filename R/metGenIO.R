@@ -133,6 +133,14 @@ convertUnit <- function(data, unitIn, unitOut, verbose = F, doConversion = T) {
           data[] <- data[] * 3600 * metGen$settings$outDt
           # print(data[5:10,312:315,1])
         }
+      } else if (unitIn == "mm" && unitOut == "mm s-1") {
+        if (verbose) printf("\"%s\" will be converted to \"%s\". ", unitIn, unitOut)
+        if (doConversion) {
+          # print(data[5:10,312:315,1])
+          # data[] <- ud.convert(data[],unitIn,unitOut)
+          data[] <- data[] / (3600 * metGen$settings$outDt)
+          # print(data[5:10,312:315,1])
+        }
       } else {
         if (verbose) printf("\"%s\" cannot be converted to \"%s\". ", unitIn, unitOut)
       }

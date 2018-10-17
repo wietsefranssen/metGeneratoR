@@ -47,21 +47,21 @@ makeNetcdfOut <- function() {
 }
 
 mgcheckInVars <- function() {
-  for (var in names(metGen$settings$inVar)) {
+  for (var in names(metGen$settings$inVars)) {
     printf("Checking input variable \"%s\". ", var)
     ## Open the netcdf file
-    ncFile <- nc_open( metGen$settings$inVar[[var]]$filename )
-    attTmp <- ncatt_get( ncFile, metGen$settings$inVar[[var]]$ncname, "units" )
+    ncFile <- nc_open( metGen$settings$inVars[[var]]$filename )
+    attTmp <- ncatt_get( ncFile, metGen$settings$inVars[[var]]$ncname, "units" )
     if (attTmp$hasatt == TRUE) {
-      metGen$metadata$invars[[var]]$input_units <- attTmp$value
+      metGen$metadata$inVars[[var]]$input_units <- attTmp$value
     } else {
-      metGen$metadata$invars[[var]]$input_units <- "missing"
+      metGen$metadata$inVars[[var]]$input_units <- "missing"
     }
     
     ## Close the file
     nc_close(ncFile)
     
-    unitIn<-metGen$metadata$invars[[var]]$input_units
+    unitIn<-metGen$metadata$inVars[[var]]$input_units
     
     ## Correction of some commenly used units
     if (unitIn == "C") {
@@ -84,9 +84,9 @@ mgcheckInVars <- function() {
       unitIn<-unitInTmp
     }
     
-    metGen$metadata$invars[[var]]$input_units <- unitIn
+    metGen$metadata$inVars[[var]]$input_units <- unitIn
     
-    convertUnit(data = NULL, metGen$metadata$invars[[var]]$input_units, metGen$metadata$invars[[var]]$internal_units, verbose = T, doConversion = F)
+    convertUnit(data = NULL, metGen$metadata$inVars[[var]]$input_units, metGen$metadata$inVars[[var]]$internal_units, verbose = T, doConversion = F)
     printf("\n")
   }
 }
@@ -94,7 +94,7 @@ mgcheckOutVars <- function() {
   for (var in names(metGen$settings$outVar)) {
     printf("Checking output variable \"%s\". ", var)
 
-    convertUnit(outData[[var]], metGen$metadata$outvars[[var]]$internal_units, metGen$metadata$outvars[[var]]$output_units, verbose = T, doConversion = F)
+    convertUnit(outData[[var]], metGen$metadata$outVars[[var]]$internal_units, metGen$metadata$outVars[[var]]$output_units, verbose = T, doConversion = F)
     
     printf("\n")
   }
@@ -104,15 +104,15 @@ mgcheckOutVars <- function() {
 readAllForcing <- function(date) {
   ## Read data
   forcing_dataR <- NULL
-  for (var in names(metGen$settings$inVar)) {
-    forcing_dataR[[var]] <- ncLoad(filename = metGen$settings$inVar[[var]]$filename,
-                                   var = metGen$settings$inVar[[var]]$ncname,
+  for (var in names(metGen$settings$inVars)) {
+    forcing_dataR[[var]] <- ncLoad(filename = metGen$settings$inVars[[var]]$filename,
+                                   var = metGen$settings$inVars[[var]]$ncname,
                                    lonlatbox = metGen$settings$lonlatbox,
                                    date = date)
     
     forcing_dataR[[var]] <- convertUnit(forcing_dataR[[var]],
-                                        metGen$metadata$invars[[var]]$input_units,
-                                        metGen$metadata$invars[[var]]$internal_units)
+                                        metGen$metadata$inVars[[var]]$input_units,
+                                        metGen$metadata$inVars[[var]]$internal_units)
   }
   
   return(forcing_dataR)

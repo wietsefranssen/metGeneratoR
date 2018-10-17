@@ -4,11 +4,11 @@ metGen <- new.env()
 #' @export
 mgcheckVariables <- function() {
   if (!is.null(metGen$settings$outVars[["vp"]])) {
-    if (!is.null(metGen$settings$inVar[["relhum"]]) && !is.null(metGen$settings$inVar[["qair"]])) {
+    if (metGen$metadata$inVars$relhum$enabled && metGen$metadata$inVars$qair$enabled) {
       stop(paste0("Both \"relhum\" and \"qair\" are provided as input. \n",
                   "Select only of the two variables for the calculation of \"vp\""))
     }
-    if (is.null(metGen$settings$inVar[["relhum"]]) && is.null(metGen$settings$inVar[["qair"]])) {
+    if (!metGen$metadata$inVars$relhum$enabled && !metGen$metadata$inVars$qair$enabled) {
       stop(paste0("\"relhum\" or \"qair\"",
                   " need to be provided as input for the calculation of \"vp\""))
     }
@@ -76,17 +76,21 @@ mgsetElevation <- function(ncname, filename) {
 
 #' @export
 mgsetInVars <- function(varlist) {
-  metGen$settings$inVar <- NULL
+  metGen$settings$inVars <- NULL
+  for (var in names(metGen$metadata$inVars)) {
+    metGen$metadata$inVars[[var]]$enabled <- FALSE
+  }
   for (var in names(varlist)) {
     ## Check if input var exists
-    if (!is.element(var, names(metGen$metadata$invars))) {
-      cat(paste0("WARING: The variable ", var, " is not a standard input variable!\n",
-                 "        Valid variables are: ", paste(names(metGen$metadata$invars),collapse=", ") , "\n",
-                 "        Ingoring: ", var, "\n"))
+    if (!is.element(var, names(metGen$metadata$inVars))) {
+      stop(paste0("The variable ", var, " is not a standard input variable!\n",
+                  "Valid variables are:\n\t", 
+                  paste(names(metGen$metadata$inVars),collapse=", ")), call. = FALSE)
     } else {
-      metGen$settings$inVar[[var]]$ncname <- varlist[[var]]$ncname
-      metGen$settings$inVar[[var]]$filename <- varlist[[var]]$filename
-      metGen$settings$inVar[[var]]$longName <- metGen$metadata$invars[[var]]$longName
+      metGen$metadata$inVars[[var]]$enabled <- TRUE
+      metGen$settings$inVars[[var]]$ncname <- varlist[[var]]$ncname
+      metGen$settings$inVars[[var]]$filename <- varlist[[var]]$filename
+      metGen$settings$inVars[[var]]$longName <- metGen$metadata$inVars[[var]]$longName
     }
   }
   mgcheckInVars()
@@ -95,29 +99,39 @@ mgsetInVars <- function(varlist) {
 #' @export
 mgsetOutVars <- function(varnames) {
   ## Check if inputvars are already defined
-  if (length(metGen$settings$inVar) <= 0) {
+  if (length(metGen$settings$inVars) <= 0) {
     cat(paste0("First set the input variables. Based on that the possible output variables can be defined\n"))
     stop()
   } else {
     metGen$settings$outVars <- NULL
     for (var in varnames) {
       ## Check input variables
-      if (var == "shortwave" && is.null(metGen$settings$inVar[["shortwave"]])) {
-        stop(paste0("Shortwave output can only be generated if shortwave is provided as input\nOn the moment, only the following input variables are defined: ", paste(names(metGen$settings$inVar), collapse=", "), "\n"), call. = FALSE)
+      if (var == "shortwave" && !metGen$metadata$inVars$shortwave$enabled) {
+        stop(paste0("Shortwave output can only be generated if shortwave is provided as input\nOn the moment, only the following input variables are defined: ", paste(names(metGen$settings$inVars), collapse=", "), "\n"), call. = FALSE)
       }
-      if (var == "pr" && is.null(metGen$settings$inVar[["pr"]])) {
-        stop(paste0("Precipitation output can only be generated if precipitation is provided as input\nOn the moment, only the following input variables are defined: ", paste(names(metGen$settings$inVar), collapse=", "), "\n"), call. = FALSE)
+      if (var == "pr") {
+        errmess <- paste0("Precipitation output can only be generated if:\n", 
+                          "\tprecipitation is provided as input or\n",
+                          "\trainfall and snowfall are provided as input\n",
+                          "On the moment, only the following input variables are defined: \n\t", 
+                          paste(names(metGen$settings$inVars), collapse=", "), "\n")
+        if (metGen$metadata$inVars$pr$enabled) {
+          if (metGen$metadata$inVars$rainf$enabled || metGen$metadata$inVars$snowf$enabled) {
+            stop(errmess, call. = FALSE)
+          }
+        } else if (metGen$metadata$inVars$rainf$enabled && metGen$metadata$inVars$snowf$enabled) {
+        } else stop(errmess, call. = FALSE)
       }
       
       ## Check if output var exists
-      if (!is.element(var, names(metGen$metadata$outvars))) {
+      if (!is.element(var, names(metGen$metadata$outVars))) {
         cat(paste0("WARING: The variable ", var, " is not a standard output variable!\n",
-                   "        Valid variables are: ", paste(names(metGen$metadata$outvars),collapse=", ") , "\n",
+                   "        Valid variables are: ", paste(names(metGen$metadata$outVars), collapse=", ") , "\n",
                    "        Ingoring: ", var, "\n"))
       } else {
         metGen$settings$outVars[[var]]$name <- var
-        metGen$settings$outVars[[var]]$longName <- metGen$metadata$outvars[[var]]$longName
-        metGen$settings$outVars[[var]]$units <- metGen$metadata$outvars[[var]]$output_units
+        metGen$settings$outVars[[var]]$longName <- metGen$metadata$outVars[[var]]$longName
+        metGen$settings$outVars[[var]]$units <- metGen$metadata$outVars[[var]]$output_units
       }
     }
   }
@@ -184,8 +198,10 @@ mgsetInitMetadata <- function() {
   assign("metadata", list(), env=metGen)
   
   ## Needed input unit
-  metGen$metadata$invars <- list(
+  metGen$metadata$inVars <- list(
     pr         = list(input_units = "", internal_units = "mm s-1"),   # incoming precipitation 
+    rainf      = list(input_units = "", internal_units = "mm s-1"),   # incoming rainfall 
+    snowf      = list(input_units = "", internal_units = "mm s-1"),   # incoming snowfall 
     tasmin     = list(input_units = "", internal_units  = "Celsius"),  # minimum air temperature 
     tasmax     = list(input_units = "", internal_units  = "Celsius"),  # maximum air temperature 
     shortwave  = list(input_units = "", internal_units  = "W m-2"),    # shortwave radiation 
@@ -197,9 +213,9 @@ mgsetInitMetadata <- function() {
     pressure   = list(input_units = "", internal_units  = "kPa"),     # near surface atmospheric pressure 
     wind       = list(input_units = "", internal_units  = "m s-1")    # near surface wind speed
   )
-
+  
   ## Output metadata (output_units)
-  metGen$metadata$outvars <- list(
+  metGen$metadata$outVars <- list(
     pr         = list(filename = "", enable = FALSE, internal_units = "mm s-1",    output_units = "mm",    longName = "incoming precipitation"),
     tas        = list(filename = "", enable = FALSE, internal_units = "C",         output_units = "C",         longName = "air temperature"),
     shortwave  = list(filename = "", enable = FALSE, internal_units = "W m-2",     output_units = "W m-2",     longName = "incoming shortwave"),
@@ -212,7 +228,7 @@ mgsetInitMetadata <- function() {
     density    = list(filename = "", enable = FALSE, internal_units = "kg m-3",    output_units = "kg m-3",    longName = "near-surface atmospheric density"),
     wind       = list(filename = "", enable = FALSE, internal_units = "m s-1",     output_units = "m s-1",     longName = "near surface wind speed")
   )
-
+  
   metGen$metadata$elevation <- list(ncName = "elevation")
   # settings$elevation <- list(ncFileName = ncFileNameElevation, ncName = "elevation")
 }

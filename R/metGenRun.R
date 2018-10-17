@@ -78,7 +78,7 @@ metGenRun <- function() {
     #   Longwave radiation
     # *************************************************/
     if (!is.null(outData$longwave)) {
-      if(metGen$metadata$inVar$longwave$enabled) {
+      if(metGen$metadata$inVars$longwave$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
           for(i in 1:maxStep) outData$longwave[, ,outrecs[i]] <- inData$longwave[, , inrecs[i]]
         } else { ## aggregate to lower number of timesteps
@@ -92,7 +92,7 @@ metGenRun <- function() {
     #   Wind
     # *************************************************/
     if (!is.null(outData$wind)) {
-      if(metGen$metadata$inVar$wind$enabled) {
+      if(metGen$metadata$inVars$wind$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
           for(i in 1:maxStep) outData$wind[, ,outrecs[i]] <- inData$wind[, , inrecs[i]]
         } else { ## aggregate to lower number of timesteps
@@ -106,7 +106,7 @@ metGenRun <- function() {
     #   Atmospheric Pressure (Pa)
     # **************************************/
     if (!is.null(outData$pressure)) {
-      if(metGen$metadata$inVar$pressure$enabled) {
+      if(metGen$metadata$inVars$pressure$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
           for(i in 1:maxStep) outData$pressure[, ,outrecs[i]] <- inData$pressure[, , inrecs[i]]
         } else { ## aggregate to lower number of timesteps
@@ -120,7 +120,7 @@ metGenRun <- function() {
     #   Temperature
     # **************************************/
     if (!is.null(outData$tas)) {
-      if(metGen$metadata$inVar$tasmin$enabled && metGen$metadata$inVar$tasmax$enabled) {
+      if(metGen$metadata$inVars$tasmin$enabled && metGen$metadata$inVars$tasmax$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
           if (nInStep > 1) stop(printf("Dissagregation of \"tasmin\" and \"tasmax\" into \"tas\" is only possible for daily input!"))
           outData$tas <- set_max_min_lonlat_cr(inData$tasmin[,,1], inData$tasmax[,,1], yday, metGen$derived$nOutStepDay, metGen$settings$lonlatbox)
@@ -129,18 +129,50 @@ metGenRun <- function() {
           for(i in 1:maxStep) outData$tas[, , outrecs[i]] <- outData$tas[, , outrecs[i]] + 
               ( ( inData$tasmin[, , inrecs[i]] + inData$tasmax[, , inrecs[i]] ) / ((nInStep/nOutStep)*2) )
         }
+      } else { ## if tas in provided as input
+        if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
+          for(i in 1:maxStep) outData$tas[, ,outrecs[i]] <- inData$tas[, , inrecs[i]]
+        } else { ## aggregate to lower number of timesteps
+          outData$tas[] <- 0
+          for(i in 1:maxStep) outData$tas[, , outrecs[i]] <- outData$tas[, , outrecs[i]] + ( inData$tas[, , inrecs[i]] / (nInStep/nOutStep) )
+        }
       }
+    }
+
+    # /**************************************
+    #   Min and Max Temperature
+    # **************************************/
+    if (!is.null(outData$tasmin)) {
+      if(metGen$metadata$inVars$tas$enabled) {
+        if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
+          stop(printf("disaggregation of \"tas\" into \"tasmin\" is not possible!"))
+        } else { ## aggregate to lower number of timesteps
+          outData$tasmin[] <- 0
+          for(i in 1:maxStep) outData$tasmin[, , outrecs[i]] <- pmin(outData$tasmin[, , outrecs[i]], inData$tas[, , inrecs[i]])
+        }
+      } else stop(printf("tas should be provided!\n"))
+    }
+    
+    if (!is.null(outData$tasmax)) {
+      if(metGen$metadata$inVars$tas$enabled) {
+        if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
+          stop(printf("disaggregation of \"tas\" into \"tasmax\" is not possible!"))
+        } else { ## aggregate to lower number of timesteps
+          outData$tasmax[] <- 0
+          for(i in 1:maxStep) outData$tasmax[, , outrecs[i]] <- pmax(outData$tasmax[, , outrecs[i]], inData$tas[, , inrecs[i]])
+        }
+      } else stop(printf("tas should be provided!\n"))
     }
     
     # /*************************************************
     #   Vapor pressure
     # *************************************************/
-    # if(!is.null(metGen$settings$inVar$relhum) && !is.null(outData$vp)) {
+    # if(!is.null(metGen$settings$inVars$relhum) && !is.null(outData$vp)) {
     #   for(rec in 1:metGen$derived$nOutStepDay) {
     #     outData$vp <- set_vp_cr(outData$tas, inData$relhum[,,1], metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay)
     #   }
     # }
-    # if(!is.null(metGen$settings$inVar$qair) && !is.null(outData$vp)) {
+    # if(!is.null(metGen$settings$inVars$qair) && !is.null(outData$vp)) {
     #   for(rec in 1:metGen$derived$nOutStepDay) {
     #     # outData$vp[,,rec] <- inData$qair[,,1] * inData$pressure[,,1]  / metGen$constants$EPS
     #     # outData$vp[,,rec] <- mg_sh2vp(inData$qair[,,1], outData$tas[,,rec], inData$pressure[,,1])
@@ -149,7 +181,7 @@ metGenRun <- function() {
     #   }
     # }
     if (!is.null(outData$vp)) {
-      if (metGen$metadata$inVar$relhum$enabled) {
+      if (metGen$metadata$inVars$relhum$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
           for(i in 1:maxStep) outData$vp[, ,outrecs[i]] <- set_vp_cr(outData$tas[, ,outrecs[i]], inData$relhum[, , inrecs[i]], metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay)
         } else { ## aggregate to lower number of timesteps
@@ -158,7 +190,7 @@ metGenRun <- function() {
               ( set_vp_cr(outData$tas[, ,outrecs[i]], inData$relhum[, , inrecs[i]], metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay) / 
                   (nInStep/nOutStep) )
         }
-      } else if(metGen$metadata$inVar$qair$enabled && metGen$metadata$inVar$pressure$enabled) {
+      } else if(metGen$metadata$inVars$qair$enabled && metGen$metadata$inVars$pressure$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
           for(i in 1:maxStep) outData$vp[,,outrecs[i]] <- sh2vp(inData$qair[,,inrecs[i]], inData$pressure[,,inrecs[i]])
         } else { ## aggregate to lower number of timesteps

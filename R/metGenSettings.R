@@ -202,6 +202,7 @@ mgsetInitMetadata <- function() {
     pr         = list(input_units = "", internal_units = "mm s-1"),   # incoming precipitation 
     rainf      = list(input_units = "", internal_units = "mm s-1"),   # incoming rainfall 
     snowf      = list(input_units = "", internal_units = "mm s-1"),   # incoming snowfall 
+    tas        = list(input_units = "", internal_units  = "Celsius"),  # average air temperature 
     tasmin     = list(input_units = "", internal_units  = "Celsius"),  # minimum air temperature 
     tasmax     = list(input_units = "", internal_units  = "Celsius"),  # maximum air temperature 
     shortwave  = list(input_units = "", internal_units  = "W m-2"),    # shortwave radiation 
@@ -216,8 +217,10 @@ mgsetInitMetadata <- function() {
   
   ## Output metadata (output_units)
   metGen$metadata$outVars <- list(
-    pr         = list(filename = "", enable = FALSE, internal_units = "mm s-1",    output_units = "mm",    longName = "incoming precipitation"),
+    pr         = list(filename = "", enable = FALSE, internal_units = "mm s-1",    output_units = "mm",        longName = "incoming precipitation"),
     tas        = list(filename = "", enable = FALSE, internal_units = "C",         output_units = "C",         longName = "air temperature"),
+    tasmin     = list(filename = "", enable = FALSE, internal_units = "C",         output_units = "C",         longName = "minimum air temperature"),
+    tasmax     = list(filename = "", enable = FALSE, internal_units = "C",         output_units = "C",         longName = "maximum air temperature"),
     shortwave  = list(filename = "", enable = FALSE, internal_units = "W m-2",     output_units = "W m-2",     longName = "incoming shortwave"),
     longwave   = list(filename = "", enable = FALSE, internal_units = "W m-2",     output_units = "W m-2",     longName = "incoming longwave"),
     pressure   = list(filename = "", enable = FALSE, internal_units = "kPa",       output_units = "kPa",       longName = "near surface atmospheric pressure"),

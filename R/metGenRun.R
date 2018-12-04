@@ -183,7 +183,9 @@ metGenRun <- function() {
     if (!is.null(outData$vp)) {
       if (metGen$metadata$inVars$relhum$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
-          for(i in 1:maxStep) outData$vp[, ,outrecs[i]] <- set_vp_cr(outData$tas[, ,outrecs[i]], inData$relhum[, , inrecs[i]], metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay)
+          for(i in 1:maxStep) {
+            outData$vp[, , ] <- set_vp_cr(outData$tas[, , ], inData$relhum[, , inrecs[i]], metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay)
+          }
         } else { ## aggregate to lower number of timesteps
           outData$vp[] <- 0
           for(i in 1:maxStep) outData$vp[, , outrecs[i]] <- outData$vp[, , outrecs[i]] + 

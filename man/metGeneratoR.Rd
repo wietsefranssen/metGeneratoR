@@ -19,18 +19,23 @@ mgsetLonlatbox(c(92.25, 110.25, 7.25, 36.25))
 mgsetPeriod(startdate = "1950-1-1", enddate = "1950-1-31")
 
 ## Set the output timesteps in hours
-mgsetOutDt(6) # 6 hourly output
+mgsetInDt(24)  # 24 hourly input
+mgsetOutDt(6)  # 6 hourly output
 
 ## Set the input variables
 mgsetInVars(list(
   pr         = list(ncname = "pr",      filename = metGen$internal$ncFileNamePr),
   tasmin     = list(ncname = "tasmin",  filename = metGen$internal$ncFileNameTasmin),
   tasmax     = list(ncname = "tasmax",  filename = metGen$internal$ncFileNameTasmax),
-  wind       = list(ncname = "wind",    filename = metGen$internal$ncFileNameWind)
+  wind       = list(ncname = "sfcWind", filename = metGen$internal$ncFileNameWind),
+  shortwave  = list(ncname = "rsds",    filename = metGen$internal$ncFileNameShortwave),
+  longwave   = list(ncname = "rlds",    filename = metGen$internal$ncFileNameLongwave),
+  relhum     = list(ncname = "hurs",    filename = metGen$internal$ncFileNameRelhum),
+  pressure   = list(ncname = "ps",      filename = metGen$internal$ncFileNamePs)
 ))
 
 ## Set the output variables
-mgsetOutVars(c("tas", "pr", "wind"))
+mgsetOutVars(c("tas", "pr", "wind", "vp", "pressure", "shortwave", "longwave"))
 
 ## Set the output filename(s) structure and path(s) 
 mgsetOutName("output/<VAR>/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = TRUE)

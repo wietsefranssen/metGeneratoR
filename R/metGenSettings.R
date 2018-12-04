@@ -241,11 +241,14 @@ mgsetInitInternal <- function() {
   assign("internal", list(), env=metGen)
   
   ## Return the location of the Example NetCDF-files
-  metGen$internal$ncFileNameElevation  <- system.file("extdata", "elevation_Mekong.nc4", package = "metGeneratoR")
-  metGen$internal$ncFileNamePr         <- system.file("extdata", "pr_Mekong.nc4", package = "metGeneratoR")
-  metGen$internal$ncFileNameTasmin     <- system.file("extdata", "tasmin_Mekong.nc4", package = "metGeneratoR")
-  metGen$internal$ncFileNameTasmax     <- system.file("extdata", "tasmax_Mekong.nc4", package = "metGeneratoR")
-  metGen$internal$ncFileNameWind       <- system.file("extdata", "wind_Mekong.nc4", package = "metGeneratoR")
+  metGen$internal$ncFileNamePr         <- system.file("extdata", "pr_19500101_19500131.nc4",      package = "metGeneratoR")
+  metGen$internal$ncFileNameTasmin     <- system.file("extdata", "tasmin_19500101_19500131.nc4",  package = "metGeneratoR")
+  metGen$internal$ncFileNameTasmax     <- system.file("extdata", "tasmax_19500101_19500131.nc4",  package = "metGeneratoR")
+  metGen$internal$ncFileNamePs         <- system.file("extdata", "ps_19500101_19500131.nc4",      package = "metGeneratoR")
+  metGen$internal$ncFileNameShortwave  <- system.file("extdata", "rsds_19500101_19500131.nc4",    package = "metGeneratoR")
+  metGen$internal$ncFileNameLongwave   <- system.file("extdata", "rlds_19500101_19500131.nc4",    package = "metGeneratoR")
+  metGen$internal$ncFileNameRelhum     <- system.file("extdata", "hurs_19500101_19500131.nc4",    package = "metGeneratoR")
+  metGen$internal$ncFileNameWind       <- system.file("extdata", "sfcWind_19500101_19500131.nc4", package = "metGeneratoR")
 }
 
 #' @export

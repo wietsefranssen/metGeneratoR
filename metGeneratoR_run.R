@@ -1,7 +1,7 @@
 ## ISSUES/TODO
 ## if eg prev_pr is used than the map is moved one gridcell upwards 
 ## vapor pressure is too high???
-## shortwave can only be done globally: fix this!
+## swdown can only be done globally: fix this!
 ## check if start yday is correct
 ## check base_offset it is now right for 6hourly calculations but maybe not for others like 3 hourly
 ## unitconversion
@@ -25,16 +25,16 @@ mgsetInVars(list(
   pressure   = list(ncname = "ps",      filename = "../example_data4mtclim/Global/ps_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   # relhum     = list(ncname = "hurs",    filename = "../example_data4mtclim/Global/hurs_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   qair       = list(ncname = "Qair",    filename = "../example_data4mtclim/Qair_1998.nc"),
-  shortwave  = list(ncname = "rsds",    filename = "../example_data4mtclim/Global/rsds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  longwave   = list(ncname = "rlds",    filename = "../example_data4mtclim/Global/rlds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  swdown     = list(ncname = "rsds",    filename = "../example_data4mtclim/Global/rsds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  lwdown     = list(ncname = "rlds",    filename = "../example_data4mtclim/Global/rlds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   wind       = list(ncname = "sfcWind", filename = "../example_data4mtclim/Global/wind_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc")
 ))
 
 mgsetInDt(inDt = 24)
 mgsetOutDt(outDt = 6)
 
-mgsetOutVars(c("shortwave", "longwave", "tas", "pr", "pressure", "wind", "vp"))
-# mgsetOutVars(c( "shortwave"))
+mgsetOutVars(c("swdown", "lwdown", "tas", "pr", "pressure", "wind", "vp"))
+# mgsetOutVars(c( "swdown"))
 mgsetOutVars(c( "tas"))
 # mgsetOutVars(c( "pr"))
 

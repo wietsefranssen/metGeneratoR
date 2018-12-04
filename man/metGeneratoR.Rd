@@ -28,14 +28,14 @@ mgsetInVars(list(
   tasmin     = list(ncname = "tasmin",  filename = metGen$internal$ncFileNameTasmin),
   tasmax     = list(ncname = "tasmax",  filename = metGen$internal$ncFileNameTasmax),
   wind       = list(ncname = "sfcWind", filename = metGen$internal$ncFileNameWind),
-  shortwave  = list(ncname = "rsds",    filename = metGen$internal$ncFileNameShortwave),
-  longwave   = list(ncname = "rlds",    filename = metGen$internal$ncFileNameLongwave),
+  swdown     = list(ncname = "rsds",    filename = metGen$internal$ncFileNameswdown),
+  lwdown     = list(ncname = "rlds",    filename = metGen$internal$ncFileNamelwdown),
   relhum     = list(ncname = "hurs",    filename = metGen$internal$ncFileNameRelhum),
   pressure   = list(ncname = "ps",      filename = metGen$internal$ncFileNamePs)
 ))
 
 ## Set the output variables
-mgsetOutVars(c("tas", "pr", "wind", "vp", "pressure", "shortwave", "longwave"))
+mgsetOutVars(c("tas", "pr", "wind", "vp", "pressure", "swdown", "lwdown"))
 
 ## Set the output filename(s) structure and path(s) 
 mgsetOutName("output/<VAR>/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = TRUE)

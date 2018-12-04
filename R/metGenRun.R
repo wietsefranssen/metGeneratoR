@@ -61,15 +61,15 @@ metGenRun <- function() {
     # /*************************************************
     #   Shortwave radiation
     # *************************************************/
-    if (!is.null(outData$shortwave)) {
-      if(metGen$metadata$inVars$shortwave$enabled) {
+    if (!is.null(outData$swdown)) {
+      if(metGen$metadata$inVars$swdown$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
           radfrac <- rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$lonlatbox)
-          shortwave_day <- apply(inData$shortwave, c(1,2), mean)
-          for(i in 1:maxStep) outData$shortwave[, , outrecs[i]] <- radfrac[ , , outrecs[i]] * shortwave_day
+          swdown_day <- apply(inData$swdown, c(1,2), mean)
+          for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- radfrac[ , , outrecs[i]] * swdown_day
         } else { ## aggregate to lower number of timesteps
-          outData$shortwave[]<-0
-          for(i in 1:maxStep) outData$shortwave[, , outrecs[i]] <- outData$shortwave[, , outrecs[i]] + ( inData$shortwave[, , inrecs[i]] /  (nInStep/nOutStep) )
+          outData$swdown[]<-0
+          for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- outData$swdown[, , outrecs[i]] + ( inData$swdown[, , inrecs[i]] /  (nInStep/nOutStep) )
         }
       }
     }    
@@ -77,13 +77,13 @@ metGenRun <- function() {
     # /*************************************************
     #   Longwave radiation
     # *************************************************/
-    if (!is.null(outData$longwave)) {
-      if(metGen$metadata$inVars$longwave$enabled) {
+    if (!is.null(outData$lwdown)) {
+      if(metGen$metadata$inVars$lwdown$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
-          for(i in 1:maxStep) outData$longwave[, ,outrecs[i]] <- inData$longwave[, , inrecs[i]]
+          for(i in 1:maxStep) outData$lwdown[, ,outrecs[i]] <- inData$lwdown[, , inrecs[i]]
         } else { ## aggregate to lower number of timesteps
-          outData$longwave[] <- 0
-          for(i in 1:maxStep) outData$longwave[, , outrecs[i]] <- outData$longwave[, , outrecs[i]] + ( inData$longwave[, , inrecs[i]] / (nInStep/nOutStep) )
+          outData$lwdown[] <- 0
+          for(i in 1:maxStep) outData$lwdown[, , outrecs[i]] <- outData$lwdown[, , outrecs[i]] + ( inData$lwdown[, , inrecs[i]] / (nInStep/nOutStep) )
         }
       }
     }

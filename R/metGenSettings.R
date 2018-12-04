@@ -106,8 +106,8 @@ mgsetOutVars <- function(varnames) {
     metGen$settings$outVars <- NULL
     for (var in varnames) {
       ## Check input variables
-      if (var == "shortwave" && !metGen$metadata$inVars$shortwave$enabled) {
-        stop(paste0("Shortwave output can only be generated if shortwave is provided as input\nOn the moment, only the following input variables are defined: ", paste(names(metGen$settings$inVars), collapse=", "), "\n"), call. = FALSE)
+      if (var == "swdown" && !metGen$metadata$inVars$swdown$enabled) {
+        stop(paste0("swdown output can only be generated if swdown is provided as input\nOn the moment, only the following input variables are defined: ", paste(names(metGen$settings$inVars), collapse=", "), "\n"), call. = FALSE)
       }
       if (var == "pr") {
         errmess <- paste0("Precipitation output can only be generated if:\n", 
@@ -205,12 +205,12 @@ mgsetInitMetadata <- function() {
     tas        = list(input_units = "", internal_units  = "Celsius"),  # average air temperature 
     tasmin     = list(input_units = "", internal_units  = "Celsius"),  # minimum air temperature 
     tasmax     = list(input_units = "", internal_units  = "Celsius"),  # maximum air temperature 
-    shortwave  = list(input_units = "", internal_units  = "W m-2"),    # shortwave radiation 
+    swdown     = list(input_units = "", internal_units  = "W m-2"),    # shortwave radiation 
     vp         = list(input_units = "", internal_units  = "kPa"),      # near surface vapor pressure 
     relhum     = list(input_units = "", internal_units  = "% / 0.01"), # relative humidity  ## relhum needs to be fraction. Because fraction does not extist in udunits  we call it "% / 0.01"
     # relhum     = list(input_units = "", internal_units  = "fraction"), # relative humidity 
     qair       = list(input_units = "", internal_units  = "kg/kg"),   # near surface specific humidity 
-    longwave   = list(input_units = "", internal_units  = "W m-2"),   # longwave radiation 
+    lwdown     = list(input_units = "", internal_units  = "W m-2"),   # longwave radiation 
     pressure   = list(input_units = "", internal_units  = "kPa"),     # near surface atmospheric pressure 
     wind       = list(input_units = "", internal_units  = "m s-1")    # near surface wind speed
   )
@@ -221,8 +221,8 @@ mgsetInitMetadata <- function() {
     tas        = list(filename = "", enable = FALSE, internal_units = "C",         output_units = "C",         longName = "air temperature"),
     tasmin     = list(filename = "", enable = FALSE, internal_units = "C",         output_units = "C",         longName = "minimum air temperature"),
     tasmax     = list(filename = "", enable = FALSE, internal_units = "C",         output_units = "C",         longName = "maximum air temperature"),
-    shortwave  = list(filename = "", enable = FALSE, internal_units = "W m-2",     output_units = "W m-2",     longName = "incoming shortwave"),
-    longwave   = list(filename = "", enable = FALSE, internal_units = "W m-2",     output_units = "W m-2",     longName = "incoming longwave"),
+    swdown     = list(filename = "", enable = FALSE, internal_units = "W m-2",     output_units = "W m-2",     longName = "incoming shortwave"),
+    lwdown     = list(filename = "", enable = FALSE, internal_units = "W m-2",     output_units = "W m-2",     longName = "incoming longwave"),
     pressure   = list(filename = "", enable = FALSE, internal_units = "kPa",       output_units = "kPa",       longName = "near surface atmospheric pressure"),
     qair       = list(filename = "", enable = FALSE, internal_units = "kg kg-1",   output_units = "kg kg-1",   longName = "specific humidity"),
     vp         = list(filename = "", enable = FALSE, internal_units = "kPa",       output_units = "kPa",       longName = "near surface vapor pressure"),
@@ -245,8 +245,8 @@ mgsetInitInternal <- function() {
   metGen$internal$ncFileNameTasmin     <- system.file("extdata", "tasmin_19500101_19500131.nc4",  package = "metGeneratoR")
   metGen$internal$ncFileNameTasmax     <- system.file("extdata", "tasmax_19500101_19500131.nc4",  package = "metGeneratoR")
   metGen$internal$ncFileNamePs         <- system.file("extdata", "ps_19500101_19500131.nc4",      package = "metGeneratoR")
-  metGen$internal$ncFileNameShortwave  <- system.file("extdata", "rsds_19500101_19500131.nc4",    package = "metGeneratoR")
-  metGen$internal$ncFileNameLongwave   <- system.file("extdata", "rlds_19500101_19500131.nc4",    package = "metGeneratoR")
+  metGen$internal$ncFileNameswdown     <- system.file("extdata", "rsds_19500101_19500131.nc4",    package = "metGeneratoR")
+  metGen$internal$ncFileNamelwdown     <- system.file("extdata", "rlds_19500101_19500131.nc4",    package = "metGeneratoR")
   metGen$internal$ncFileNameRelhum     <- system.file("extdata", "hurs_19500101_19500131.nc4",    package = "metGeneratoR")
   metGen$internal$ncFileNameWind       <- system.file("extdata", "sfcWind_19500101_19500131.nc4", package = "metGeneratoR")
 }

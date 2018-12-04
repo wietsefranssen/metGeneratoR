@@ -105,13 +105,13 @@ metGenRun <- function() {
     # /**************************************
     #   Atmospheric Pressure (Pa)
     # **************************************/
-    if (!is.null(outData$pressure)) {
-      if(metGen$metadata$inVars$pressure$enabled) {
+    if (!is.null(outData$psurf)) {
+      if(metGen$metadata$inVars$psurf$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
-          for(i in 1:maxStep) outData$pressure[, ,outrecs[i]] <- inData$pressure[, , inrecs[i]]
+          for(i in 1:maxStep) outData$psurf[, ,outrecs[i]] <- inData$psurf[, , inrecs[i]]
         } else { ## aggregate to lower number of timesteps
-          outData$pressure[] <- 0
-          for(i in 1:maxStep) outData$pressure[, , outrecs[i]] <- outData$pressure[, , outrecs[i]] + ( inData$pressure[, , inrecs[i]] / (nInStep/nOutStep) )
+          outData$psurf[] <- 0
+          for(i in 1:maxStep) outData$psurf[, , outrecs[i]] <- outData$psurf[, , outrecs[i]] + ( inData$psurf[, , inrecs[i]] / (nInStep/nOutStep) )
         }
       }
     }
@@ -174,10 +174,10 @@ metGenRun <- function() {
     # }
     # if(!is.null(metGen$settings$inVars$qair) && !is.null(outData$vp)) {
     #   for(rec in 1:metGen$derived$nOutStepDay) {
-    #     # outData$vp[,,rec] <- inData$qair[,,1] * inData$pressure[,,1]  / metGen$constants$EPS
-    #     # outData$vp[,,rec] <- mg_sh2vp(inData$qair[,,1], outData$tas[,,rec], inData$pressure[,,1])
-    #     # outData$vp[,,rec] <- sh2vp(inData$qair[,,1], inData$pressure[,,1])
-    #     outData$vp[,,rec] <- sh2vp(inData$qair[,,1], inData$pressure[,,1])
+    #     # outData$vp[,,rec] <- inData$qair[,,1] * inData$psurf[,,1]  / metGen$constants$EPS
+    #     # outData$vp[,,rec] <- mg_sh2vp(inData$qair[,,1], outData$tas[,,rec], inData$psurf[,,1])
+    #     # outData$vp[,,rec] <- sh2vp(inData$qair[,,1], inData$psurf[,,1])
+    #     outData$vp[,,rec] <- sh2vp(inData$qair[,,1], inData$psurf[,,1])
     #   }
     # }
     if (!is.null(outData$vp)) {
@@ -192,12 +192,12 @@ metGenRun <- function() {
               ( set_vp_cr(outData$tas[, ,outrecs[i]], inData$relhum[, , inrecs[i]], metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay) / 
                   (nInStep/nOutStep) )
         }
-      } else if(metGen$metadata$inVars$qair$enabled && metGen$metadata$inVars$pressure$enabled) {
+      } else if(metGen$metadata$inVars$qair$enabled && metGen$metadata$inVars$psurf$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
-          for(i in 1:maxStep) outData$vp[,,outrecs[i]] <- sh2vp(inData$qair[,,inrecs[i]], inData$pressure[,,inrecs[i]])
+          for(i in 1:maxStep) outData$vp[,,outrecs[i]] <- sh2vp(inData$qair[,,inrecs[i]], inData$psurf[,,inrecs[i]])
         } else { ## aggregate to lower number of timesteps
           outData$vp[] <- 0
-          for(i in 1:maxStep) outData$vp[, , outrecs[i]] <- outData$vp[, , outrecs[i]] +  ( sh2vp(inData$qair[,,inrecs[i]], inData$pressure[,,inrecs[i]]) /  (nInStep/nOutStep) )
+          for(i in 1:maxStep) outData$vp[, , outrecs[i]] <- outData$vp[, , outrecs[i]] +  ( sh2vp(inData$qair[,,inrecs[i]], inData$psurf[,,inrecs[i]]) /  (nInStep/nOutStep) )
         }
       } else if(metGen$metadata$inVars$vp$enabled) {
             if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps

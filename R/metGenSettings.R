@@ -211,7 +211,7 @@ mgsetInitMetadata <- function() {
     # relhum     = list(input_units = "", internal_units  = "fraction"), # relative humidity 
     qair       = list(input_units = "", internal_units  = "kg/kg"),   # near surface specific humidity 
     lwdown     = list(input_units = "", internal_units  = "W m-2"),   # longwave radiation 
-    pressure   = list(input_units = "", internal_units  = "kPa"),     # near surface atmospheric pressure 
+    psurf   = list(input_units = "", internal_units  = "kPa"),     # near surface atmospheric pressure 
     wind       = list(input_units = "", internal_units  = "m s-1")    # near surface wind speed
   )
   
@@ -223,7 +223,7 @@ mgsetInitMetadata <- function() {
     tasmax     = list(filename = "", enable = FALSE, internal_units = "C",         output_units = "C",         longName = "maximum air temperature"),
     swdown     = list(filename = "", enable = FALSE, internal_units = "W m-2",     output_units = "W m-2",     longName = "incoming shortwave"),
     lwdown     = list(filename = "", enable = FALSE, internal_units = "W m-2",     output_units = "W m-2",     longName = "incoming longwave"),
-    pressure   = list(filename = "", enable = FALSE, internal_units = "kPa",       output_units = "kPa",       longName = "near surface atmospheric pressure"),
+    psurf      = list(filename = "", enable = FALSE, internal_units = "kPa",       output_units = "kPa",       longName = "near surface atmospheric pressure"),
     qair       = list(filename = "", enable = FALSE, internal_units = "kg kg-1",   output_units = "kg kg-1",   longName = "specific humidity"),
     vp         = list(filename = "", enable = FALSE, internal_units = "kPa",       output_units = "kPa",       longName = "near surface vapor pressure"),
     # relhum     = list(filename = "", enable = FALSE, internal_units = "%",         output_units = "%",         longName = "relative humidity"),

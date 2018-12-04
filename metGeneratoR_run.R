@@ -22,7 +22,7 @@ mgsetInVars(list(
   pr         = list(ncname = "pr",      filename = "../example_data4mtclim/Global/pr_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   tasmin     = list(ncname = "tasmin",  filename = "../example_data4mtclim/Global/tasmin_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   tasmax     = list(ncname = "tasmax",  filename = "../example_data4mtclim/Global/tasmax_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
-  pressure   = list(ncname = "ps",      filename = "../example_data4mtclim/Global/ps_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
+  psurf      = list(ncname = "ps",      filename = "../example_data4mtclim/Global/ps_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   # relhum     = list(ncname = "hurs",    filename = "../example_data4mtclim/Global/hurs_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
   qair       = list(ncname = "Qair",    filename = "../example_data4mtclim/Qair_1998.nc"),
   swdown     = list(ncname = "rsds",    filename = "../example_data4mtclim/Global/rsds_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_1998.nc"),
@@ -33,7 +33,7 @@ mgsetInVars(list(
 mgsetInDt(inDt = 24)
 mgsetOutDt(outDt = 6)
 
-mgsetOutVars(c("swdown", "lwdown", "tas", "pr", "pressure", "wind", "vp"))
+mgsetOutVars(c("swdown", "lwdown", "tas", "pr", "psurf", "wind", "vp"))
 # mgsetOutVars(c( "swdown"))
 mgsetOutVars(c( "tas"))
 # mgsetOutVars(c( "pr"))

@@ -92,7 +92,11 @@ mgcheckInVars <- function() {
     
     metGen$metadata$inVars[[var]]$input_units <- unitIn
     
-    convertUnit(data = NULL, metGen$metadata$inVars[[var]]$input_units, metGen$metadata$inVars[[var]]$internal_units, verbose = T, doConversion = F)
+    convertUnit(data = NULL,
+                metGen$metadata$inVars[[var]]$input_units,
+                metGen$metadata$inVars[[var]]$internal_units,
+                metGen$settings$inDt,
+                verbose = T, doConversion = F)
     printf("\n")
   }
 }
@@ -100,7 +104,11 @@ mgcheckOutVars <- function() {
   for (var in names(metGen$settings$outVar)) {
     printf("Checking output variable \"%s\". ", var)
 
-    convertUnit(outData[[var]], metGen$metadata$outVars[[var]]$internal_units, metGen$metadata$outVars[[var]]$output_units, verbose = T, doConversion = F)
+    convertUnit(outData[[var]], 
+                metGen$metadata$outVars[[var]]$internal_units, 
+                metGen$metadata$outVars[[var]]$output_units,
+                metGen$settings$outDt,
+                verbose = T, doConversion = F)
     
     printf("\n")
   }
@@ -118,14 +126,15 @@ readAllForcing <- function(date) {
     
     forcing_dataR[[var]] <- convertUnit(forcing_dataR[[var]],
                                         metGen$metadata$inVars[[var]]$input_units,
-                                        metGen$metadata$inVars[[var]]$internal_units)
+                                        metGen$metadata$inVars[[var]]$internal_units,
+                                        metGen$settings$inDt)
   }
   
   return(forcing_dataR)
 }
 
 #' @export
-convertUnit <- function(data, unitIn, unitOut, verbose = F, doConversion = T) {
+convertUnit <- function(data, unitIn, unitOut, dt = 24, verbose = F, doConversion = T) {
   if (!unitIn == unitOut) {
     if (ud.are.convertible(unitIn, unitOut)) {
       if (verbose) printf("\"%s\" will be converted to \"%s\". ", unitIn, unitOut)
@@ -136,7 +145,7 @@ convertUnit <- function(data, unitIn, unitOut, verbose = F, doConversion = T) {
         if (doConversion) {
           # print(data[5:10,312:315,1])
           # data[] <- ud.convert(data[],unitIn,unitOut)
-          data[] <- data[] * 3600 * metGen$settings$outDt
+          data[] <- data[] * (3600 * dt)
           # print(data[5:10,312:315,1])
         }
       } else if (unitIn == "mm" && unitOut == "mm s-1") {
@@ -144,7 +153,7 @@ convertUnit <- function(data, unitIn, unitOut, verbose = F, doConversion = T) {
         if (doConversion) {
           # print(data[5:10,312:315,1])
           # data[] <- ud.convert(data[],unitIn,unitOut)
-          data[] <- data[] / (3600 * metGen$settings$outDt)
+          data[] <- data[] / (3600 * dt)
           # print(data[5:10,312:315,1])
         }
       } else {

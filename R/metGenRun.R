@@ -213,7 +213,10 @@ metGenRun <- function() {
     
     ## Convert to desired output unit
     for (var in names(metGen$settings$outVars)) {
-      outData[[var]] <- convertUnit(outData[[var]], metGen$metadata$outVars[[var]]$internal_units, metGen$metadata$outVars[[var]]$output_units)
+      outData[[var]] <- convertUnit(outData[[var]], 
+                                    metGen$metadata$outVars[[var]]$internal_units, 
+                                    metGen$metadata$outVars[[var]]$output_units,
+                                    metGen$settings$outDt)
     }
     
     ## ADD OUTPUT TO NETCDF

@@ -1,7 +1,7 @@
 Package: metGeneratoR
 Type: Package
 Title: metGeneratoR
-Version: 1.1
+Version: 1.1.1
 Date: 2019-02-19
 Author: Wietse Franssen
 Maintainer: Wietse Franssen <wietse.franssen@wur.nl>

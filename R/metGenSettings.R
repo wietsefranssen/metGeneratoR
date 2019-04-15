@@ -188,7 +188,7 @@ mgsetInitSettings <- function() {
   metGen$settings <- NULL
   metGen$settings$startDate <- NULL
   metGen$settings$endDate <- NULL
-  
+  metGen$settings$timeUnitsName <- "units"
   mgsetInDt(24) # Set N hours per timestep
   mgsetOutDt(6) # Set N hours per timestep
 }

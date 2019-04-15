@@ -57,7 +57,7 @@ mgcheckInVars <- function() {
     printf("Checking input variable \"%s\". ", var)
     ## Open the netcdf file
     ncFile <- nc_open( metGen$settings$inVars[[var]]$filename )
-    attTmp <- ncatt_get( ncFile, metGen$settings$inVars[[var]]$ncname, "units" )
+    attTmp <- ncatt_get( ncFile, metGen$settings$inVars[[var]]$ncname, metGen$settings$timeUnitsName )
     if (attTmp$hasatt == TRUE) {
       metGen$metadata$inVars[[var]]$input_units <- attTmp$value
     } else {
@@ -204,18 +204,30 @@ ncLoad <- function(filename, var, lonlatbox, date = NULL) {
     
     time_index <- which(format(times, "%Y-%m-%d") == format(date, "%Y-%m-%d"))
     
-    dataset <- nc.get.var.subset.by.axes(ncid, var,
-                                         axis.indices = list(X = lon_index, 
-                                                             Y = lat_index,
-                                                             T = time_index)
-                                         # axes.map = c(3,2,1)
-    )
+    if (metGen$settings$uselessDim) {
+      axis.indices <- list(X = lon_index, 
+                          Y = lat_index,
+                          Z = 1,
+                          T = time_index)
+    } else {
+      axis.indices <- list(X = lon_index, 
+                           Y = lat_index,
+                           T = time_index)
+    } 
   } else {
-    dataset <- nc.get.var.subset.by.axes(ncid, var,
-                                         axis.indices = list(X = lon_index, 
-                                                             Y = lat_index,
-                                                             T = 1))
+    if (metGen$settings$uselessDim) {
+      axis.indices <- list(X = lon_index, 
+                           Y = lat_index,
+                           Z = 1,
+                           T = 1)
+    } else {
+      axis.indices <- list(X = lon_index, 
+                           Y = lat_index,
+                           T = 1)
+    } 
   }
+  dataset <- nc.get.var.subset.by.axes(ncid, var,
+                                       axis.indices = axis.indices)
   nc_close(ncid)
   
   ## Flip if needed

@@ -191,6 +191,7 @@ ncLoad <- function(filename, var, lonlatbox, date = NULL) {
     # tas <- tas[ , lat_index, ]
   }
   
+  
   if (!is.null(date)) {
     ## TODO Move this part to a general part like check input data
     ## mgsetInDt(inDt = 3) this function can then also be filled automatically
@@ -204,15 +205,18 @@ ncLoad <- function(filename, var, lonlatbox, date = NULL) {
     
     time_index <- which(format(times, "%Y-%m-%d") == format(date, "%Y-%m-%d"))
     
+    dataset <- array(NA,dim=c(length(lons),length(lats),length(time_index)))
     if (metGen$settings$uselessDim) {
       axis.indices <- list(X = lon_index, 
                           Y = lat_index,
                           Z = 1,
                           T = time_index)
+      dataset[,,] <- nc.get.var.subset.by.axes(ncid, var, axis.indices = axis.indices)[,,1,]
     } else {
       axis.indices <- list(X = lon_index, 
                            Y = lat_index,
                            T = time_index)
+      dataset <- nc.get.var.subset.by.axes(ncid, var, axis.indices = axis.indices)
     } 
   } else {
     if (metGen$settings$uselessDim) {
@@ -220,14 +224,14 @@ ncLoad <- function(filename, var, lonlatbox, date = NULL) {
                            Y = lat_index,
                            Z = 1,
                            T = 1)
+      dataset[,,] <- nc.get.var.subset.by.axes(ncid, var, axis.indices = axis.indices)[,,1,]
     } else {
       axis.indices <- list(X = lon_index, 
                            Y = lat_index,
                            T = 1)
+      dataset <- nc.get.var.subset.by.axes(ncid, var, axis.indices = axis.indices)
     } 
   }
-  dataset <- nc.get.var.subset.by.axes(ncid, var,
-                                       axis.indices = axis.indices)
   nc_close(ncid)
   
   ## Flip if needed

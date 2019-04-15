@@ -11,10 +11,14 @@ Start R and run the following commands:
 
     library(devtools)
     install_git("https://github.com/wietsefranssen/metGeneratoR")
-
+    
 ## Loading
 
     library(metGeneratoR)
+
+## Check version
+
+    packageVersion("metGeneratoR")
 
 ## Help
 

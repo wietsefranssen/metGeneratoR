@@ -16,10 +16,15 @@ mgcheckVariables <- function() {
 }
 
 #' @export
+mgsetInRes <- function(inRes) {
+  metGen$derived$inRes <- metGen$settings$inRes <- inRes
+}
+
+#' @export
 mgsetLonlatbox <- function(lonlatbox) {
   metGen$settings$lonlatbox <- lonlatbox
-  metGen$settings$x <- seq(lonlatbox[1],lonlatbox[2], 0.5)
-  metGen$settings$y <- seq(lonlatbox[3],lonlatbox[4], 0.5)
+  metGen$settings$x <- seq(lonlatbox[1],lonlatbox[2], metGen$settings$inRes)
+  metGen$settings$y <- seq(lonlatbox[3],lonlatbox[4], metGen$settings$inRes)
   metGen$settings$nx <- length(metGen$settings$x)
   metGen$settings$ny <- length(metGen$settings$y)
 }
@@ -46,6 +51,11 @@ mgsetOutDt <- function(outDt) {
   {
     mgsetPeriod(metGen$settings$startDate, metGen$settings$endDate)
   }
+}
+
+#' @export
+mgsetInRes <- function(inRes) {
+  metGen$derived$inRes <- metGen$settings$inRes <- inRes
 }
 
 #' @export

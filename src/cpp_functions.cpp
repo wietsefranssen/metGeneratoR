@@ -189,7 +189,7 @@ int rad_fract_lats_c(double **rad_fract_map, int nt, int yday, float slat, float
   
   // float slat = -89.75;
   // float elat = 89.75;
-  float reslat = 0.5;
+  float reslat = 0.25;
   float lat;
   int ny, iy;
   int it;
@@ -200,7 +200,7 @@ int rad_fract_lats_c(double **rad_fract_map, int nt, int yday, float slat, float
   double *rad_fract = (double*)malloc(nt * sizeof(double));
   
   for (iy = 0; iy < ny; iy++) {
-    lat = slat + ((iy)*0.5);
+    lat = slat + ((iy)*0.25);
     
     // run the function
     solar_geom_c(rad_fract, lat, yday, nt);

@@ -65,6 +65,14 @@ metGenRun <- function() {
       if(metGen$metadata$inVars$swdown$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
           radfrac <- rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$lonlatbox)
+          print(dim(radfrac))
+          print(yday)
+          par(mfrow=c(2,2))
+          image(radfrac[,,1])
+          image(radfrac[,,2])
+          image(radfrac[,,3])
+          image(radfrac[,,4])
+          
           swdown_day <- apply(inData$swdown, c(1,2), mean)
           for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- radfrac[ , , outrecs[i]] * swdown_day
         } else { ## aggregate to lower number of timesteps

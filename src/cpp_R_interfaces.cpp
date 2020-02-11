@@ -98,14 +98,14 @@ NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx) {
 
 // [[Rcpp::export]]
 NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec, NumericVector lonlatbox) {
-  float reslon = 0.5;
+  float reslon = 0.25;
   float lon;
   int nx, ix;
   float slon = lonlatbox[0];
   float elon = lonlatbox[1];
   float slat = lonlatbox[2];
   float elat = lonlatbox[3];
-  float reslat = 0.5;
+  float reslat = 0.25;
   float lat;
   int ny, iy;
   // int nt;
@@ -127,7 +127,7 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   // double tmin_hour_ix;
   // double tmax_hour_ix;
   // nt = nx;
-  nTinyStepsPerDay = 360 / reslon; // 360 degress in lon direction
+  nTinyStepsPerDay = 720 / reslon; // 720 degress in lon direction
   
   // double *radfrac_c = (double*)malloc(nx * sizeof(double));
   double tmin_hour = -999;
@@ -164,21 +164,21 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
       tmax_hour = 16;
     } 
     if (lat >= 0 && tmin_hour == 99) {
-      tmin_hour = 11 - (24/(360/reslat));
-      tmax_hour = 12 + (24/(360/reslat));
+      tmin_hour = 11 - (48/(720/reslat));
+      tmax_hour = 12 + (48/(720/reslat));
     }
-    float iXoffset = (slon - -179.75) / reslon;
+    float iXoffset = (slon - (-180 + (0.25/2))) / reslon;
     
     // printf("iy: %d, tmin: %f, tmax: %f, radfrac: %f\n", iy, tmin_hour, tmax_hour, sum);
     for (ix = 0; ix < nx; ix++) {
       lon = slon + (ix*reslon);
-      ix_offset = (lon / 0.5) - 0.5;
+      ix_offset = (lon / 0.25) - 0.25;
       // float iXoffset = (slon - -179.75) / reslon;
-      tmin_hour_new = tmin_hour - (24.0/(float)nTinyStepsPerDay * (float)ix_offset);
+      tmin_hour_new = tmin_hour - (48.0/(float)nTinyStepsPerDay * (float)ix_offset);
       // printf("ix_offset: %d, iXoffset: %f\n", ix_offset,iXoffset);
-      // if (tmin_hour_new<0) tmin_hour_new +=24;
-      tmax_hour_new = tmax_hour - (24.0/(float)nTinyStepsPerDay * (float)ix_offset);
-      // if (tmax_hour_new<0) tmax_hour_new +=24;
+      // if (tmin_hour_new<0) tmin_hour_new +=48;
+      tmax_hour_new = tmax_hour - (48.0/(float)nTinyStepsPerDay * (float)ix_offset);
+      // if (tmax_hour_new<0) tmax_hour_new +=48;
       // if (iy == 200)
       // printf("blaat: lon: %5.2f, iy: %d, ix: %d, ix_offset: %d, tmin: %f, tmax: %f, tminhour: %f\n", lon, iy, ix, ix_offset,tmin_hour_new, tmax_hour_new, tmin_hour);
       
@@ -241,14 +241,14 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   double gmt_float_tmp;
   size_t count;
   
-  float reslon = 0.5;
-  float reslat = 0.5;
+  float reslon = 0.25;
+  float reslat = 0.25;
   float slon = lonlatbox[0];
   float elon = lonlatbox[1];
   float slat = lonlatbox[2];
   float elat = lonlatbox[3];
   
-  nTinyStepsPerDay = 360 / reslon; // 360 degress in lon direction
+  nTinyStepsPerDay = 360 / reslon; // 720 degress in lon direction
   dt = nTinyStepsPerDay / nrec;
   ny = ((elat - slat) / reslat) + 1;
   nx = ((elon - slon) / reslon) + 1;
@@ -299,13 +299,13 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   if (gmt_float < 0) gmt_float = gmt_float + nTinyStepsPerDay;
   
   // ## Define the index offset based on the gmt offset
-  gmt_float_tmp = gmt_float * (nTinyStepsPerDay/24);
-  iGmtOffset = gmt_float_tmp + ((24/nrec) * -15 + 360);
+  gmt_float_tmp = gmt_float * (nTinyStepsPerDay/48);
+  iGmtOffset = gmt_float_tmp + ((48/nrec) * -15 + 720);
   if (iGmtOffset < 0) iGmtOffset = iGmtOffset + nTinyStepsPerDay;
   // printf("gmt: %d\n", iGmtOffset);
   
   // iXoffset is for a smaller domain...
-  float iXoffset = (slon - -179.75) / reslon;
+  float iXoffset = (slon - (-180 + (0.25/2))) / reslon;
   for (ix = 0; ix < nx; ix++) {
     // idx = (floor((float)ix * ( (float)nTinyStepsPerDay / (float)nx) )) + iGmtOffset;
     idx = floor((float)ix) + iGmtOffset + ((float)1 * (float)iXoffset);
@@ -348,6 +348,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   // }
   
   count = 0;
+  printf("nx: %d, ny: %d\n", nx, ny);
   for (irec = 0; irec < nrec; irec++) {
     for (iy = 0; iy < ny; iy++) {
       for (ix = 0; ix < nx; ix++) {
@@ -376,9 +377,15 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
 // [[Rcpp::export]]
 NumericVector rad_map_lats_cr(int nt, int yday) {
   // Define and allocate
-  float slat = -89.75;
-  float elat = 89.75;
-  float reslat = 0.5;
+//  float slat = -89.75;
+//  float elat = 89.75;
+//  float reslat = 0.25;
+  float slat = -90;
+  float elat = 90;
+  float reslat = 0.25;
+  slat = slat + (reslat/2);
+  elat = elat - (reslat/2);
+
   int ny, iy;
   int it;
   

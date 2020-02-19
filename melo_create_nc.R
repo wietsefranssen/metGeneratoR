@@ -1,4 +1,3 @@
-rm(list = ls())
 source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions.R")
 
 library(ncdf4)
@@ -6,6 +5,7 @@ library(ncdf4.helpers)
 library(units)
 library(lubridate)
 library(ncmeta)
+library(proj4)
 
 # inFile <- "~/sw_1day.nc"
 # varname <- "SWdown"
@@ -21,19 +21,12 @@ outFile <- "~/Dest.nc"
 timezone <- 1
 nhourly <- 6
 
-doRad <- F
-doPr <- T
-file.remove(outFile)
-
-
 ncid_in<-nc_open(inFile, write = F)
 if (fileType == "regulairLatlon") {
   inlons <- ncvar_get(ncid_in,"lon")
   nx <- length(inlons)
-  #inlonsatt <- ncatt_get(ncid_in,"lon")
   inlats <- ncvar_get(ncid_in,"lat")
   ny <- length(inlats)
-  #inlatsatt <- ncatt_get(ncid_in,"lat")
   ## Make d2 lon and lat arrays
   ## First based on 1d lon lat files:
   lon_1d <- inlons
@@ -55,89 +48,36 @@ if (fileType == "regulairLatlon") {
   inlats <- ncvar_get(ncid_in,"y")
   ny <- ncid_in$dim$y$len
   indataatt <- ncatt_get(ncid_in,varname)
-  # incoord <- ncvar_get(ncid_in,"lambert_azimuthal_equal_area")
-  # incoordatt <- ncatt_get(ncid_in,"lambert_azimuthal_equal_area")
   ingridmapping <- nc_grid_mapping_atts(inFile)
   proj4string <- suppressWarnings(nc_gm_to_prj(ingridmapping))
+  proj4varname <- ingridmapping$variable[1]
+  x_2d <- array(data = NA, dim = c(nx,ny))
+  y_2d <- array(data = NA, dim = c(nx,ny))
+  for (ix in 1:nx) x_2d[ix,] <- inlons[ix]  
+  for (iy in 1:ny) y_2d[,iy] <- inlats[iy]  
+  x_1d <- as.vector(x_2d)
+  y_1d <- as.vector(y_2d)
+  xy <- data.frame(x=x_1d, y=y_1d)
+  
+  ## Transformed data
+  pj <- proj4::project(xy, proj4string, inverse=TRUE)
+  pj_lon <- pj$x
+  dim(pj_lon) <- c(nx,ny)
+  pj_lat <- pj$y
+  dim(pj_lat) <- c(nx,ny)
+  lat_2d <- pj_lat
+  lon_2d <- pj_lon
 } else {
   stop("fileType not regonised")
 }
-
-
-x_2d <- array(data = NA, dim = c(nx,ny))
-y_2d <- array(data = NA, dim = c(nx,ny))
-for (ix in 1:nx) x_2d[ix,] <- inlons[ix]  
-for (iy in 1:ny) y_2d[,iy] <- inlats[iy]  
-
-x_1d <- as.vector(x_2d)
-y_1d <- as.vector(y_2d)
-
-
-library(proj4)
-# incoord
-# proj4string <- "+proj=utm +zone=19 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs "
-# nc_gm_to_prj.list(incoord)
-# proj4string <-"+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs"
-# Source data
-# xy <- data.frame(x=354521, y=7997417.8)
-xy <- data.frame(x=x_1d, y=y_1d)
-
-# Transformed data
-pj <- proj4::project(xy, proj4string, inverse=TRUE)
-# pj <- ?project(xy, proj4string, inv=TRUE)
-# lonnn <- array(pj['x'], dim = c(nx,ny))
-pj_lon <- pj$x
-dim(pj_lon) <- c(nx,ny)
-pj_lat <- pj$y
-dim(pj_lat) <- c(nx,ny)
-
-lat_2d <- pj_lat
-lon_2d <- pj_lon
-#latlon <- data.frame(lat=pj$y, lon=pj$x)
-#print(latlon)
-
-
-
 intimes <- ncvar_get(ncid_in,"time")
-#intimesatt <- ncatt_get(ncid_in,"time")
 ts <- nc.get.time.series(ncid_in)
 indata <- ncvar_get(ncid_in, varname)
-#indataatt <- ncatt_get(ncid_in,varname)
 nc_close(ncid_in)
-
 
 ## Define target dates
 dates <- seq(ts, by = paste(nhourly, "hours"), length = (24 / nhourly) * length(ts))
 
-## Do calculation
-## Radiation
-if (doRad) {
-  dataOut <- array(NA, dim=c(nx, ny, (24 / nhourly)))
-  iy<-1
-  for (iy in 1:ny) {
-    ix<-1
-    lat <- lat_2d[ix,iy]
-    print(paste(iy,lat))
-    for (ix in 1:nx) {
-      lon <- lon_2d[ix,iy]
-      dataOut [ix,iy,] <- disaggregate_radiation(radiation=indata[ix,iy],date=dates,lon=lon,lat=lat,timezone=timezone)
-    }
-  }
-}
-
-if (doPr) {
-  dataOut <- array(NA, dim=c(nx, ny, (24 / nhourly)))
-  iy<-1
-  for (iy in 1:ny) {
-    ix<-1
-    lat <- lat_2d[ix,iy]
-    # print(paste(iy,lat))
-    for (ix in 1:nx) {
-      lon <- lon_2d[ix,iy]
-      dataOut [ix,iy,] <- indata[ix,iy]
-    }
-  }
-}
 
 outTimes <- seq(as.POSIXct(ts[1]), by = paste(nhourly, "hours"), length = (24 / nhourly) * length(ts))
 outTatt <- paste0("hours since ", outTimes[1])
@@ -170,14 +110,11 @@ if (fileType == "curvilinear_2d") {
   ncid_out <- nc_create( outFile, list(varLat,varLon,varLatBnds,varLonBnds,varData) )
 } else if (fileType == "xy") {
   print("add xy2")
-  # varLat <- ncvar_def(name='y', units='degrees_north', dim=list(dimX,dimY), missval=NA, prec='double')
-  #  varLon <- ncvar_def(name='x', units='degrees_east', dim=list(dimX,dimY), missval=NA, prec='double')
-  varCoord <- ncvar_def(name='lambert_azimuthal_equal_area', dim=list(), units="", prec='integer')
+  varCoord <- ncvar_def(name=proj4varname, dim=list(), units="", prec='integer')
   ncid_out <- nc_create( outFile, list(varCoord, varData) )
 } else {
   ncid_out <- nc_create( outFile, list(varData) )
 }
-
 nc_close(ncid_out)
 
 ## Add data to file
@@ -186,33 +123,17 @@ if (fileType == "curvilinear_2d") {
   print("add curv")
   ncvar_put(ncid_out, varLon, vals = inlons)
   ncvar_put(ncid_out, varLat, vals = inlats)
-  ncvar_put(ncid_out, varData, vals = dataOut)
 } else if (fileType == "xy") {
   print("add xy3")
-  ncvar_put(ncid_out, varData, vals = dataOut)
-  
+
   iattNames<-names(indataatt)
   i <- 1
   for (iatt in indataatt) {
     ncatt_put(ncid_out, varname, iattNames[i], iatt)
     i <- i+1
   }
-  # iattNames<-names(incoordatt)
-  # i <- 1
-  # for (iatt in incoordatt) {
-  #   ncatt_put(ncid_out, 'lambert_azimuthal_equal_area', iattNames[i], iatt)
-  #   i <- i+1
-  # }
-  # iattNames<-ingridmapping$name
-
-  for (i in 1:length(ingridmapping$name)) {
-    ncatt_put(ncid_out, 'lambert_azimuthal_equal_area', ingridmapping$name[[i]], ingridmapping$value[[i]])
-    print(paste( ingridmapping$name[i], ingridmapping$value[[i]]))
-  }
-  
-  # ncatt_put(ncid_out, varname)
-  # indataatt
+  ## add PROJ4 attributes
+  for (i in 1:length(ingridmapping$name)) ncatt_put(ncid_out, proj4varname, ingridmapping$name[[i]], ingridmapping$value[[i]])
 } else {
-  ncvar_put(ncid_out, varData, vals = dataOut)
 }
 nc_close(ncid_out)

@@ -32,7 +32,7 @@
 # otherwise return a Series containing total radiation
 # """
 
-rm(list = ls())
+# rm(list = ls())
 
 library(units)
 library(lubridate)

@@ -1,77 +1,69 @@
+rm(list = ls())
 source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions.R")
-###########################
-dates <- seq(as.POSIXct('2014-01-01 00:00:00'), by = "hours", length = 24)
 
-# potential_radiation(date=c('2014-01-01 12:00:00','2014-01-01 13:00:00'),lon=8.86,lat= 51.00,timezone=1)
-# rad_hour <- disaggregate_radiation(radiation=10.6625,date=dates,lon=8.86,lat= 51.00,timezone=1)
-
-### Read netcdf
 library(ncdf4)
-ncid<-nc_open("~/sw_1day.nc")
-rsds<-ncvar_get(ncid,"SWdown")
-nc_close(ncid)
+library(ncdf4.helpers)
+library(units)
+library(lubridate)
+library(ncmeta)
+library(proj4)
 
-###
-radlats<-array(NA, dim=c(720, 360, 24))
-iy<-1
-for (ilat in seq(-90,89.75,.5)) {
-  ix<-1
-  print(iy)
-  for (ilon in seq(-180,179.75,.5)) {
-    radlats[ix,iy,] <- disaggregate_radiation(radiation=rsds[ix,iy],date=dates,lon=ilon,lat= ilat,timezone=2)
-    # radlats[ix,iy,] <- potential_radiation(dates=dates,lon=ilon,lat= ilat,timezone=1)
-    ix<-ix+1
+# inFile <- "~/sw_1day.nc"
+# varname <- "SWdown"
+# fileType <- "regulairLatlon"
+## cdo setgridtype,curvilinear pr_19900101_efas.nc pr_19900101_efas_curv.nc
+# inFile <- "~/pr_19900101_efas_curv.nc"
+# varname <- "pr"
+# fileType <- "curvilinear_2d"
+inFile <- "~/pr_19900101_efas.nc"
+varname <- "pr"
+fileType <- "xy"
+outFile <- "~/Dest.nc"
+timezone <- 1
+nhourly <- 6
+
+doRad <- T
+doPr <- F
+
+file.remove(outFile)
+
+## Create NetCDF
+source("/home/wietse/Documents/RProjects/metGeneratoR/melo_create_nc.R")
+
+
+## Define target dates
+dates <- seq(ts, by = paste(nhourly, "hours"), length = (24 / nhourly) * length(ts))
+
+## Do calculation
+## Radiation
+if (doRad) {
+  dataOut <- array(NA, dim=c(nx, ny, (24 / nhourly)))
+  iy<-1
+  for (iy in 1:ny) {
+    ix<-1
+    lat <- lat_2d[ix,iy]
+    print(paste(iy,lat))
+    for (ix in 1:nx) {
+      lon <- lon_2d[ix,iy]
+      dataOut [ix,iy,] <- disaggregate_radiation(radiation=indata[ix,iy],date=dates,lon=lon,lat=lat,timezone=timezone)
+    }
   }
-  iy<-iy+1
 }
 
-ncid<-nc_open("~/sw_3h.nc")
-rsds_3h<-ncvar_get(ncid,"SWdown")
-nc_close(ncid)
-image(rsds_3h[,,1])
-
-mask <- rsds_3h[,,1]
-mask[mask>=0] <- 1
-#image(mask)
-max(rsds_3h[,,1], na.rm = T)
-max(radlats[,,1], na.rm = T)
-
-
-inData <- radlats
-nhourly<-3
-outData <- array(data = 0, dim = c(720,360,(24/nhourly)))
-inrecs <- c(1:24)
-outrecs <- rep(1:(24/nhourly), each = nhourly)
-
-for(i in 1:24) outData[, , outrecs[i]] <- outData[, , outrecs[i]] + inData[, , inrecs[i]]
-for(i in 1:8) outData[, , i] <- (outData[, , i] / 3 ) * mask
-
-
-qq<-seq(1,24,3)
-outData2<-outData
-outData3<-outData
-outData4<-outData
-for (i in 1:8) {
-  outData2[,,i] <- radlats[,,qq[i]]
-  outData3[,,i] <- radlats[,,(qq[i]+1)]
-  outData4[,,i] <- radlats[,,(qq[i]+2)]
+if (doPr) {
+  dataOut <- array(NA, dim=c(nx, ny, (24 / nhourly)))
+  iy<-1
+  for (iy in 1:ny) {
+    ix<-1
+    lat <- lat_2d[ix,iy]
+    for (ix in 1:nx) {
+      lon <- lon_2d[ix,iy]
+      dataOut [ix,iy,] <- indata[ix,iy]
+    }
+  }
 }
 
-ilat <- 200
-ilon <- 360
-pdf(paste0("rplot_",2,".pdf") )
-par(mfrow=c(2,2))
-plot(rsds_3h[ilon,ilat,])
-lines(outData[ilon,ilat,])
-lines(outData2[ilon,ilat,], col = "green")
-lines(outData3[ilon,ilat,], col = "red")
-lines(outData4[ilon,ilat,], col = "blue")
-image(rsds_3h[,,4])
-image(outData[,,4])
-image(radlats[,,11]*mask)
-max(rsds_3h[,,4], na.rm = T)
-max(outData[,,4], na.rm = T)
-max(radlats[,,11]*mask, na.rm = T)
-# Close the pdf file
-dev.off() 
-
+## Add data to file
+ncid_out <- nc_open(outFile, write = T )
+ncvar_put(ncid_out, varData, vals = dataOut)
+nc_close(ncid_out)

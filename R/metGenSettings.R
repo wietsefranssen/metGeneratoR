@@ -16,11 +16,6 @@ mgcheckVariables <- function() {
 }
 
 #' @export
-mgsetInRes <- function(inRes) {
-  metGen$derived$inRes <- metGen$settings$inRes <- inRes
-}
-
-#' @export
 mgsetLonlatbox <- function(lonlatbox) {
   metGen$settings$lonlatbox <- lonlatbox
   metGen$settings$x <- seq(lonlatbox[1],lonlatbox[2], metGen$settings$inRes)

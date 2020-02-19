@@ -5,6 +5,7 @@
 
 using namespace Rcpp;
 
+//' @export
 // [[Rcpp::export]]
 NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, int ny, int nrec) {
   int irec,ix,iy;
@@ -52,6 +53,7 @@ NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, in
   return vp_r; 
 }  
 
+//' @export
 // [[Rcpp::export]]
 NumericVector sh2vp(NumericVector q, NumericVector p) {
   size_t i;
@@ -76,6 +78,7 @@ NumericVector sh2vp(NumericVector q, NumericVector p) {
   return vp;
 }  
 
+//' @export
 // [[Rcpp::export]]
 NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx) {
   NumericVector result(2);
@@ -96,6 +99,7 @@ NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx) {
   return result;
 }
 
+//' @export
 // [[Rcpp::export]]
 NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec, NumericVector lonlatbox) {
   float reslon = 0.25;
@@ -374,6 +378,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   return rad_fract_map_r;
 }
 
+//' @export
 // [[Rcpp::export]]
 NumericVector rad_map_lats_cr(int nt, int yday) {
   // Define and allocate
@@ -422,6 +427,7 @@ NumericVector rad_map_lats_cr(int nt, int yday) {
   return rad_fract_map_r;
 }
 
+//' @export
 // [[Rcpp::export]]
 NumericVector solar_geom_cr(float lat, int yday, int timesteps_per_day) {
   

@@ -1,5 +1,3 @@
-source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions.R")
-
 library(ncdf4)
 library(ncdf4.helpers)
 library(units)
@@ -9,20 +7,20 @@ library(proj4)
 
 # inFile <- "~/sw_1day.nc"
 # varname <- "SWdown"
-# fileType <- "regulairLatlon"
+# fileType <- "latlon"
 ## cdo setgridtype,curvilinear pr_19900101_efas.nc pr_19900101_efas_curv.nc
 # inFile <- "~/pr_19900101_efas_curv.nc"
 # varname <- "pr"
 # fileType <- "curvilinear_2d"
-inFile <- "~/pr_19900101_efas.nc"
-varname <- "pr"
-fileType <- "xy"
-outFile <- "~/Dest.nc"
-timezone <- 1
-nhourly <- 6
+# inFile <- "~/pr_19900101_efas.nc"
+# varname <- "pr"
+# fileType <- "xy"
+# outFile <- "~/Dest.nc"
+# timezone <- 1
+# nhourly <- 6
 
 ncid_in<-nc_open(inFile, write = F)
-if (fileType == "regulairLatlon") {
+if (fileType == "latlon") {
   inlons <- ncvar_get(ncid_in,"lon")
   nx <- length(inlons)
   inlats <- ncvar_get(ncid_in,"lat")
@@ -84,7 +82,7 @@ outTatt <- paste0("hours since ", outTimes[1])
 outTvals <- seq(from = 0, length.out = length(outTimes), by = nhourly)
 
 ncid_in<-nc_open(inFile, write = F)
-if (fileType == "regulairLatlon") {
+if (fileType == "latlon") {
   dimX <- ncdim_def(name='lon', units='degrees_east', longname='longitude', vals=inlons )
   dimY <- ncdim_def(name='lat', units='degrees_north', longname='latitude', vals=inlats )
 } else if (fileType == "xy") {

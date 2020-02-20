@@ -8,17 +8,15 @@ float deg2rad(float deg) {
   return (deg * M_PI) / (180);
 }
 
-float potential_radiation(int hour,int minute, int yday, float lon, float lat, float timezone) {
-  // int potential_radiation(double *potrad, int hour,int minute, int yday, float lon, float lat, float timezone) {
-  
+float potential_radiation(int hour, int minute, int yday, float lon, float lat, float timezone) {
   float terrain_slope=0;
   float terrain_slope_azimuth=0;
   float cloud_fraction=0;
-  //split=F
-  
+
   float solar_constant = 1367.0;
   float days_per_year = 365.25;
   float tropic_of_cancer = deg2rad(23.43697);
+  // float tropic_of_cancer = 0.4090523;
   float solstice = 173.0;
   float pi = M_PI;
   
@@ -37,7 +35,7 @@ float potential_radiation(int hour,int minute, int yday, float lon, float lat, f
   // get solar zenith angle
   float cos_solar_zenith = (sin(solar_decline) * sin(deg2rad(lat))
                               + cos(solar_decline) * cos(deg2rad(lat)) * cos(hour_angle));
-  if  (cos_solar_zenith < 0) { cos_solar_zenith = 0; }
+  if (cos_solar_zenith < 0) { cos_solar_zenith = 0; }
   float solar_zenith_angle = acos(cos_solar_zenith);
   
   // compute transmissivities for direct and diffus radiation using cloud fraction
@@ -46,22 +44,20 @@ float potential_radiation(int hour,int minute, int yday, float lon, float lat, f
   
   // modify solar constant for eccentricity
   float beta = 2. * pi * (day_of_year / days_per_year);
-  float  radius_ratio = (1.00011 + 0.034221 * cos(beta) + 0.00128 * sin(beta)
+  float radius_ratio = (1.00011 + 0.034221 * cos(beta) + 0.00128 * sin(beta)
                            + 0.000719 * cos(2. * beta) + 0.000077 * sin(2 * beta));
-  float  solar_constant_times_radius_ratio = solar_constant * radius_ratio;
+  float solar_constant_times_radius_ratio = solar_constant * radius_ratio;
   
-  float  mu = asin(cos(solar_decline) * sin(hour_angle) / sin(solar_zenith_angle));
-  float  cosi = (cos(terrain_slope) * cos_solar_zenith
+  float mu = asin(cos(solar_decline) * sin(hour_angle) / sin(solar_zenith_angle));
+  float cosi = (cos(terrain_slope) * cos_solar_zenith
                    + sin(terrain_slope) * sin(solar_zenith_angle) * cos(mu - terrain_slope_azimuth));
   
   // get total shortwave radiation
-  float  direct_radiation = solar_constant_times_radius_ratio * transmissivity_direct * cosi;
-  float    diffuse_radiation = solar_constant_times_radius_ratio * transmissivity_diffuse * cos_solar_zenith;
-  if  (direct_radiation < 0) { direct_radiation = 0; }
+  float direct_radiation = solar_constant_times_radius_ratio * transmissivity_direct * cosi;
+  float diffuse_radiation = solar_constant_times_radius_ratio * transmissivity_diffuse * cos_solar_zenith;
+  if (direct_radiation < 0) { direct_radiation = 0; }
   
-  // *potrad = direct_radiation;
   return direct_radiation;
-  // return 0;
 }
 
 int set_min_max_hour_c(double *radfrac, double *tmin_hour, double *tmax_hour, int nx) {

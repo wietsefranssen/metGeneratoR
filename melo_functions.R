@@ -40,26 +40,16 @@ library(lubridate)
 
 deg2rad <- function(deg) {(deg * pi) / (180)}
 
-potential_radiation <- function(hour,minute,yday,lon=8.86,lat= 51.00,timezone=1) {
-  # potential_radiation <- function(dates='2014-01-01 12:00:00',lon=8.86,lat= 51.00,timezone=1) {
-    # dates='2014-01-01 12:00:00'
-  # lon=8.86
-  # lat= 51.00
-  # timezone=1
-  terrain_slope=0
-  terrain_slope_azimuth=0
-  cloud_fraction=0 
-  split=F
+potential_radiation <- function(hour, minute, yday, lon, lat, timezone=1) {
+  terrain_slope = 0
+  terrain_slope_azimuth = 0
+  cloud_fraction = 0 
+  split = F
   
   solar_constant = 1367.
   days_per_year = 365.25
   tropic_of_cancer = deg2rad(23.43697)
   solstice = 173.0
-  
-  # dates = pd.DatetimeIndex(dates)
-  # dates_hour = hour(dates)
-  # dates_minute = minute(dates)
-  # day_of_year = yday(dates)
   
   dates_hour = hour
   dates_minute = minute
@@ -104,20 +94,13 @@ potential_radiation <- function(hour,minute,yday,lon=8.86,lat= 51.00,timezone=1)
 ##########################
 
 disaggregate_radiation <- function(radiation=10.6625,hour,minute, yday,lon=8.86,lat= 51.00,timezone=1) {
-  # disaggregate_radiation <- function(radiation=10.6625,dates='2014-01-01 12:00:00',lon=8.86,lat= 51.00,timezone=1) {
-    # pot_rad <- potential_radiation(dates=dates,lon=lon,lat= lat,timezone=timezone)
-  # pot_rad <- potential_radiation(hour = hour,minute = minute, yday =yday,lon=lon,lat= lat,timezone=timezone)
   pot_rad<-array(NA, dim = c(length(hour)))
   for (i in 1:length(hour)) {
-    # hour = hour(dates[i])
-    # minute = minute(dates[i])
-    # yday =yday(dates[i])
     h <- hour[i]
     m <- minute[i]
     y <- yday[i]
     radtmp <- potential_radiation_cr(h, m, y, lon, lat, timezone)
-    # radtmp <- potential_radiation_cr(hour = hour[i],minute = minute[i], yday =yday[i], lon=lon,lat= lat,timezone=timezone)
-    # radtmp <- potential_radiation(hour = hour[i],minute = minute[i], yday =yday[i],lon=lon,lat= lat,timezone=timezone)
+    # radtmp <- potential_radiation(h, m, y, lon, lat, timezone)
     pot_rad[i] <-radtmp
   }
   globalrad = radiation
@@ -127,6 +110,5 @@ disaggregate_radiation <- function(radiation=10.6625,hour,minute, yday,lon=8.86,
   glob_disagg[glob_disagg < 1e-2] = 0.
   glob_disagg[is.na(glob_disagg)] = 0.
   
-  # print(glob_disagg)
   return(glob_disagg)
 }

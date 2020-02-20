@@ -11,7 +11,7 @@ library(lubridate)
 library(ncmeta)
 library(proj4)
 
-source(system.file("Rscripts", "melo_functions_rad.R",      package = "metGeneratoR"))
+source(system.file("extdata", "melo_functions_rad.R",      package = "metGeneratoR"))
 
 inFile <- "~/sw_1day.nc"
 varname <- "SWdown"
@@ -54,7 +54,7 @@ file.remove(outFile)
 
 ## Create NetCDF
 # source("/home/wietse/Documents/RProjects/metGeneratoR/R/melo_create_nc.R")
-source(system.file("Rscripts", "melo_create_nc.R",      package = "metGeneratoR"))
+source(system.file("extdata", "melo_create_nc.R",      package = "metGeneratoR"))
 
 ## Load data
 ncid_in<-nc_open(inFile)

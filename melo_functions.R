@@ -33,14 +33,16 @@
 # """
 
 # rm(list = ls())
-
+## Based on : https://journals.ametsoc.org/doi/pdf/10.1175/JHM486.1
+## https://www.geosci-model-dev.net/9/2315/2016/gmd-2016-51.pdf
 library(units)
 library(lubridate)
 
 deg2rad <- function(deg) {(deg * pi) / (180)}
 
-potential_radiation <- function(dates='2014-01-01 12:00:00',lon=8.86,lat= 51.00,timezone=1) {
-  # dates='2014-01-01 12:00:00'
+potential_radiation <- function(hour,minute,yday,lon=8.86,lat= 51.00,timezone=1) {
+  # potential_radiation <- function(dates='2014-01-01 12:00:00',lon=8.86,lat= 51.00,timezone=1) {
+    # dates='2014-01-01 12:00:00'
   # lon=8.86
   # lat= 51.00
   # timezone=1
@@ -55,9 +57,13 @@ potential_radiation <- function(dates='2014-01-01 12:00:00',lon=8.86,lat= 51.00,
   solstice = 173.0
   
   # dates = pd.DatetimeIndex(dates)
-  dates_hour = hour(dates)
-  dates_minute = minute(dates)
-  day_of_year = yday(dates)
+  # dates_hour = hour(dates)
+  # dates_minute = minute(dates)
+  # day_of_year = yday(dates)
+  
+  dates_hour = hour
+  dates_minute = minute
+  day_of_year = yday
   
   # compute solar decline in rad
   solar_decline = tropic_of_cancer * cos(2.0 * pi * (day_of_year - solstice) / days_per_year)
@@ -97,9 +103,23 @@ potential_radiation <- function(dates='2014-01-01 12:00:00',lon=8.86,lat= 51.00,
 
 ##########################
 
-disaggregate_radiation <- function(radiation=10.6625,dates='2014-01-01 12:00:00',lon=8.86,lat= 51.00,timezone=1) {
-  pot_rad <- potential_radiation(dates=dates,lon=lon,lat= lat,timezone=timezone)
-  
+disaggregate_radiation <- function(radiation=10.6625,hour,minute, yday,lon=8.86,lat= 51.00,timezone=1) {
+  # disaggregate_radiation <- function(radiation=10.6625,dates='2014-01-01 12:00:00',lon=8.86,lat= 51.00,timezone=1) {
+    # pot_rad <- potential_radiation(dates=dates,lon=lon,lat= lat,timezone=timezone)
+  # pot_rad <- potential_radiation(hour = hour,minute = minute, yday =yday,lon=lon,lat= lat,timezone=timezone)
+  pot_rad<-array(NA, dim = c(length(hour)))
+  for (i in 1:length(hour)) {
+    # hour = hour(dates[i])
+    # minute = minute(dates[i])
+    # yday =yday(dates[i])
+    h <- hour[i]
+    m <- minute[i]
+    y <- yday[i]
+    radtmp <- potential_radiation_cr(h, m, y, lon, lat, timezone)
+    # radtmp <- potential_radiation_cr(hour = hour[i],minute = minute[i], yday =yday[i], lon=lon,lat= lat,timezone=timezone)
+    # radtmp <- potential_radiation(hour = hour[i],minute = minute[i], yday =yday[i],lon=lon,lat= lat,timezone=timezone)
+    pot_rad[i] <-radtmp
+  }
   globalrad = radiation
   
   pot_rad_daily = mean(pot_rad)

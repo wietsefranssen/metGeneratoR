@@ -34,18 +34,27 @@ source("/home/wietse/Documents/RProjects/metGeneratoR/melo_create_nc.R")
 ## Define target dates
 dates <- seq(ts, by = paste(nhourly, "hours"), length = (24 / nhourly) * length(ts))
 
+
 ## Do calculation
 ## Radiation
+# hour = hour(dates[i])
+# minute = minute(dates[i])
+# yday =yday(dates[i])
+
 if (doRad) {
   dataOut <- array(NA, dim=c(nx, ny, (24 / nhourly)))
+  hour = hour(dates)
+  minute = minute(dates)
+  yday = yday(dates)
   iy<-1
+  # for (iy in 1:300) {
   for (iy in 1:ny) {
     ix<-1
     lat <- lat_2d[ix,iy]
     print(paste(iy,lat))
     for (ix in 1:nx) {
       lon <- lon_2d[ix,iy]
-      dataOut [ix,iy,] <- disaggregate_radiation(radiation=indata[ix,iy],date=dates,lon=lon,lat=lat,timezone=timezone)
+      dataOut [ix,iy,] <- disaggregate_radiation(radiation=indata[ix,iy],hour = hour,minute = minute, yday =yday,lon=lon,lat=lat,timezone=timezone)
     }
   }
 }

@@ -5,6 +5,22 @@
 
 using namespace Rcpp;
 
+// potential_radiation_cr
+float potential_radiation_cr(int hour, int minute, int yday, float lon, float lat, float timezone);
+RcppExport SEXP _metGeneratoR_potential_radiation_cr(SEXP hourSEXP, SEXP minuteSEXP, SEXP ydaySEXP, SEXP lonSEXP, SEXP latSEXP, SEXP timezoneSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type hour(hourSEXP);
+    Rcpp::traits::input_parameter< int >::type minute(minuteSEXP);
+    Rcpp::traits::input_parameter< int >::type yday(ydaySEXP);
+    Rcpp::traits::input_parameter< float >::type lon(lonSEXP);
+    Rcpp::traits::input_parameter< float >::type lat(latSEXP);
+    Rcpp::traits::input_parameter< float >::type timezone(timezoneSEXP);
+    rcpp_result_gen = Rcpp::wrap(potential_radiation_cr(hour, minute, yday, lon, lat, timezone));
+    return rcpp_result_gen;
+END_RCPP
+}
 // set_vp_cr
 NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, int ny, int nrec);
 RcppExport SEXP _metGeneratoR_set_vp_cr(SEXP tair_rSEXP, SEXP relhum_rSEXP, SEXP nxSEXP, SEXP nySEXP, SEXP nrecSEXP) {
@@ -100,6 +116,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_metGeneratoR_potential_radiation_cr", (DL_FUNC) &_metGeneratoR_potential_radiation_cr, 6},
     {"_metGeneratoR_set_vp_cr", (DL_FUNC) &_metGeneratoR_set_vp_cr, 5},
     {"_metGeneratoR_sh2vp", (DL_FUNC) &_metGeneratoR_sh2vp, 2},
     {"_metGeneratoR_set_min_max_hour_cr", (DL_FUNC) &_metGeneratoR_set_min_max_hour_cr, 2},

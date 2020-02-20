@@ -2,8 +2,13 @@
 #include <Rcpp.h>
 #include "Rdefines.h" // R memory io
 #include "Rmath.h"    // R math functions
+#include <cmath>
 
 /*** SubRoutine Prototypes ***/
+float deg2rad(float);
+// int potential_radiation(double *, int ,int, int, float, float, float);
+float potential_radiation(int ,int, int, float, float, float);
+
 int solar_geom_c(double*, float, int , int);
 int rad_fract_lats_c(double **rad_fract_map, int nt, int yday, float slat, float elat);
 int rad_map_final_c(double ***rad_fract_map_final, double **rad_fract_map, int nt, int yday);

@@ -2,6 +2,11 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #' @export
+potential_radiation_cr <- function(hour, minute, yday, lon, lat, timezone) {
+    .Call('_metGeneratoR_potential_radiation_cr', PACKAGE = 'metGeneratoR', hour, minute, yday, lon, lat, timezone)
+}
+
+#' @export
 set_vp_cr <- function(tair_r, relhum_r, nx, ny, nrec) {
     .Call('_metGeneratoR_set_vp_cr', PACKAGE = 'metGeneratoR', tair_r, relhum_r, nx, ny, nrec)
 }

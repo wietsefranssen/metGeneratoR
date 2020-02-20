@@ -7,6 +7,16 @@ using namespace Rcpp;
 
 //' @export
 // [[Rcpp::export]]
+float potential_radiation_cr(int hour,int minute, int yday, float lon, float lat, float timezone) {
+   // float potrad;
+   // potrad = potential_radiation(hour, minute, yday, lon, lat, timezone);
+  // vp_r[count] = svp(tair_r[count]) * relhum_c[ix][iy] / 1000 ;
+  // NumericVector xx(1);
+  return potential_radiation(hour, minute, yday, lon, lat, timezone);
+}
+
+//' @export
+// [[Rcpp::export]]
 NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, int ny, int nrec) {
   int irec,ix,iy;
   NumericVector vp_r(nx*ny*nrec);
@@ -58,7 +68,7 @@ NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, in
 NumericVector sh2vp(NumericVector q, NumericVector p) {
   size_t i;
   size_t n = q.length();
-
+  
   NumericVector t = p;
   
   if(q.length() != t.length() || q.length() != p.length()) {
@@ -67,14 +77,14 @@ NumericVector sh2vp(NumericVector q, NumericVector p) {
     // printf("q, t and p should all have the same length!\n");
     return(1);
   }
-
+  
   NumericVector vp(n);
   vp.attr("dim") = q.attr("dim");
-
+  
   for (i = 0; i < n; i++) {
     vp[i] = sh2vp_c(q[i], t[i], p[i]);
   }
-
+  
   return vp;
 }  
 
@@ -115,7 +125,7 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   // int nt;
   int nTinyStepsPerDay;
   
-
+  
   int irec;
   
   ny = ((elat - slat) / reslat) + 1;
@@ -323,7 +333,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
       }
     }
   }
-
+  
   // Do everything for rec 0
   // float iXoffset = (slon - -179.75) / reslon;
   // printf("iXoffset: %f\n", iXoffset);
@@ -382,15 +392,15 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
 // [[Rcpp::export]]
 NumericVector rad_map_lats_cr(int nt, int yday) {
   // Define and allocate
-//  float slat = -89.75;
-//  float elat = 89.75;
-//  float reslat = 0.25;
+  //  float slat = -89.75;
+  //  float elat = 89.75;
+  //  float reslat = 0.25;
   float slat = -90;
   float elat = 90;
   float reslat = 0.25;
   slat = slat + (reslat/2);
   elat = elat - (reslat/2);
-
+  
   int ny, iy;
   int it;
   

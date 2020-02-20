@@ -97,7 +97,7 @@ if (fileType == "latlon") {
 }
 dimT <- ncdim_def(name='time', units=outTatt, vals=outTvals )
 
-varData <- ncvar_def(name=varname, units='-', dim=list(dimX,dimY,dimT), missval=NA, prec='double')
+varData <- ncvar_def(name=varname, units='-', dim=list(dimX,dimY,dimT), missval=NA, prec='double', compression = 5)
 
 if (fileType == "curvilinear_2d") {
   print("add curv")

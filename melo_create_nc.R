@@ -70,7 +70,7 @@ if (fileType == "latlon") {
 }
 intimes <- ncvar_get(ncid_in,"time")
 ts <- nc.get.time.series(ncid_in)
-indata <- ncvar_get(ncid_in, varname)
+# indata <- ncvar_get(ncid_in, varname)
 nc_close(ncid_in)
 
 ## Define target dates

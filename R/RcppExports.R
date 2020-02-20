@@ -7,6 +7,11 @@ potential_radiation_cr <- function(hour, minute, yday, lon, lat, timezone) {
 }
 
 #' @export
+HourlyT_cr <- function(nrec, TminHour, Tmin, TmaxHour, Tmax) {
+    .Call('_metGeneratoR_HourlyT_cr', PACKAGE = 'metGeneratoR', nrec, TminHour, Tmin, TmaxHour, Tmax)
+}
+
+#' @export
 set_vp_cr <- function(tair_r, relhum_r, nx, ny, nrec) {
     .Call('_metGeneratoR_set_vp_cr', PACKAGE = 'metGeneratoR', tair_r, relhum_r, nx, ny, nrec)
 }

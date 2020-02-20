@@ -111,6 +111,23 @@ disaggregate_radiation <- function(radiation=10.6625,hour,minute, yday,lon=8.86,
   glob_disagg <- pot_rad / pot_rad_daily * radiation
   glob_disagg[glob_disagg < 1e-2] <- 0.
   glob_disagg[is.na(glob_disagg)] <- 0.
-
+  
   return(glob_disagg)
+}
+
+potential_radiation_day <- function(hour,minute, yday,lon,lat,timezone=1) {
+  nt <- length(hour)
+  pot_rad <- numeric(nt)
+  # pot_rad_daily <- 0
+  for (i in 1:length(hour)) {
+    h <- hour[i]
+    m <- minute[i]
+    y <- yday[i]
+    radtmp <- potential_radiation_cr(h, m, y, lon, lat, timezone)
+    pot_rad[i] <- radtmp
+    # pot_rad_daily <- pot_rad_daily + radtmp
+  }
+  # pot_rad_daily <- pot_rad_daily / nt
+  
+  return(pot_rad)
 }

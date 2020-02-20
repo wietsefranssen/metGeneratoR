@@ -79,7 +79,7 @@ void HourlyT_c(int nrec,
   int n;
   int hour;
   int nsteps;
-
+  
   int HOURSPERDAY = nrec;
   TminHour = TminHour / (24/nrec);
   TmaxHour = TmaxHour / (24/nrec);
@@ -93,7 +93,7 @@ void HourlyT_c(int nrec,
   yc2   = (double *) calloc(n, sizeof(double));
   yc3   = (double *) calloc(n, sizeof(double));
   yc4   = (double *) calloc(n, sizeof(double));
-
+  
   /* First fill the x vector with the times for Tmin and Tmax, and fill the 
    Tyc1 with the corresponding temperature and humidity values */
   hour = 0;
@@ -104,10 +104,11 @@ void HourlyT_c(int nrec,
     Tyc1[2]  = Tmax;
   }
   else {
-    x[2]       = TmaxHour + hour;
-    Tyc1[2]  = Tmax;
-    x[3]       = TminHour + hour;
-    Tyc1[3]  = Tmin;
+    // printf("TminHour > TmaxHour");
+    x[1]       = TmaxHour + hour;
+    Tyc1[1]  = Tmax;
+    x[2]       = TminHour + hour;
+    Tyc1[2]  = Tmin;
   } 
   
   /* To "tie" down the first and last values, repeat those */
@@ -145,24 +146,24 @@ void HourlyT_c(int nrec,
   int klo,khi,k;
   hour = 0;
   for (i = 0; i < nsteps; i++) {
-
-      klo=0;
-      khi=n-1;
-      while (khi-klo > 1) {
-        k=(khi+klo) >> 1;
-
-        if (x[k] > hour) {
-          khi=k;
-        } else {
-          klo=k;
-        }
-      }
+    
+    klo=0;
+    khi=n-1;
+    while (khi-klo > 1) {
+      k=(khi+klo) >> 1;
       
-      dx = hour - x[klo];
-      Tair[i] = Tyc1[klo] + dx * (yc2[klo] + dx * (yc3[klo] + dx * yc4[klo]));
-      hour++;
+      if (x[k] > hour) {
+        khi=k;
+      } else {
+        klo=k;
+      }
     }
-
+    
+    dx = hour - x[klo];
+    Tair[i] = Tyc1[klo] + dx * (yc2[klo] + dx * (yc3[klo] + dx * yc4[klo]));
+    hour++;
+  }
+  
   free(x);   
   free(Tyc1);
   free(yc2);

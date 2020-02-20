@@ -8,11 +8,28 @@ using namespace Rcpp;
 //' @export
 // [[Rcpp::export]]
 float potential_radiation_cr(int hour,int minute, int yday, float lon, float lat, float timezone) {
-   // float potrad;
-   // potrad = potential_radiation(hour, minute, yday, lon, lat, timezone);
+  // float potrad;
+  // potrad = potential_radiation(hour, minute, yday, lon, lat, timezone);
   // vp_r[count] = svp(tair_r[count]) * relhum_c[ix][iy] / 1000 ;
   // NumericVector xx(1);
   return potential_radiation(hour, minute, yday, lon, lat, timezone);
+}
+
+//' @export
+// [[Rcpp::export]]
+NumericVector HourlyT_cr(int nrec,
+                double TminHour,
+                double Tmin, 
+                double TmaxHour, 
+                double Tmax) {
+  NumericVector result(nrec);
+  double Tair[nrec];
+
+ HourlyT_c(nrec,TminHour,Tmin, TmaxHour, Tmax, Tair);
+  for (int i = 0; i < nrec; i++) {
+    result[i] = Tair[i];
+  }
+  return result;
 }
 
 //' @export

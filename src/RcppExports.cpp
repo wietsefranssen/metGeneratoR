@@ -21,6 +21,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// HourlyT_cr
+NumericVector HourlyT_cr(int nrec, double TminHour, double Tmin, double TmaxHour, double Tmax);
+RcppExport SEXP _metGeneratoR_HourlyT_cr(SEXP nrecSEXP, SEXP TminHourSEXP, SEXP TminSEXP, SEXP TmaxHourSEXP, SEXP TmaxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type nrec(nrecSEXP);
+    Rcpp::traits::input_parameter< double >::type TminHour(TminHourSEXP);
+    Rcpp::traits::input_parameter< double >::type Tmin(TminSEXP);
+    Rcpp::traits::input_parameter< double >::type TmaxHour(TmaxHourSEXP);
+    Rcpp::traits::input_parameter< double >::type Tmax(TmaxSEXP);
+    rcpp_result_gen = Rcpp::wrap(HourlyT_cr(nrec, TminHour, Tmin, TmaxHour, Tmax));
+    return rcpp_result_gen;
+END_RCPP
+}
 // set_vp_cr
 NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, int ny, int nrec);
 RcppExport SEXP _metGeneratoR_set_vp_cr(SEXP tair_rSEXP, SEXP relhum_rSEXP, SEXP nxSEXP, SEXP nySEXP, SEXP nrecSEXP) {
@@ -117,6 +132,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_metGeneratoR_potential_radiation_cr", (DL_FUNC) &_metGeneratoR_potential_radiation_cr, 6},
+    {"_metGeneratoR_HourlyT_cr", (DL_FUNC) &_metGeneratoR_HourlyT_cr, 5},
     {"_metGeneratoR_set_vp_cr", (DL_FUNC) &_metGeneratoR_set_vp_cr, 5},
     {"_metGeneratoR_sh2vp", (DL_FUNC) &_metGeneratoR_sh2vp, 2},
     {"_metGeneratoR_set_min_max_hour_cr", (DL_FUNC) &_metGeneratoR_set_min_max_hour_cr, 2},

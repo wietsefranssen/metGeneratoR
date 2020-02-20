@@ -1,6 +1,6 @@
 rm(list = ls())
 source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions_rad.R")
-source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions_temp.R")
+# source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions_temp.R")
 
 library(ncdf4)
 library(ncdf4.helpers)
@@ -22,17 +22,45 @@ fileType <- "latlon"
 # varname <- "pr"
 # fileType <- "xy"
 
+inFile <- "~/tmin_daily.nc"
+varname <- "Tair"
+inFile2 <- "~/tmax_daily.nc"
+varname2 <- "Tair"
+fileType <- "latlon"
+
+inFile <- "~/tn_19920628.nc"
+varname <- "tn"
+inFile2 <- "~/tx_19920628.nc"
+varname2 <- "tx"
+fileType <- "xy"
+
 outFile <- "~/Dest.nc"
 timezone <- 1
 nhourly <- 3
 
-doRad <- T
+doRad <- F
 doPr <- F
+doTemp <- T
+
+TminHour <- 7
+TmaxHour <- 14
+
 
 file.remove(outFile)
 
 ## Create NetCDF
 source("/home/wietse/Documents/RProjects/metGeneratoR/melo_create_nc.R")
+
+## Load data
+ncid_in<-nc_open(inFile)
+indata <- ncvar_get(ncid_in, varname)
+nc_close(ncid_in)
+if (doTemp) {
+  ncid_in<-nc_open(inFile2)
+  indata2 <- ncvar_get(ncid_in, varname2)
+  nc_close(ncid_in)
+}
+
 
 ## Define target dates
 dates <- seq(ts, by = paste(nhourly, "hours"), length = (24 / nhourly) * length(ts))
@@ -65,6 +93,29 @@ if (doPr) {
     for (ix in 1:nx) {
       lon <- lon_2d[ix,iy]
       dataOut [ix,iy,] <- indata[ix,iy]
+    }
+  }
+}
+
+if (doTemp) {
+  # set_min_max_hour_c
+  hour = hour(dates)
+  minute = minute(dates)
+  yday = yday(dates)
+  dataOut <- array(NA, dim=c(nx, ny, (24 / nhourly)))
+  iy<-1
+  for (iy in 1:ny) {
+    ix<-1
+    lat <- lat_2d[ix,iy]
+    for (ix in 1:nx) {
+      lon <- lon_2d[ix,iy]
+      # potential_radiation_day
+      if (!is.na(indata[ix,iy])) {
+        potradtmp <- potential_radiation_day(hour, minute, yday, lon, lat, timezone)
+        TminHour <- (which.min(potradtmp)-1) * nhourly
+        TmaxHour <- (which.max(potradtmp)-1) * nhourly
+        dataOut [ix,iy,] <- HourlyT_cr((24 / nhourly), TminHour, indata[ix,iy], TmaxHour, indata2[ix,iy])
+      }
     }
   }
 }

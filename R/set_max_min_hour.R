@@ -116,3 +116,12 @@ hermite <- function(n, x, yc1, yc2, yc3, yc4) {
     yc4[i] = divdf3/(dx*dx);
   }
 }
+
+# plot(HourlyT_cr(24,12,20,2,30))
+# lines(HourlyT(12,20,2,30))
+# 
+# timemin <- 7
+# timemax <- 14
+# 
+# plot(seq(1,24,6),HourlyT_cr(4,timemin,20,timemax,30))
+#      lines(c(1:24),HourlyT(timemin,20,timemax,30))

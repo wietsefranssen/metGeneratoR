@@ -1,4 +1,20 @@
-rm(list = ls())
+#!/usr/bin/env Rscript
+#rm(list = ls())
+args = commandArgs(trailingOnly=TRUE)
+
+# test if there is at least one argument: if not, return an error
+if (length(args)<6) {
+  stop("Too less arguments. \n\nRequired:\n  --> vartype, projection, nhourly, inFile, varname, outfile", call.=FALSE)
+} else if (args[1]=="temp") {
+  if (length(args)<8) {
+    stop("Too less arguments. \n\nRequired:\n  --> vartype, projection, nhourly, inFileTmin, varname, inFileTmax, varname, outfile\n\n ex: ./melo_run.R temp xy 3 ~/tn_19900101.nc tn ~/tx_19900101.nc tx ~/out.nc", call.=FALSE)
+  }
+} else if (length(args)==2) {
+  # default output file
+  print(args[2])
+}
+# stop("STOP")
+
 source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions_rad.R")
 # source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions_temp.R")
 
@@ -36,12 +52,22 @@ varname2 <- "tx"
 fileType <- "xy"
 
 outFile <- "~/Dest.nc"
+
+vartype <- args[1]
+fileType <- args[2]
+nhourly <- args[3]
+inFile <- args[4]
+varname <- args[5]
+inFile2 <- args[6]
+varname2 <- args[7]
+outFile <- args[8]
+
 timezone <- 1
 nhourly <- 3
 
-doRad <- F
-doPr <- F
-doTemp <- T
+varType <- "shortwave"
+varType <- "precip"
+varType <- "temp"
 
 TminHour <- 7
 TmaxHour <- 14
@@ -56,7 +82,7 @@ source("/home/wietse/Documents/RProjects/metGeneratoR/melo_create_nc.R")
 ncid_in<-nc_open(inFile)
 indata <- ncvar_get(ncid_in, varname)
 nc_close(ncid_in)
-if (doTemp) {
+if (varType == "temp") {
   ncid_in<-nc_open(inFile2)
   indata2 <- ncvar_get(ncid_in, varname2)
   nc_close(ncid_in)
@@ -68,7 +94,7 @@ dates <- seq(ts, by = paste(nhourly, "hours"), length = (24 / nhourly) * length(
 
 ## Do calculation
 ## Radiation
-if (doRad) {
+if (varType == "shortwave") {
   dataOut <- array(NA, dim=c(nx, ny, (24 / nhourly)))
   hour = hour(dates)
   minute = minute(dates)
@@ -85,7 +111,7 @@ if (doRad) {
   }
 }
 
-if (doPr) {
+if (varType == "precip") {
   dataOut <- array(NA, dim=c(nx, ny, (24 / nhourly)))
   iy<-1
   for (iy in 1:ny) {
@@ -98,7 +124,7 @@ if (doPr) {
   }
 }
 
-if (doTemp) {
+if (varType == "temp") {
   # set_min_max_hour_c
   hour = hour(dates)
   minute = minute(dates)

@@ -1,5 +1,6 @@
 rm(list = ls())
-source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions_rad.R")
+#source("melo_functions_rad.R")
+#source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions_rad.R")
 # source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions_temp.R")
 
 library(metGeneratoR)
@@ -9,6 +10,8 @@ library(units)
 library(lubridate)
 library(ncmeta)
 library(proj4)
+
+source(system.file("Rscripts", "melo_functions_rad.R",      package = "metGeneratoR"))
 
 inFile <- "~/sw_1day.nc"
 varname <- "SWdown"
@@ -50,7 +53,8 @@ TmaxHour <- 14
 file.remove(outFile)
 
 ## Create NetCDF
-source("/home/wietse/Documents/RProjects/metGeneratoR/melo_create_nc.R")
+# source("/home/wietse/Documents/RProjects/metGeneratoR/R/melo_create_nc.R")
+source(system.file("Rscripts", "melo_create_nc.R",      package = "metGeneratoR"))
 
 ## Load data
 ncid_in<-nc_open(inFile)

@@ -35,9 +35,6 @@
 # rm(list = ls())
 ## Based on : https://journals.ametsoc.org/doi/pdf/10.1175/JHM486.1
 ## https://www.geosci-model-dev.net/9/2315/2016/gmd-2016-51.pdf
-library(units)
-library(lubridate)
-
 deg2rad <- function(deg) {(deg * pi) / (180)}
 
 potential_radiation <- function(hour, minute, yday, lon, lat, timezone=1) {

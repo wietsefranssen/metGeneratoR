@@ -1,26 +1,22 @@
 #!/usr/bin/env Rscript
-#rm(list = ls())
+
 args = commandArgs(trailingOnly=TRUE)
 
-# test if there is at least one argument: if not, return an error
+# Test arguments
 if (length(args)<6) {
-  stop("Too less arguments. \n\nRequired:\n  --> vartype, projection, nhourly, inFile, varname, outfile", call.=FALSE)
+  stop("Too less arguments. \n\nRequired:\n  --> varType, projection, nhourly, inFile, varname, outfile", call.=FALSE)
 } else if (args[1]=="temp") {
   if (length(args)<8) {
-    stop("Too less arguments. \n\nRequired:\n  --> vartype, projection, nhourly, inFileTmin, varname, inFileTmax, varname, outfile\n\n ex: ./melo_run.R temp xy 3 ~/tn_19900101.nc tn ~/tx_19900101.nc tx ~/out.nc", call.=FALSE)
+    stop("Too less arguments. \n\nRequired:\n  --> varType, projection, nhourly, inFileTmin, varname, inFileTmax, varname, outfile\n\n ex: ./melo_run.R temp xy 3 ~/tn_19900101.nc tn ~/tx_19900101.nc tx ~/out.nc", call.=FALSE)
   }
 } else if (length(args)==2) {
   # default output file
   print(args[2])
 }
 
-library(metGeneratoR)
-library(ncdf4)
-library(ncdf4.helpers)
-library(units)
-library(lubridate)
-library(ncmeta)
-library(proj4)
+
+suppressPackageStartupMessages(library(metGeneratoR))
+
 #source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions_rad.R")
 source(system.file("extdata", "melo_functions_rad.R",      package = "metGeneratoR"))
 
@@ -51,32 +47,46 @@ fileType <- "xy"
 
 outFile <- "~/Dest.nc"
 
-vartype <- args[1]
-fileType <- args[2]
-nhourly <- args[3]
-inFile <- args[4]
-varname <- args[5]
-inFile2 <- args[6]
-varname2 <- args[7]
-outFile <- args[8]
-
 timezone <- 1
-nhourly <- 3
+# nhourly <- 3
 
 varType <- "shortwave"
 varType <- "precip"
 varType <- "temp"
 
-TminHour <- 7
-TmaxHour <- 14
+varType <- args[1]
+fileType <- args[2]
+nhourly <- as.numeric(args[3])
+inFile <- args[4]
+varname <- args[5]
+if (varType == "tair") {
+inFile2 <- args[6]
+varname2 <- args[7]
+outFile <- args[8]
+} else {
+  outFile <- args[6]
+}
 
+## Check
+if (varType != "precip" && varType != "temp" && varType != "shortwave") stop("varType not supported!")
 
-file.remove(outFile)
+## Print setting
+cat(paste("\n######################################################################################"))
+cat(paste("\n## varType:   ", varType, "    \tfileType:   ", fileType, "   nhourly:    ", nhourly))
+cat(paste("\n## inFile:   ", inFile,"    varname:   ", varname))
+if (varType == "tair") {
+  cat(paste("\n## inFile2:   ", inFile2,"    varname2:   ", varname2))
+}
+cat(paste("\n## outFile:   ", outFile))
+cat(paste("\n######################################################################################\n"))
+
+## Remove the output file first (if there is one...)
+if (file.exists(outFile)) {
+  invisible(file.remove(outFile))
+}
 
 ## Create NetCDF
-# source("/home/wietse/Documents/RProjects/metGeneratoR/melo_create_nc.R")
 source(system.file("extdata", "melo_create_nc.R",      package = "metGeneratoR"))
-
 ## Load data
 ncid_in<-nc_open(inFile)
 indata <- ncvar_get(ncid_in, varname)
@@ -86,7 +96,6 @@ if (varType == "temp") {
   indata2 <- ncvar_get(ncid_in, varname2)
   nc_close(ncid_in)
 }
-
 
 ## Define target dates
 dates <- seq(ts, by = paste(nhourly, "hours"), length = (24 / nhourly) * length(ts))

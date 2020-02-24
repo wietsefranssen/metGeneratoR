@@ -1,15 +1,6 @@
 rm(list = ls())
-#source("melo_functions_rad.R")
-#source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions_rad.R")
-# source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions_temp.R")
 
-library(metGeneratoR)
-library(ncdf4)
-library(ncdf4.helpers)
-library(units)
-library(lubridate)
-library(ncmeta)
-library(proj4)
+suppressPackageStartupMessages(library(metGeneratoR))
 
 source(system.file("extdata", "melo_functions_rad.R",      package = "metGeneratoR"))
 
@@ -53,7 +44,6 @@ TmaxHour <- 14
 file.remove(outFile)
 
 ## Create NetCDF
-# source("/home/wietse/Documents/RProjects/metGeneratoR/R/melo_create_nc.R")
 source(system.file("extdata", "melo_create_nc.R",      package = "metGeneratoR"))
 
 ## Load data

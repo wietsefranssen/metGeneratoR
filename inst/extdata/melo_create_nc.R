@@ -1,10 +1,3 @@
-library(ncdf4)
-library(ncdf4.helpers)
-library(units)
-library(lubridate)
-library(ncmeta)
-library(proj4)
-
 # inFile <- "~/sw_1day.nc"
 # varname <- "SWdown"
 # fileType <- "latlon"
@@ -86,7 +79,7 @@ if (fileType == "latlon") {
   dimX <- ncdim_def(name='lon', units='degrees_east', longname='longitude', vals=inlons )
   dimY <- ncdim_def(name='lat', units='degrees_north', longname='latitude', vals=inlats )
 } else if (fileType == "xy") {
-  print("add xy")
+  ##print("add xy")
   dimX <- ncdim_def(name='x', units='Meter', longname='x coordinate of projection', vals=inlons )
   dimY <- ncdim_def(name='y', units='Meter', longname='y coordinate of projection', vals=inlats )
 } else if (fileType == "curvilinear_2d") {
@@ -107,7 +100,7 @@ if (fileType == "curvilinear_2d") {
   varLonBnds <- ncvar_def(name='lon_bnds', units='degrees_east', dim=list(dimX,dimY,dimNV4), missval=NA, prec='double')
   ncid_out <- nc_create( outFile, list(varLat,varLon,varLatBnds,varLonBnds,varData) )
 } else if (fileType == "xy") {
-  print("add xy2")
+ ## print("add xy2")
   varCoord <- ncvar_def(name=proj4varname, dim=list(), units="", prec='integer')
   ncid_out <- nc_create( outFile, list(varCoord, varData) )
 } else {
@@ -122,7 +115,7 @@ if (fileType == "curvilinear_2d") {
   ncvar_put(ncid_out, varLon, vals = inlons)
   ncvar_put(ncid_out, varLat, vals = inlats)
 } else if (fileType == "xy") {
-  print("add xy3")
+  ##print("add xy3")
 
   iattNames<-names(indataatt)
   i <- 1

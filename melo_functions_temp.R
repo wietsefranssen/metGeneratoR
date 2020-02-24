@@ -1,18 +1,18 @@
-# data_daily =
-method='sine_min_max'
-min_max_time='fix'
-mod_nighttime=FALSE
-# max_delta=None
-# mean_course=None
-# sun_times=None
-
-hours_per_day = 24
-method = 'sine_min_max'
-min_max_time = 'fix'
-
-data_daily.temp <- 273.
-data_daily.tmin <- 271.05
-data_daily.tmax <- 276.45
+# # data_daily =
+# method='sine_min_max'
+# min_max_time='fix'
+# mod_nighttime=FALSE
+# # max_delta=None
+# # mean_course=None
+# # sun_times=None
+# 
+# hours_per_day = 24
+# method = 'sine_min_max'
+# min_max_time = 'fix'
+# 
+# data_daily.temp <- 273.
+# data_daily.tmin <- 271.05
+# data_daily.tmax <- 276.45
 
 
 temp_disagg = numeric(hours_per_day)

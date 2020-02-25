@@ -1,58 +1,19 @@
 #!/usr/bin/env Rscript
+suppressPackageStartupMessages(library(metGeneratoR))
 
 args = commandArgs(trailingOnly=TRUE)
 
 # Test arguments
 if (length(args)<6) {
   stop("Too less arguments. \n\nRequired:\n  --> varType, projection, nhourly, inFile, varname, outfile", call.=FALSE)
-} else if (args[1]=="temp") {
+} else if (args[1]=="tair") {
   if (length(args)<8) {
-    stop("Too less arguments. \n\nRequired:\n  --> varType, projection, nhourly, inFileTmin, varname, inFileTmax, varname, outfile\n\n ex: ./melo_run.R temp xy 3 ~/tn_19900101.nc tn ~/tx_19900101.nc tx ~/out.nc", call.=FALSE)
+    stop("Too less arguments. \n\nRequired:\n  --> varType, projection, nhourly, inFileTmin, varname, inFileTmax, varname, outfile\n\n ex: ./melo_run.R tair xy 3 ~/tn_19900101.nc tn ~/tx_19900101.nc tx ~/out.nc", call.=FALSE)
   }
 } else if (length(args)==2) {
   # default output file
   print(args[2])
 }
-
-
-suppressPackageStartupMessages(library(metGeneratoR))
-
-#source("/home/wietse/Documents/RProjects/metGeneratoR/melo_functions_rad.R")
-source(system.file("extdata", "melo_functions_rad.R",      package = "metGeneratoR"))
-
-inFile <- "~/sw_1day.nc"
-varname <- "SWdown"
-fileType <- "latlon"
-
-## cdo setgridtype,curvilinear pr_19900101_efas.nc pr_19900101_efas_curv.nc
-# inFile <- "~/pr_19900101_efas_curv.nc"
-# varname <- "pr"
-# fileType <- "curvilinear_2d"
-
-# inFile <- "~/pr_19900101_efas.nc"
-# varname <- "pr"
-# fileType <- "xy"
-
-inFile <- "~/tmin_daily.nc"
-varname <- "Tair"
-inFile2 <- "~/tmax_daily.nc"
-varname2 <- "Tair"
-fileType <- "latlon"
-
-inFile <- "~/tn_19920628.nc"
-varname <- "tn"
-inFile2 <- "~/tx_19920628.nc"
-varname2 <- "tx"
-fileType <- "xy"
-
-outFile <- "~/Dest.nc"
-
-timezone <- 1
-# nhourly <- 3
-
-varType <- "shortwave"
-varType <- "precip"
-varType <- "temp"
 
 varType <- args[1]
 fileType <- args[2]
@@ -68,7 +29,7 @@ outFile <- args[8]
 }
 
 ## Check
-if (varType != "precip" && varType != "temp" && varType != "shortwave") stop("varType not supported!")
+if (varType != "precip" && varType != "tair" && varType != "shortwave") stop("varType not supported!")
 
 ## Print setting
 cat(paste("\n######################################################################################"))
@@ -80,6 +41,8 @@ if (varType == "tair") {
 cat(paste("\n## outFile:   ", outFile))
 cat(paste("\n######################################################################################\n"))
 
+timezone <- 1
+
 ## Remove the output file first (if there is one...)
 if (file.exists(outFile)) {
   invisible(file.remove(outFile))
@@ -87,11 +50,12 @@ if (file.exists(outFile)) {
 
 ## Create NetCDF
 source(system.file("extdata", "melo_create_nc.R",      package = "metGeneratoR"))
+
 ## Load data
 ncid_in<-nc_open(inFile)
 indata <- ncvar_get(ncid_in, varname)
 nc_close(ncid_in)
-if (varType == "temp") {
+if (varType == "tair") {
   ncid_in<-nc_open(inFile2)
   indata2 <- ncvar_get(ncid_in, varname2)
   nc_close(ncid_in)
@@ -132,7 +96,7 @@ if (varType == "precip") {
   }
 }
 
-if (varType == "temp") {
+if (varType == "tair") {
   # set_min_max_hour_c
   hour = hour(dates)
   minute = minute(dates)

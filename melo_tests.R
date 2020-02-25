@@ -35,7 +35,7 @@ nhourly <- 3
 
 doRad <- F
 doPr <- F
-doTemp <- T
+doTair <- T
 
 TminHour <- 7
 TmaxHour <- 14
@@ -50,7 +50,7 @@ source(system.file("extdata", "melo_create_nc.R",      package = "metGeneratoR")
 ncid_in<-nc_open(inFile)
 indata <- ncvar_get(ncid_in, varname)
 nc_close(ncid_in)
-if (doTemp) {
+if (doTair) {
   ncid_in<-nc_open(inFile2)
   indata2 <- ncvar_get(ncid_in, varname2)
   nc_close(ncid_in)
@@ -92,7 +92,7 @@ if (doPr) {
   }
 }
 
-if (doTemp) {
+if (doTair) {
   # set_min_max_hour_c
   hour = hour(dates)
   minute = minute(dates)

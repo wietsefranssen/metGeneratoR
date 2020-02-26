@@ -31,7 +31,7 @@ if (!is.null(args)) {
 } else {
   varType <- "tair"
   fileType <- "xy"
-  nhourly <- 6
+  nhourly <- 1
   inFile <-"~/tn_19900101.nc"
   varname <- "tn"
   if (varType == "tair") {
@@ -112,6 +112,57 @@ if (varType == "precip") {
     }
   }
 }
+# 
+# if (varType == "tair") {
+#   # set_min_max_hour_c
+#   hour = 1:24
+#   minute = rep(0,24)
+#   yday = rep(yday(dates)[1],24)
+#   dataOut <- array(NA, dim=c(nx, ny, (24)))
+#   potradxx <- array(NA, dim=c(nx, ny, 24))
+#   dataOuttmp <- array(NA, dim=c(nx, ny, 24))
+#   iy<-1
+#   for (iy in 1:ny) {
+#     ix<-1
+#     lat <- lat_2d[ix,iy]
+#     for (ix in 1:nx) {
+#       lon <- lon_2d[ix,iy]
+#       # potential_radiation_day
+#       if (!is.na(indata[ix,iy])) {
+#         potradtmp <- potential_radiation_day(hour, minute, yday, lon, lat, timezone)
+#         potradxx[ix,iy,] <- potradtmp
+#         TminHour <- (which.min(potradtmp)-1) * nhourly
+#         TmaxHour <- (which.max(potradtmp)-1) * nhourly
+#         dataOuttmp[ix,iy,] <- HourlyT_cr(24, TminHour, indata[ix,iy], TmaxHour, indata2[ix,iy])
+#       }
+#     }
+#   }
+# }
+# 
+# if (varType == "tair") {
+#   # set_min_max_hour_c
+#   hour = hour(dates)
+#   minute = minute(dates)
+#   yday = yday(dates)
+#   dataOut <- array(NA, dim=c(nx, ny, (24 / nhourly)))
+#   potrad <- array(NA, dim=c(nx, ny, (24 / nhourly)))
+#   iy<-1
+#   for (iy in 1:ny) {
+#     ix<-1
+#     lat <- lat_2d[ix,iy]
+#     for (ix in 1:nx) {
+#       lon <- lon_2d[ix,iy]
+#       # potential_radiation_day
+#       if (!is.na(indata[ix,iy])) {
+#         potradtmp <- potential_radiation_day(hour, minute, yday, lon, lat, timezone)
+#         # potrad[ix,iy,] <- potradtmp
+#         TminHour <- (which.min(potradtmp)-1) * nhourly
+#         TmaxHour <- (which.max(potradtmp)-1) * nhourly
+#         dataOut[ix,iy,] <- HourlyT_cr((24 / nhourly), TminHour, indata[ix,iy], TmaxHour, indata2[ix,iy])
+#       }
+#     }
+#   }
+# }
 
 if (varType == "tair") {
   # set_min_max_hour_c
@@ -119,6 +170,7 @@ if (varType == "tair") {
   minute = minute(dates)
   yday = yday(dates)
   dataOut <- array(NA, dim=c(nx, ny, (24 / nhourly)))
+  # potrad <- array(NA, dim=c(nx, ny, (24 / nhourly)))
   iy<-1
   for (iy in 1:ny) {
     ix<-1
@@ -127,14 +179,43 @@ if (varType == "tair") {
       lon <- lon_2d[ix,iy]
       # potential_radiation_day
       if (!is.na(indata[ix,iy])) {
-        potradtmp <- potential_radiation_day(hour, minute, yday, lon, lat, timezone)
-        TminHour <- (which.min(potradtmp)-1) * nhourly
-        TmaxHour <- (which.max(potradtmp)-1) * nhourly
-        dataOut[ix,iy,] <- HourlyT_cr((24 / nhourly), TminHour, indata[ix,iy], TmaxHour, indata2[ix,iy])
+        # potradtmp <- potential_radiation_day(hour, minute, yday, lon, lat, timezone)
+        # potrad[ix,iy,] <- potradtmp
+        # TminHour <- (which.min(potradtmp)-1) * nhourly
+        # TmaxHour <- (which.max(potradtmp)-1) * nhourly
+        dataOut[ix,iy,] <- potential_radiation_day(hour, minute, yday, lon, lat, timezone)
       }
     }
   }
 }
+
+# iix <- 200
+# iiy <- 400
+# 
+# plot(dataOut[iix,iiy,])
+# plot(potradxx[iix,iiy,])
+# plot(dataOuttmp[iix,iiy,])
+# TminHourr <- (which.min(potradxx[iix,iiy,])-1)
+# TmaxHourr <- (which.max(potradxx[iix,iiy,])-1)
+# plot(HourlyT_cr(24, TminHourr, indata[iix,iiy], TmaxHourr, indata2[iix,iiy]))
+# plot(HourlyT_cr(24, TminHour, indata[ix,iy], TmaxHour, indata2[ix,iy]))
+# t_1hourly<-HourlyT_cr(24, TminHour, indata[ix,iy], TmaxHour, indata2[ix,iy])
+# t_1hourly<-HourlyT_cr(24, TminHourr, indata[iix,iiy], TmaxHourr, indata2[iix,iiy])
+# plot(t_1hourly,x=c(0:23))
+# t_6hourly <- NULL
+# t_6hourly[1] <- mean(t_1hourly[1:6])
+# t_6hourly[2] <- mean(t_1hourly[7:12])
+# t_6hourly[3] <- mean(t_1hourly[13:18])
+# t_6hourly[4] <- mean(t_1hourly[19:24])
+# plot(t_1hourly,x=c(0:23))
+# points(y=t_6hourly, x = c(0,6,12,18), pch = 22, col = "red")
+# points(y=t_6hourly, x = c(5,11,17, 23), pch = 22, col = "blue")
+# points(y=t_1hourly[c(0,6,12,18)+1], x = c(0,6,12,18), pch = 20, col = "red")
+# points(y=t_1hourly[c(5,11,17, 23)+1], x = c(5,11,17, 23), pch = 20, col = "blue")
+
+
+## Middelen VOORUIT!! (rode vierkantjes)
+
 
 ## Add data to file
 ncid_out <- nc_open(outFile, write = T )

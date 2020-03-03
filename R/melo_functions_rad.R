@@ -90,7 +90,7 @@ potential_radiation <- function(hour, minute, yday, lon, lat, timezone=1) {
 
 ##########################
 
-disaggregate_radiation <- function(radiation=10.6625,hour,minute, yday,lon=8.86,lat= 51.00,timezone=1) {
+disaggregate_radiation <- function(radiation=10.6625,hour,minute, yday,lon=8.86,lat= 51.00,timezone=0) {
   nt <- length(hour)
   pot_rad <- numeric(nt)
   pot_rad_daily <- 0
@@ -112,7 +112,7 @@ disaggregate_radiation <- function(radiation=10.6625,hour,minute, yday,lon=8.86,
   return(glob_disagg)
 }
 
-potential_radiation_day <- function(hour,minute, yday,lon,lat,timezone=1) {
+potential_radiation_day <- function(hour,minute, yday,lon,lat,timezone=0) {
   nt <- length(hour)
   pot_rad <- numeric(nt)
   # pot_rad_daily <- 0

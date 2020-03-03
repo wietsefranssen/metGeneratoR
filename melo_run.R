@@ -58,7 +58,7 @@ if (!is.null(args)) {
   cat(paste("\n######################################################################################\n"))
 }
 
-timezone <- 1
+timezone <- 0
 
 ## Remove the output file first (if there is one...)
 if (file.exists(outFile)) {
@@ -212,7 +212,6 @@ if (varType == "tair") {
 # points(y=t_6hourly, x = c(5,11,17, 23), pch = 22, col = "blue")
 # points(y=t_1hourly[c(0,6,12,18)+1], x = c(0,6,12,18), pch = 20, col = "red")
 # points(y=t_1hourly[c(5,11,17, 23)+1], x = c(5,11,17, 23), pch = 20, col = "blue")
-
 
 ## Middelen VOORUIT!! (rode vierkantjes)
 

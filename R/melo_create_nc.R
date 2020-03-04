@@ -7,9 +7,17 @@ melo_create_nc <-function(nc_info) {
   inx <- nc_info$inx
   iny <- nc_info$iny
   ts <- nc_info$ts
+  extraGlobalAttributes <- nc_info$extraGlobalAttributes
   if (fileType == "xy") proj4varname <- nc_info$proj4varname
   if (fileType == "xy") indataatt <- nc_info$indataatt
   if (fileType == "xy") ingridmapping <- nc_info$ingridmapping
+  
+  
+  
+  ## Remove the output file first (if there is one...)
+  if (file.exists(outFile)) {
+    invisible(file.remove(outFile))
+  }
   
   outTimes <- seq(as.POSIXct(ts[1]), by = paste(nhourly, "hours"), length = (24 / nhourly) * length(ts))
   if (shiftouthours != 0) {

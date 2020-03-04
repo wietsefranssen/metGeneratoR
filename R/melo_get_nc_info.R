@@ -50,9 +50,37 @@ melo_get_nc_info <- function() {
   }
   intimes <- ncvar_get(ncid_in,"time")
   ts <- nc.get.time.series(ncid_in)
+  if (shiftinhours != 0) {
+    ts <- as.POSIXct(ts) + hours(shiftinhours)
+  }
+  
   # indata <- ncvar_get(ncid_in, varname)
   nc_close(ncid_in)
 
+  extraGlobalAttributes <- NULL
+  extraGlobalAttributes$name <- NULL
+  extraGlobalAttributes$att <- NULL
+  
+  ## Checks
+  if (shiftouthours != 0) {
+    strmessage <- paste0("Output time shifted by ", shiftouthours, " hours")
+    ## Print message
+    cat(paste0("NOTE: ", strmessage, "\n"))
+    ## Add global attribute
+    ii <- length(extraGlobalAttributes$name) + 1
+    extraGlobalAttributes$name[ii] <- paste0("disaggr_note_", ii)
+    extraGlobalAttributes$att[ii] <- strmessage
+  }
+  if (shiftinhours != 0) {
+    strmessage <- paste0("Input time shifted by ", shiftinhours, " hours")
+    ## Print message
+    cat(paste0("NOTE: ", strmessage, "\n"))
+    ## Add global attribute
+    ii <- length(extraGlobalAttributes$name) + 1
+    extraGlobalAttributes$name[ii] <- paste0("disaggr_note_", ii)
+    extraGlobalAttributes$att[ii] <- strmessage
+  }
+  
   ## Create function output
   nc_info <- NULL
   nc_info$nx <- nx
@@ -62,6 +90,7 @@ melo_get_nc_info <- function() {
   nc_info$inx <- inx
   nc_info$iny <- iny
   nc_info$ts <- ts
+  nc_info$extraGlobalAttributes <- extraGlobalAttributes
   if (fileType == "xy") nc_info$proj4varname <- proj4varname
   if (fileType == "xy") nc_info$indataatt <- indataatt
   if (fileType == "xy") nc_info$ingridmapping <- ingridmapping

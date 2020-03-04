@@ -17,27 +17,8 @@ if (varType == "tair") varname2 <- settings$varname2
 outVar <- settings$outVar
 
 timezone <- 0
-shiftouthours <- -30
-
-extraGlobalAttributes <- NULL
-extraGlobalAttributes$name <- NULL
-extraGlobalAttributes$att <- NULL
-
-## Checks
-if (shiftouthours != 0) {
-  strmessage <- paste0("Output time shifted by ", shiftouthours, " hours")
-  ## Print message
-  cat(paste0("NOTE: ", strmessage, "\n"))
-  ## Add global attribute
-  ii <- length(extraGlobalAttributes$name) + 1
-  extraGlobalAttributes$name[ii] <- paste0("disaggr_note_", ii)
-  extraGlobalAttributes$att[ii] <- strmessage
-}
-
-## Remove the output file first (if there is one...)
-if (file.exists(outFile)) {
-  invisible(file.remove(outFile))
-}
+shiftinhours <- -30
+shiftouthours <- 0
 
 ## Get NetCDF/Grid infomation
 nc_info <- melo_get_nc_info()

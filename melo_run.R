@@ -1,72 +1,49 @@
 #!/usr/bin/env Rscript
+
+## Load library
 suppressPackageStartupMessages(library(metGeneratoR))
 
-if (!is.null(args)) {
-  args = commandArgs(trailingOnly=TRUE)
-  
-  # Test arguments
-  if (length(args)<6) {
-    stop("Too less arguments. \n\nRequired:\n  --> varType, projection, nhourly, inFile, varname, outfile", call.=FALSE)
-  } else if (args[1]=="tair") {
-    if (length(args)<8) {
-      stop("Too less arguments. \n\nRequired:\n  --> varType, projection, nhourly, inFileTmin, varname, inFileTmax, varname, outfile\n\n ex: ./melo_run.R tair xy 3 ~/tn_19900101.nc tn ~/tx_19900101.nc tx ~/out.nc", call.=FALSE)
-    }
-  } else if (length(args)==2) {
-    # default output file
-    print(args[2])
-  }
-  
-  varType <- args[1]
-  fileType <- args[2]
-  nhourly <- as.numeric(args[3])
-  inFile <- args[4]
-  varname <- args[5]
-  if (varType == "tair") {
-    inFile2 <- args[6]
-    varname2 <- args[7]
-    outFile <- args[8]
-  } else {
-    outFile <- args[6]
-  }
-} else {
-  varType <- "tair"
-  fileType <- "xy"
-  nhourly <- 1
-  inFile <-"~/tn_19900101.nc"
-  varname <- "tn"
-  if (varType == "tair") {
-    inFile2 <- "~/tx_19900101.nc"
-    varname2 <- "tx"
-    outFile <-"~/tair_out.nc"
-  } else {
-    outFile <- "~/tair_out.nc"
-  }
-  
-  
-  
-  ## Check
-  if (varType != "precip" && varType != "tair" && varType != "shortwave") stop("varType not supported!")
-  
-  ## Print setting
-  cat(paste("\n######################################################################################"))
-  cat(paste("\n## varType:   ", varType, "    \tfileType:   ", fileType, "   nhourly:    ", nhourly))
-  cat(paste("\n## inFile:   ", inFile,"    varname:   ", varname))
-  if (varType == "tair") {
-    cat(paste("\n## inFile2:   ", inFile2,"    varname2:   ", varname2))
-  }
-  cat(paste("\n## outFile:   ", outFile))
-  cat(paste("\n######################################################################################\n"))
-}
+## Get settings
+settings <- melo_get_settings()
+inFile <- settings$inFile
+outFile <- settings$outFile
+fileType <- settings$fileType
+varType <- settings$varType
+nhourly <- settings$nhourly
+inFile <- settings$inFile
+varname <- settings$varname
+if (varType == "tair") inFile2 <- settings$inFile2
+if (varType == "tair") varname2 <- settings$varname2
+outVar <- settings$outVar
 
 timezone <- 0
+shiftouthours <- -30
+
+extraGlobalAttributes <- NULL
+extraGlobalAttributes$name <- NULL
+extraGlobalAttributes$att <- NULL
+
+## Checks
+if (shiftouthours != 0) {
+  strmessage <- paste0("Output time shifted by ", shiftouthours, " hours")
+  ## Print message
+  cat(paste0("NOTE: ", strmessage, "\n"))
+  ## Add global attribute
+  ii <- length(extraGlobalAttributes$name) + 1
+  extraGlobalAttributes$name[ii] <- paste0("disaggr_note_", ii)
+  extraGlobalAttributes$att[ii] <- strmessage
+}
 
 ## Remove the output file first (if there is one...)
 if (file.exists(outFile)) {
   invisible(file.remove(outFile))
 }
 
+## Get NetCDF/Grid infomation
+nc_info <- melo_get_nc_info()
+
 ## Create NetCDF
-source(system.file("extdata", "melo_create_nc.R",      package = "metGeneratoR"))
+melo_create_nc(nc_info)
 
 ## Load data
 ncid_in<-nc_open(inFile)
@@ -78,10 +55,15 @@ if (varType == "tair") {
   nc_close(ncid_in)
 }
 
-## Define target dates
-dates <- seq(ts, by = paste(nhourly, "hours"), length = (24 / nhourly) * length(ts))
+## Define dates
+dates <- seq(nc_info$ts, by = paste(nhourly, "hours"), length = (24 / nhourly) * length(nc_info$ts))
 
 ## Do calculation
+nx <- nc_info$nx
+ny <- nc_info$ny
+lon_2d <- nc_info$lon_2d
+lat_2d <- nc_info$lat_2d
+
 ## Radiation
 if (varType == "shortwave") {
   dataOut <- array(NA, dim=c(nx, ny, (24 / nhourly)))
@@ -139,31 +121,6 @@ if (varType == "precip") {
 #   }
 # }
 # 
-# if (varType == "tair") {
-#   # set_min_max_hour_c
-#   hour = hour(dates)
-#   minute = minute(dates)
-#   yday = yday(dates)
-#   dataOut <- array(NA, dim=c(nx, ny, (24 / nhourly)))
-#   potrad <- array(NA, dim=c(nx, ny, (24 / nhourly)))
-#   iy<-1
-#   for (iy in 1:ny) {
-#     ix<-1
-#     lat <- lat_2d[ix,iy]
-#     for (ix in 1:nx) {
-#       lon <- lon_2d[ix,iy]
-#       # potential_radiation_day
-#       if (!is.na(indata[ix,iy])) {
-#         potradtmp <- potential_radiation_day(hour, minute, yday, lon, lat, timezone)
-#         # potrad[ix,iy,] <- potradtmp
-#         TminHour <- (which.min(potradtmp)-1) * nhourly
-#         TmaxHour <- (which.max(potradtmp)-1) * nhourly
-#         dataOut[ix,iy,] <- HourlyT_cr((24 / nhourly), TminHour, indata[ix,iy], TmaxHour, indata2[ix,iy])
-#       }
-#     }
-#   }
-# }
-
 if (varType == "tair") {
   # set_min_max_hour_c
   hour = hour(dates)
@@ -179,10 +136,30 @@ if (varType == "tair") {
       lon <- lon_2d[ix,iy]
       # potential_radiation_day
       if (!is.na(indata[ix,iy])) {
-        # potradtmp <- potential_radiation_day(hour, minute, yday, lon, lat, timezone)
-        # potrad[ix,iy,] <- potradtmp
-        # TminHour <- (which.min(potradtmp)-1) * nhourly
-        # TmaxHour <- (which.max(potradtmp)-1) * nhourly
+        potradtmp <- potential_radiation_day(hour, minute, yday, lon, lat, timezone)
+        TminHour <- (which.min(potradtmp)-1) * nhourly
+        TmaxHour <- (which.max(potradtmp)-1) * nhourly
+        dataOut[ix,iy,] <- HourlyT_cr((24 / nhourly), TminHour, indata[ix,iy], TmaxHour, indata2[ix,iy])
+      }
+    }
+  }
+}
+
+if (varType == "potrad") {
+  # set_min_max_hour_c
+  hour = hour(dates)
+  minute = minute(dates)
+  yday = yday(dates)
+  dataOut <- array(NA, dim=c(nx, ny, (24 / nhourly)))
+  # potrad <- array(NA, dim=c(nx, ny, (24 / nhourly)))
+  iy<-1
+  for (iy in 1:ny) {
+    ix<-1
+    lat <- lat_2d[ix,iy]
+    for (ix in 1:nx) {
+      lon <- lon_2d[ix,iy]
+      # potential_radiation_day
+      if (!is.na(indata[ix,iy])) {
         dataOut[ix,iy,] <- potential_radiation_day(hour, minute, yday, lon, lat, timezone)
       }
     }
@@ -215,8 +192,7 @@ if (varType == "tair") {
 
 ## Middelen VOORUIT!! (rode vierkantjes)
 
-
 ## Add data to file
 ncid_out <- nc_open(outFile, write = T )
-ncvar_put(ncid_out, varData, vals = dataOut)
+ncvar_put(ncid_out, outVar, vals = dataOut)
 nc_close(ncid_out)

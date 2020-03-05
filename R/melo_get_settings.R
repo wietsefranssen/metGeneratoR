@@ -27,8 +27,8 @@ melo_get_settings <- function() {
       outFile <- args[6]
     }
   } else {
-    # varType <- "tair"
-    varType <- "potrad"
+    varType <- "tair"
+    # varType <- "potrad"
     fileType <- "xy"
     nhourly <- 1
     inFile <-"~/tn_19900101.nc"

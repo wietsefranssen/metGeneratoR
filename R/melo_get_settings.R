@@ -30,7 +30,7 @@ melo_get_settings <- function() {
     varType <- "tair"
     # varType <- "potrad"
     fileType <- "xy"
-    nhourly <- 1
+    nhourly <- 6
     inFile <-"~/tn_19900101.nc"
     varname <- "tn"
     

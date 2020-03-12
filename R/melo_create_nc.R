@@ -71,6 +71,7 @@ melo_create_nc <-function(nc_info) {
     }
   } else {
   }
+  ncatt_put(ncid_out, "time", "calendar", "standard")
   
   ## Add variable attributes
   if (outVar == "tair") {

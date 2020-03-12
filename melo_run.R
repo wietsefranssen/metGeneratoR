@@ -196,17 +196,23 @@ if (varType == "tair") {
 # lon<-lon_2d[iix,iiy]
 # lat<-lat_2d[iix,iiy]
 # 
-# TminHour_arr[iix,iiy] 
-# TmaxHour_arr[iix,iiy] 
+# TminHour_arr[iix,iiy]
+# TmaxHour_arr[iix,iiy]
 # 
 # par(mfrow=c(2,1))
 # plot(potrad[iix, iiy, ], main = "potrad",x=c(0:23), xlab = "", ylab = "")
+# text(6, 150, paste0("tmin hour:", TminHour_arr[iix,iiy]), cex = .8)
+# text(20, 150, paste0("tmax hour:", TmaxHour_arr[iix,iiy]), cex = .8)
 # 
 # plot(tair_1h_arr[iix, iiy, ], x=c(0:23), main = "tair", xlab = "", ylab = "")
 # # points(y=tair_1h_arr[iix,iiy,c(0,6,12,18)+1], x = c(0,6,12,18), pch = 20, col = "red")
 # # points(y=tair_1h_arr[iix,iiy,c(5,11,17, 23)+1], x = c(5,11,17, 23), pch = 20, col = "blue")
 # points(y=dataOut[iix, iiy, ], x = c(0,6,12,18), pch = 22, col = "red")
 # # points(y=dataOut[iix, iiy,], x = c(5,11,17, 23), pch = 22, col = "blue")
+# text(4, 9, expression(hat(beta) == (X^t * X)^{-1} * X^t * y))
+# text(6, 2, paste0("tmin:", indata[iix,iiy]), cex = .8)
+# text(16, 2, paste0("tmax:", indata2[iix,iiy]), cex = .8)
+# 
 
 ## Add data to file
 ncid_out <- nc_open(outFile, write = T )

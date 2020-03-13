@@ -30,8 +30,10 @@ melo_create_nc <-function(nc_info) {
     dimX <- ncdim_def(name='lon', units='degrees_east', longname='longitude', vals=inx )
     dimY <- ncdim_def(name='lat', units='degrees_north', longname='latitude', vals=iny )
   } else if (fileType == "xy") {
-    dimX <- ncdim_def(name='x', units='Meter', longname='x coordinate of projection', vals=inx )
-    dimY <- ncdim_def(name='y', units='Meter', longname='y coordinate of projection', vals=iny )
+    # dimX <- ncdim_def(name='x', units='Meter', longname='x coordinate of projection', vals=inx )
+    # dimY <- ncdim_def(name='y', units='Meter', longname='y coordinate of projection', vals=iny )
+    dimX <- ncdim_def(name='x', units='m', longname='x coordinate of projection', vals=inx )
+    dimY <- ncdim_def(name='y', units='m', longname='y coordinate of projection', vals=iny )
   } else if (fileType == "curvilinear_2d") {
     print("add curv")
     dimX <- ncdim_def(name='x', units='', vals = 1:nx, create_dimvar=F)

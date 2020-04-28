@@ -26,7 +26,6 @@ float potential_radiation(int hour, int minute, int yday, float lon, float lat, 
   
   // compute solar decline in rad
   float solar_decline = tropic_of_cancer * cos(2.0 * pi * (day_of_year - solstice) / days_per_year);
-  
   // compute the sun hour angle in rad
   float standard_meridian = timezone * 15.;
   float delta_lat_time = (lon - standard_meridian) * 24. / 360.;
@@ -48,7 +47,10 @@ float potential_radiation(int hour, int minute, int yday, float lon, float lat, 
                            + 0.000719 * cos(2. * beta) + 0.000077 * sin(2 * beta));
   float solar_constant_times_radius_ratio = solar_constant * radius_ratio;
   
-  float mu = asin(cos(solar_decline) * sin(hour_angle) / sin(solar_zenith_angle));
+  float mu_tmp = cos(solar_decline) * sin(hour_angle) / sin(solar_zenith_angle);
+  if (mu_tmp < -1.0) mu_tmp = -1.0;
+  float mu = asin(mu_tmp);
+  // float mu = asin(cos(solar_decline) * sin(hour_angle) / sin(solar_zenith_angle));
   float cosi = (cos(terrain_slope) * cos_solar_zenith
                    + sin(terrain_slope) * sin(solar_zenith_angle) * cos(mu - terrain_slope_azimuth));
   
@@ -56,6 +58,16 @@ float potential_radiation(int hour, int minute, int yday, float lon, float lat, 
   float direct_radiation = solar_constant_times_radius_ratio * transmissivity_direct * cosi;
   float diffuse_radiation = solar_constant_times_radius_ratio * transmissivity_diffuse * cos_solar_zenith;
   if (direct_radiation < 0) { direct_radiation = 0; }
+  // printf("hoi%f\n",cos(solar_decline) );
+  // printf("%f\n",cos(solar_decline) );
+  // printf("%f\n",sin(hour_angle));
+  // printf("%f\n",sin(solar_zenith_angle));
+  // printf("%f\n",cos(solar_decline) * sin(hour_angle) / sin(solar_zenith_angle)  );
+  // printf("mu: %f\n",asin(cos(solar_decline) * sin(hour_angle) / sin(solar_zenith_angle)));
+  // 
+  // printf("%f\n",mu_tmp);
+  // printf("mu2: %f\n",(float)mu);
+  // printf("%f\n",asin(-1.00000));
   
   return direct_radiation;
 }

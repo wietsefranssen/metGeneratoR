@@ -31,11 +31,11 @@ melo_get_settings <- function() {
     # varType <- "potrad"
     fileType <- "xy"
     nhourly <- 6
-    inFile <-"~/tn_19900101.nc"
+    inFile <-"~/tn_19900324.nc"
     varname <- "tn"
     
     if (varType == "tair") {
-      inFile2 <- "~/tx_19900101.nc"
+      inFile2 <- "~/tx_19900324.nc"
       varname2 <- "tx"
     }
     outFile <- "~/out_interactive.nc"

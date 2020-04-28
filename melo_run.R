@@ -18,7 +18,7 @@ tminTmax <- function() {
       if (i_prev == 0) i_prev <- 24
       pot_curr <- potradtmp[i]
       pot_prev <- potradtmp[i_prev]
-      # print(paste(pot_curr, pot_prev))
+      print(paste(pot_curr, pot_prev))
       if (pot_curr < pot_prev) {
         sunrise <- i
       }

@@ -11,6 +11,7 @@ Start R and run the following commands:
 
     library(devtools)
     install_git("https://github.com/wietsefranssen/metGeneratoR")
+    install_git("https://github.com/wietsefranssen/metGeneratoR", ref="master")
     
 ## Loading
 

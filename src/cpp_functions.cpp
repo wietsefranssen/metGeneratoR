@@ -49,6 +49,7 @@ float potential_radiation(int hour, int minute, int yday, float lon, float lat, 
   
   float mu_tmp = cos(solar_decline) * sin(hour_angle) / sin(solar_zenith_angle);
   if (mu_tmp < -1.0) mu_tmp = -1.0;
+  if (mu_tmp > 1.0) mu_tmp = 1.0;
   float mu = asin(mu_tmp);
   // float mu = asin(cos(solar_decline) * sin(hour_angle) / sin(solar_zenith_angle));
   float cosi = (cos(terrain_slope) * cos_solar_zenith
@@ -68,7 +69,7 @@ float potential_radiation(int hour, int minute, int yday, float lon, float lat, 
   // printf("%f\n",mu_tmp);
   // printf("mu2: %f\n",(float)mu);
   // printf("%f\n",asin(-1.00000));
-  
+  // 
   return direct_radiation;
 }
 

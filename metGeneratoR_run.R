@@ -13,8 +13,8 @@ rm(list=ls(all=TRUE))
 library(metGeneratoR)
 
 ## Override standard settings
-mgsetLonlatbox(c(-179.75, 179.75, -89.75, 89.75))
-# mgsetLonlatbox(c(92.25,110.25,7.25,36.25))
+mgsetXYbox(c(-179.75, 179.75, -89.75, 89.75))
+# mgsetXYbox(c(92.25,110.25,7.25,36.25))
 
 mgsetPeriod(startdate = "1998-1-1", enddate = "1998-1-1")
 

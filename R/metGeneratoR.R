@@ -12,8 +12,8 @@
 #' @name metGeneratoR
 #' @examples
 #' 
-#' ## Set the latlonbox
-#' mgsetLonlatbox(c(92.25, 110.25, 7.25, 36.25))
+#' ## Set the XYbox
+#' mgsetXYbox(c(92.25, 110.25, 7.25, 36.25))
 #' 
 #' ## Set the period to run
 #' mgsetPeriod(startdate = "1950-1-1", enddate = "1950-1-31")

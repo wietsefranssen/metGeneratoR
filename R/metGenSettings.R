@@ -16,10 +16,10 @@ mgcheckVariables <- function() {
 }
 
 #' @export
-mgsetLonlatbox <- function(lonlatbox) {
-  metGen$settings$lonlatbox <- lonlatbox
-  metGen$settings$x <- seq(lonlatbox[1],lonlatbox[2], 0.5)
-  metGen$settings$y <- seq(lonlatbox[3],lonlatbox[4], 0.5)
+mgsetXYbox <- function(xybox) {
+  metGen$settings$xybox <- xybox
+  metGen$settings$x <- seq(xybox[1],xybox[2], 1)
+  metGen$settings$y <- seq(xybox[3],xybox[4], 1)
   metGen$settings$nx <- length(metGen$settings$x)
   metGen$settings$ny <- length(metGen$settings$y)
 }

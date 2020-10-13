@@ -45,8 +45,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // set_max_min_lonlat_cr
-NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec, NumericVector lonlatbox);
-RcppExport SEXP _metGeneratoR_set_max_min_lonlat_cr(SEXP tmin_mapSEXP, SEXP tmax_mapSEXP, SEXP ydaySEXP, SEXP nrecSEXP, SEXP lonlatboxSEXP) {
+NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec, NumericVector xybox);
+RcppExport SEXP _metGeneratoR_set_max_min_lonlat_cr(SEXP tmin_mapSEXP, SEXP tmax_mapSEXP, SEXP ydaySEXP, SEXP nrecSEXP, SEXP xyboxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -54,22 +54,22 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type tmax_map(tmax_mapSEXP);
     Rcpp::traits::input_parameter< int >::type yday(ydaySEXP);
     Rcpp::traits::input_parameter< int >::type nrec(nrecSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type lonlatbox(lonlatboxSEXP);
-    rcpp_result_gen = Rcpp::wrap(set_max_min_lonlat_cr(tmin_map, tmax_map, yday, nrec, lonlatbox));
+    Rcpp::traits::input_parameter< NumericVector >::type xybox(xyboxSEXP);
+    rcpp_result_gen = Rcpp::wrap(set_max_min_lonlat_cr(tmin_map, tmax_map, yday, nrec, xybox));
     return rcpp_result_gen;
 END_RCPP
 }
 // rad_map_final_cr
-NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVector lonlatbox);
-RcppExport SEXP _metGeneratoR_rad_map_final_cr(SEXP nrecSEXP, SEXP ydaySEXP, SEXP gmt_floatSEXP, SEXP lonlatboxSEXP) {
+NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVector xybox);
+RcppExport SEXP _metGeneratoR_rad_map_final_cr(SEXP nrecSEXP, SEXP ydaySEXP, SEXP gmt_floatSEXP, SEXP xyboxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type nrec(nrecSEXP);
     Rcpp::traits::input_parameter< int >::type yday(ydaySEXP);
     Rcpp::traits::input_parameter< double >::type gmt_float(gmt_floatSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type lonlatbox(lonlatboxSEXP);
-    rcpp_result_gen = Rcpp::wrap(rad_map_final_cr(nrec, yday, gmt_float, lonlatbox));
+    Rcpp::traits::input_parameter< NumericVector >::type xybox(xyboxSEXP);
+    rcpp_result_gen = Rcpp::wrap(rad_map_final_cr(nrec, yday, gmt_float, xybox));
     return rcpp_result_gen;
 END_RCPP
 }

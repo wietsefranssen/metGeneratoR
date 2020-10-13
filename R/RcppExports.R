@@ -13,13 +13,13 @@ set_min_max_hour_cr <- function(radfrac, nx) {
     .Call('_metGeneratoR_set_min_max_hour_cr', PACKAGE = 'metGeneratoR', radfrac, nx)
 }
 
-set_max_min_lonlat_cr <- function(tmin_map, tmax_map, yday, nrec, lonlatbox) {
-    .Call('_metGeneratoR_set_max_min_lonlat_cr', PACKAGE = 'metGeneratoR', tmin_map, tmax_map, yday, nrec, lonlatbox)
+set_max_min_lonlat_cr <- function(tmin_map, tmax_map, yday, nrec, xybox) {
+    .Call('_metGeneratoR_set_max_min_lonlat_cr', PACKAGE = 'metGeneratoR', tmin_map, tmax_map, yday, nrec, xybox)
 }
 
 #' @export
-rad_map_final_cr <- function(nrec, yday, gmt_float, lonlatbox) {
-    .Call('_metGeneratoR_rad_map_final_cr', PACKAGE = 'metGeneratoR', nrec, yday, gmt_float, lonlatbox)
+rad_map_final_cr <- function(nrec, yday, gmt_float, xybox) {
+    .Call('_metGeneratoR_rad_map_final_cr', PACKAGE = 'metGeneratoR', nrec, yday, gmt_float, xybox)
 }
 
 rad_map_lats_cr <- function(nt, yday) {

@@ -27,7 +27,8 @@ metGenRun <- function() {
   ### THE MAIN LOOP
   profile<-NULL
   profile$start.time.total <- Sys.time()
-  for (iday in 1:metGen$derived$nday) {
+  # for (iday in 1:metGen$derived$nday) {
+    iday<-1
     metGen$current$timestep <- (metGen$derived$nInStepDay * (iday-1)) + 1
     yday            <- metGen$derived$inYDays[iday]
     printf("Day: %d, date: %s\n", iday, metGen$derived$inDates[metGen$current$timestep])
@@ -64,7 +65,7 @@ metGenRun <- function() {
     if (!is.null(outData$swdown)) {
       if(metGen$metadata$inVars$swdown$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
-          radfrac <- rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$lonlatbox)
+          radfrac <- rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox)
           swdown_day <- apply(inData$swdown, c(1,2), mean)
           for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- radfrac[ , , outrecs[i]] * swdown_day
         } else { ## aggregate to lower number of timesteps
@@ -123,7 +124,7 @@ metGenRun <- function() {
       if(metGen$metadata$inVars$tasmin$enabled && metGen$metadata$inVars$tasmax$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
           if (nInStep > 1) stop(printf("Dissagregation of \"tasmin\" and \"tasmax\" into \"tas\" is only possible for daily input!"))
-          outData$tas <- set_max_min_lonlat_cr(inData$tasmin[,,1], inData$tasmax[,,1], yday, metGen$derived$nOutStepDay, metGen$settings$lonlatbox)
+          outData$tas <- set_max_min_lonlat_cr(inData$tasmin[,,1], inData$tasmax[,,1], yday, metGen$derived$nOutStepDay, metGen$settings$xybox)
         } else { ## aggregate to lower number of timesteps
           outData$tas[] <- 0
           for(i in 1:maxStep) outData$tas[, , outrecs[i]] <- outData$tas[, , outrecs[i]] + 
@@ -232,7 +233,7 @@ metGenRun <- function() {
       nc_close(metGen$settings$outVars[[var]]$ncid)
     }
     rm(inData)
-  }
+  
   
   ncellsTotal <- metGen$settings$nx*metGen$settings$ny
   profile$end.time.total <- Sys.time()

@@ -97,14 +97,14 @@ NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx) {
 }
 
 // [[Rcpp::export]]
-NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec, NumericVector lonlatbox) {
+NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec, NumericVector xybox) {
   float reslon = 0.5;
   float lon;
   int nx, ix;
-  float slon = lonlatbox[0];
-  float elon = lonlatbox[1];
-  float slat = lonlatbox[2];
-  float elat = lonlatbox[3];
+  float slon = xybox[0];
+  float elon = xybox[1];
+  float slat = xybox[2];
+  float elat = xybox[3];
   float reslat = 0.5;
   float lat;
   int ny, iy;
@@ -227,7 +227,7 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
 
 //' @export
 // [[Rcpp::export]]
-NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVector lonlatbox) {
+NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVector xybox) {
   // Define and allocate
   int nx, ix;
   int ny, iy;
@@ -243,10 +243,10 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   
   float reslon = 0.5;
   float reslat = 0.5;
-  float slon = lonlatbox[0];
-  float elon = lonlatbox[1];
-  float slat = lonlatbox[2];
-  float elat = lonlatbox[3];
+  float slon = xybox[0];
+  float elon = xybox[1];
+  float slat = xybox[2];
+  float elat = xybox[3];
   
   nTinyStepsPerDay = 360 / reslon; // 360 degress in lon direction
   dt = nTinyStepsPerDay / nrec;

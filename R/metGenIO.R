@@ -121,7 +121,7 @@ readAllForcing <- function(date) {
   for (var in names(metGen$settings$inVars)) {
     forcing_dataR[[var]] <- ncLoad(filename = metGen$settings$inVars[[var]]$filename,
                                    var = metGen$settings$inVars[[var]]$ncname,
-                                   lonlatbox = metGen$settings$lonlatbox,
+                                   xybox = metGen$settings$xybox,
                                    date = date)
     
     forcing_dataR[[var]] <- convertUnit(forcing_dataR[[var]],
@@ -168,28 +168,28 @@ convertUnit <- function(data, unitIn, unitOut, dt = 24, verbose = F, doConversio
 
 ##https://cran.r-project.org/web/packages/futureheatwaves/vignettes/starting_from_netcdf.html
 #' @export
-ncLoad <- function(filename, var, lonlatbox, date = NULL) {
-  
-  lon_range <- c(lonlatbox[1], lonlatbox[2])
-  lat_range <- c(lonlatbox[3], lonlatbox[4])
+ncLoad <- function(filename, var, xybox, date = NULL) {
+
+  # lon_range <- c(xybox[1], xybox[2])
+  # lat_range <- c(xybox[3], xybox[4])
   
   ncid <- nc_open(filename = filename)
-  lons <- ncvar_get(ncid, "lon")
-  lats <- ncvar_get(ncid, "lat")
+  # lons <- ncvar_get(ncid, "lon")
+  # lats <- ncvar_get(ncid, "lat")
   
-  # If requested, limit to certain ranges of latitude and/or longitude
-  if(!is.null(lon_range)){
-    lon_range <- sort(lon_range)
-    lon_index <- which(lon_range[1] <= lons & lons <= lon_range[2]) 
-    # lon <- lons[lon_index]
-    # tas <- tas[lon_index, , ]
-  }
-  if(!is.null(lat_range)){
-    lat_range <- sort(lat_range)
-    lat_index <- which(lat_range[1] <= lats &  lats <= lat_range[2]) 
-    # lat <- lats[lat_index]
-    # tas <- tas[ , lat_index, ]
-  }
+  # # If requested, limit to certain ranges of latitude and/or longitude
+  # if(!is.null(lon_range)){
+  #   lon_range <- sort(lon_range)
+  #   lon_index <- which(lon_range[1] <= lons & lons <= lon_range[2]) 
+  #   # lon <- lons[lon_index]
+  #   # tas <- tas[lon_index, , ]
+  # }
+  # if(!is.null(lat_range)){
+  #   lat_range <- sort(lat_range)
+  #   lat_index <- which(lat_range[1] <= lats &  lats <= lat_range[2]) 
+  #   # lat <- lats[lat_index]
+  #   # tas <- tas[ , lat_index, ]
+  # }
   
   if (!is.null(date)) {
     ## TODO Move this part to a general part like check input data
@@ -205,22 +205,22 @@ ncLoad <- function(filename, var, lonlatbox, date = NULL) {
     time_index <- which(format(times, "%Y-%m-%d") == format(date, "%Y-%m-%d"))
     
     dataset <- nc.get.var.subset.by.axes(ncid, var,
-                                         axis.indices = list(X = lon_index, 
-                                                             Y = lat_index,
+                                         axis.indices = list(X = c(xybox[1]:xybox[2]), 
+                                                             Y = c(xybox[3]:xybox[4]),
                                                              T = time_index)
                                          # axes.map = c(3,2,1)
     )
   } else {
     dataset <- nc.get.var.subset.by.axes(ncid, var,
-                                         axis.indices = list(X = lon_index, 
-                                                             Y = lat_index,
+                                         axis.indices = list(X = c(xybox[1]:xybox[2]), 
+                                                             Y = c(xybox[3]:xybox[4]),
                                                              T = 1))
   }
   nc_close(ncid)
   
-  ## Flip if needed
-  if (lats[2] < lats[1])
-    dataset[]<-dataset[,c(dim(dataset)[2]:1),]
+  # ## Flip if needed
+  # if (lats[2] < lats[1])
+  #   dataset[]<-dataset[,c(dim(dataset)[2]:1),]
   
   return(dataset)
 }

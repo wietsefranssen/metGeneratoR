@@ -38,6 +38,21 @@ metGenRun <- function() {
     inData <- readAllForcing(metGen$derived$inDates[metGen$current$timestep])
     profile$end.time.read <- Sys.time()
     
+    
+    # /*************************************************
+    #   radiation fraction
+    # *************************************************/
+    if (!is.null(outData$radfrac)) {
+      if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
+        radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox, metGen$output$radfrac$lats)
+        radfrac_day <- apply(inData$radfrac, c(1,2), mean)
+        for(i in 1:maxStep) outData$radfrac[, , outrecs[i]] <- radfrac[ , , outrecs[i]] * radfrac_day
+      } else { ## aggregate to lower number of timesteps
+        outData$radfrac[]<-0
+        for(i in 1:maxStep) outData$radfrac[, , outrecs[i]] <- outData$radfrac[, , outrecs[i]] + ( inData$radfrac[, , inrecs[i]] /  (nInStep/nOutStep) )
+      }
+    }    
+    
     # /*************************************************
     #   Precipitation
     # *************************************************/
@@ -139,7 +154,7 @@ metGenRun <- function() {
         }
       }
     }
-
+    
     # /**************************************
     #   Min and Max Temperature
     # **************************************/
@@ -201,12 +216,12 @@ metGenRun <- function() {
           for(i in 1:maxStep) outData$vp[, , outrecs[i]] <- outData$vp[, , outrecs[i]] +  ( sh2vp(inData$qair[,,inrecs[i]], inData$psurf[,,inrecs[i]]) /  (nInStep/nOutStep) )
         }
       } else if(metGen$metadata$inVars$vp$enabled) {
-            if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
-              for(i in 1:maxStep) outData$vp[, ,outrecs[i]] <- inData$vp[, , inrecs[i]]
-            } else { ## aggregate to lower number of timesteps
-              outData$vp[] <- 0
-              for(i in 1:maxStep) outData$vp[, , outrecs[i]] <- outData$vp[, , outrecs[i]] + ( inData$vp[, , inrecs[i]] / (nInStep/nOutStep) )
-            }
+        if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
+          for(i in 1:maxStep) outData$vp[, ,outrecs[i]] <- inData$vp[, , inrecs[i]]
+        } else { ## aggregate to lower number of timesteps
+          outData$vp[] <- 0
+          for(i in 1:maxStep) outData$vp[, , outrecs[i]] <- outData$vp[, , outrecs[i]] + ( inData$vp[, , inrecs[i]] / (nInStep/nOutStep) )
+        }
       } else {
         if (nInStep > 1) stop(printf("Cannot convert to vp!"))
       }

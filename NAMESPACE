@@ -28,9 +28,10 @@ export(mgsetInitInput)
 export(mgsetInitOutput)
 export(mggetInDims)
 export(mgsetOutDims)
-
+export(rad_map_final_2dll_cr)
 export(mgcheckInVars)
 export(mgcheckOutVars)
+export(solar_geom_cr)
 
 import(Rcpp)
 importFrom(Rcpp,evalCpp)

@@ -43,14 +43,10 @@ metGenRun <- function() {
     #   radiation fraction
     # *************************************************/
     if (!is.null(outData$radfrac)) {
-      if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
-        radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox, metGen$output$radfrac$lats)
-        radfrac_day <- apply(inData$radfrac, c(1,2), mean)
-        for(i in 1:maxStep) outData$radfrac[, , outrecs[i]] <- radfrac[ , , outrecs[i]] * radfrac_day
-      } else { ## aggregate to lower number of timesteps
-        outData$radfrac[]<-0
-        for(i in 1:maxStep) outData$radfrac[, , outrecs[i]] <- outData$radfrac[, , outrecs[i]] + ( inData$radfrac[, , inrecs[i]] /  (nInStep/nOutStep) )
-      }
+        metGen$radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, 
+                                         metGen$settings$xybox, 
+                                         metGen$output$lats)
+        
     }    
     
     # /*************************************************

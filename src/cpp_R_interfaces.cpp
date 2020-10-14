@@ -56,7 +56,7 @@ NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, in
 NumericVector sh2vp(NumericVector q, NumericVector p) {
   size_t i;
   size_t n = q.length();
-
+  
   NumericVector t = p;
   
   if(q.length() != t.length() || q.length() != p.length()) {
@@ -65,14 +65,14 @@ NumericVector sh2vp(NumericVector q, NumericVector p) {
     // printf("q, t and p should all have the same length!\n");
     return(1);
   }
-
+  
   NumericVector vp(n);
   vp.attr("dim") = q.attr("dim");
-
+  
   for (i = 0; i < n; i++) {
     vp[i] = sh2vp_c(q[i], t[i], p[i]);
   }
-
+  
   return vp;
 }  
 
@@ -111,7 +111,7 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
   // int nt;
   int nTinyStepsPerDay;
   
-
+  
   int irec;
   
   ny = ((elat - slat) / reslat) + 1;
@@ -379,7 +379,6 @@ NumericVector rad_map_final_2dll_cr(int nrec, int yday, double gmt_float, Numeri
   int nx, ix;
   int ny, iy;
   int it;
-  // int ixx ;
   int irec;
   int idx;
   int iGmtOffset;
@@ -387,19 +386,7 @@ NumericVector rad_map_final_2dll_cr(int nrec, int yday, double gmt_float, Numeri
   int dt;
   double gmt_float_tmp;
   size_t count;
-  // 
-  // float reslon = 0.5;
-  // float reslat = 0.5;
-  // float slon = xybox[0];
-  // float elon = xybox[1];
-  // float slat = xybox[2];
-  // float elat = xybox[3];
-  // 
-  // nTinyStepsPerDay = 360 / reslon; // 360 degress in lon direction
-  // dt = nTinyStepsPerDay / nrec;
-  // ny = ((elat - slat) / reslat) + 1;
-  // nx = ((elon - slon) / reslon) + 1;
-
+  
   nx = (xybox[1] - xybox[0]) + 1;
   ny = (xybox[3] - xybox[2]) + 1;
   
@@ -441,14 +428,25 @@ NumericVector rad_map_final_2dll_cr(int nrec, int yday, double gmt_float, Numeri
     }
   }
   
-  // // run the function new!
-  // for (ix = 0; ix < nx; ix++) {
-  //   for (iy = 0; iy < ny; iy++) {
-  //     for (irec = 0; irec < nrec; irec++) {
-  //       rad_fract_map[ix][iy][irec] = solar_geom_c(rad_fract, lat, yday, nt);
-  //     }
-  //   }
-  // }
+  // run the function new!
+  int timesteps_per_day = 24; // dummy!!
+  float lat;
+  double *rad_fract = (double*)malloc(timesteps_per_day * sizeof(double));
+  
+  int i = 0;
+  for (ix = 0; ix < nx; ix++) {
+    printf("i: %i\n",i);
+    for (iy = 0; iy < ny; iy++) {
+      // printf("j: %i\n",i);
+      lat = lats[i];
+      solar_geom_c(rad_fract, lat, yday = yday, timesteps_per_day);
+      for (irec = 0; irec < nrec; irec++) {
+        rad_fract_map[ix][iy][irec] = rad_fract[irec];
+      }
+      i++;
+    }
+    
+  }
   // 
   // // // run the function
   // // rad_fract_lats_c(rad_fract_map_org, nTinyStepsPerDay, yday, slat, elat);

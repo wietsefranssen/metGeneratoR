@@ -374,7 +374,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
 }
 //' @export
 // [[Rcpp::export]]
-NumericVector rad_map_final_2dll_cr(int nrec, int yday, double gmt_float, NumericVector xybox) {
+NumericVector rad_map_final_2dll_cr(int nrec, int yday, double gmt_float, NumericVector xybox, NumericVector lats) {
   // Define and allocate
   int nx, ix;
   int ny, iy;
@@ -387,18 +387,21 @@ NumericVector rad_map_final_2dll_cr(int nrec, int yday, double gmt_float, Numeri
   int dt;
   double gmt_float_tmp;
   size_t count;
-  
-  float reslon = 0.5;
-  float reslat = 0.5;
-  float slon = xybox[0];
-  float elon = xybox[1];
-  float slat = xybox[2];
-  float elat = xybox[3];
-  
-  nTinyStepsPerDay = 360 / reslon; // 360 degress in lon direction
-  dt = nTinyStepsPerDay / nrec;
-  ny = ((elat - slat) / reslat) + 1;
-  nx = ((elon - slon) / reslon) + 1;
+  // 
+  // float reslon = 0.5;
+  // float reslat = 0.5;
+  // float slon = xybox[0];
+  // float elon = xybox[1];
+  // float slat = xybox[2];
+  // float elat = xybox[3];
+  // 
+  // nTinyStepsPerDay = 360 / reslon; // 360 degress in lon direction
+  // dt = nTinyStepsPerDay / nrec;
+  // ny = ((elat - slat) / reslat) + 1;
+  // nx = ((elon - slon) / reslon) + 1;
+
+  nx = (xybox[1] - xybox[0]) + 1;
+  ny = (xybox[3] - xybox[2]) + 1;
   
   NumericVector rad_fract_map_r(nrec * ny * nx);
   IntegerVector dims(3);
@@ -416,18 +419,18 @@ NumericVector rad_map_final_2dll_cr(int nrec, int yday, double gmt_float, Numeri
     }
   }
   
-  // Define and allocate
-  double **rad_fract_map_org = (double**)malloc(ny * sizeof(double));
-  for (iy = 0; iy < ny; iy++) {
-    rad_fract_map_org[iy] = (double*)malloc(nTinyStepsPerDay * sizeof(double));
-  }
-  
-  // Zero
-  for (iy = 0; iy < ny; iy++) {
-    for (it = 0; it < nTinyStepsPerDay; it++) {
-      rad_fract_map_org[iy][it] = 0;
-    }
-  }
+  // // Define and allocate
+  // double **rad_fract_map_org = (double**)malloc(ny * sizeof(double));
+  // for (iy = 0; iy < ny; iy++) {
+  //   rad_fract_map_org[iy] = (double*)malloc(nTinyStepsPerDay * sizeof(double));
+  // }
+  // 
+  // // Zero
+  // for (iy = 0; iy < ny; iy++) {
+  //   for (it = 0; it < nTinyStepsPerDay; it++) {
+  //     rad_fract_map_org[iy][it] = 0;
+  //   }
+  // }
   
   // Zero
   for (ix = 0; ix < nx; ix++) {
@@ -438,34 +441,41 @@ NumericVector rad_map_final_2dll_cr(int nrec, int yday, double gmt_float, Numeri
     }
   }
   
-  // run the function
-  rad_fract_lats_c(rad_fract_map_org, nTinyStepsPerDay, yday, slat, elat);
-  
-  // ## Check and correct gmt_float 
-  // if(gmt_float < -12 || gmt_float > 12) stop("cannot be lower than -12 and higher than 12")
-  if (gmt_float < 0) gmt_float = gmt_float + nTinyStepsPerDay;
-  
-  // ## Define the index offset based on the gmt offset
-  gmt_float_tmp = gmt_float * (nTinyStepsPerDay/24);
-  iGmtOffset = gmt_float_tmp + ((24/nrec) * -15 + 360);
-  if (iGmtOffset < 0) iGmtOffset = iGmtOffset + nTinyStepsPerDay;
-  // printf("gmt: %d\n", iGmtOffset);
-  
-  // iXoffset is for a smaller domain...
-  float iXoffset = (slon - -179.75) / reslon;
-  for (ix = 0; ix < nx; ix++) {
-    // idx = (floor((float)ix * ( (float)nTinyStepsPerDay / (float)nx) )) + iGmtOffset;
-    idx = floor((float)ix) + iGmtOffset + ((float)1 * (float)iXoffset);
-    for (irec = 0; irec < nrec; irec++) {
-      for (int id = 0; id < dt; id++) {
-        if (idx >= nTinyStepsPerDay) idx -= nTinyStepsPerDay;
-        for (iy = 0; iy < ny; iy++) {
-          rad_fract_map[ix][iy][irec] += rad_fract_map_org[iy][idx] * nrec;
-        }
-        idx++;
-      }
-    }
-  }
+  // // run the function new!
+  // for (ix = 0; ix < nx; ix++) {
+  //   for (iy = 0; iy < ny; iy++) {
+  //     for (irec = 0; irec < nrec; irec++) {
+  //       rad_fract_map[ix][iy][irec] = solar_geom_c(rad_fract, lat, yday, nt);
+  //     }
+  //   }
+  // }
+  // 
+  // // // run the function
+  // // rad_fract_lats_c(rad_fract_map_org, nTinyStepsPerDay, yday, slat, elat);
+  // 
+  // // ## Check and correct gmt_float 
+  // // if(gmt_float < -12 || gmt_float > 12) stop("cannot be lower than -12 and higher than 12")
+  // if (gmt_float < 0) gmt_float = gmt_float + nTinyStepsPerDay;
+  // 
+  // // ## Define the index offset based on the gmt offset
+  // gmt_float_tmp = gmt_float * (nTinyStepsPerDay/24);
+  // iGmtOffset = gmt_float_tmp + ((24/nrec) * -15 + 360);
+  // if (iGmtOffset < 0) iGmtOffset = iGmtOffset + nTinyStepsPerDay;
+  // 
+  // // iXoffset is for a smaller domain...
+  // float iXoffset = (slon - -179.75) / reslon;
+  // for (ix = 0; ix < nx; ix++) {
+  //   idx = floor((float)ix) + iGmtOffset + ((float)1 * (float)iXoffset);
+  //   for (irec = 0; irec < nrec; irec++) {
+  //     for (int id = 0; id < dt; id++) {
+  //       if (idx >= nTinyStepsPerDay) idx -= nTinyStepsPerDay;
+  //       for (iy = 0; iy < ny; iy++) {
+  //         rad_fract_map[ix][iy][irec] += rad_fract_map_org[iy][idx] * nrec;
+  //       }
+  //       idx++;
+  //     }
+  //   }
+  // }
   
   // Do everything for rec 0
   // float iXoffset = (slon - -179.75) / reslon;
@@ -513,10 +523,10 @@ NumericVector rad_map_final_2dll_cr(int nrec, int yday, double gmt_float, Numeri
   }
   free(rad_fract_map);
   
-  for (iy = 0; iy < ny; iy++) {
-    free(rad_fract_map_org[iy]);
-  }
-  free(rad_fract_map_org);
+  // for (iy = 0; iy < ny; iy++) {
+  //   free(rad_fract_map_org[iy]);
+  // }
+  // free(rad_fract_map_org);
   return rad_fract_map_r;
 }
 

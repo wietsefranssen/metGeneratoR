@@ -23,8 +23,8 @@ rad_map_final_cr <- function(nrec, yday, gmt_float, xybox) {
 }
 
 #' @export
-rad_map_final_2dll_cr <- function(nrec, yday, gmt_float, xybox) {
-    .Call('_metGeneratoR_rad_map_final_2dll_cr', PACKAGE = 'metGeneratoR', nrec, yday, gmt_float, xybox)
+rad_map_final_2dll_cr <- function(nrec, yday, gmt_float, xybox, lats) {
+    .Call('_metGeneratoR_rad_map_final_2dll_cr', PACKAGE = 'metGeneratoR', nrec, yday, gmt_float, xybox, lats)
 }
 
 rad_map_lats_cr <- function(nt, yday) {

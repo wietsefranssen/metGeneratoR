@@ -27,8 +27,8 @@ metGenRun <- function() {
   ### THE MAIN LOOP
   profile<-NULL
   profile$start.time.total <- Sys.time()
-  # for (iday in 1:metGen$derived$nday) {
-    iday<-1
+  for (iday in 1:metGen$derived$nday) {
+    # iday<-1
     metGen$current$timestep <- (metGen$derived$nInStepDay * (iday-1)) + 1
     yday            <- metGen$derived$inYDays[iday]
     printf("Day: %d, date: %s\n", iday, metGen$derived$inDates[metGen$current$timestep])
@@ -65,7 +65,7 @@ metGenRun <- function() {
     if (!is.null(outData$swdown)) {
       if(metGen$metadata$inVars$swdown$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
-          radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox)
+          radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox, metGen$output$swdown$lats)
           swdown_day <- apply(inData$swdown, c(1,2), mean)
           for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- radfrac[ , , outrecs[i]] * swdown_day
         } else { ## aggregate to lower number of timesteps
@@ -221,6 +221,9 @@ metGenRun <- function() {
     }
     
     ## ADD OUTPUT TO NETCDF
+    # need to switch dimension order first (fix later)
+    # outData[[var]]<-aperm(outData[[var]],c(2,1,3))
+    
     for (var in names(metGen$settings$outVars)) {
       timeIndex <- metGen$derived$nOutStepDay*(iday-1)+1
       metGen$settings$outVars[[var]]$ncid <- nc_open(metGen$settings$outVars[[var]]$filename, write = TRUE)
@@ -228,12 +231,12 @@ metGenRun <- function() {
                 var,
                 outData[[var]][,,],
                 start = c(1, 1, timeIndex),
-                count = c(metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay)
+                count = c(metGen$settings$ny, metGen$settings$nx, metGen$derived$nOutStepDay)
       )
       nc_close(metGen$settings$outVars[[var]]$ncid)
     }
     rm(inData)
-  
+  }
   
   ncellsTotal <- metGen$settings$nx*metGen$settings$ny
   profile$end.time.total <- Sys.time()

@@ -24,6 +24,14 @@ export(readAllForcing)
 
 export(set_max_min_lonlat_cr)
 
+export(mgsetInitInput)
+export(mgsetInitOutput)
+export(mggetInDims)
+export(mgsetOutDims)
+
+export(mgcheckInVars)
+export(mgcheckOutVars)
+
 import(Rcpp)
 importFrom(Rcpp,evalCpp)
 useDynLib(metGeneratoR)

@@ -93,7 +93,6 @@ mgsetInVars <- function(varlist) {
       metGen$settings$inVars[[var]]$longName <- metGen$metadata$inVars[[var]]$longName
     }
   }
-  mgcheckInVars()
 }
 
 #' @export
@@ -136,8 +135,6 @@ mgsetOutVars <- function(varnames) {
     }
   }
   mgsetOutName(nameString = "output/<VAR>/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = F)
-  mgcheckOutVars()
-  
 }
 
 #' @export
@@ -180,6 +177,17 @@ mgsetInit <- function() {
   mgsetInitMetadata()
   mgsetInitInternal()
   mgsetInitConstants()
+  mgsetInitInput()
+  mgsetInitOutput()
+}
+
+#' @export
+mgsetInitInput <- function() {
+  metGen$input <- NULL
+}
+#' @export
+mgsetInitOutput <- function() {
+  metGen$output <- NULL
 }
 
 #' @export
@@ -229,7 +237,8 @@ mgsetInitMetadata <- function() {
     # relhum     = list(filename = "", enable = FALSE, internal_units = "%",         output_units = "%",         longName = "relative humidity"),
     relhum     = list(filename = "", enable = FALSE, internal_units = "% / 0.01",  output_units = "% / 0.01",  longName = "relative humidity"), ## relhum needs to be fraction. Because fraction does not extist in udunits we call it "% / 0.01"
     density    = list(filename = "", enable = FALSE, internal_units = "kg m-3",    output_units = "kg m-3",    longName = "near-surface atmospheric density"),
-    wind       = list(filename = "", enable = FALSE, internal_units = "m s-1",     output_units = "m s-1",     longName = "near surface wind speed")
+    wind       = list(filename = "", enable = FALSE, internal_units = "m s-1",     output_units = "m s-1",     longName = "near surface wind speed"),
+    radfrac       = list(filename = "", enable = FALSE, internal_units = "frac",     output_units = "frac",     longName = "radiation fraction")
   )
   
   metGen$metadata$elevation <- list(ncName = "elevation")

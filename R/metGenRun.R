@@ -9,7 +9,7 @@ metGenRun <- function() {
   ## DEFINE OUTPUT ARRAY
   outData <- NULL
   for (var in names(metGen$settings$outVars)) {
-    outData[[var]] <- array(NA, dim = c(metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay))
+    outData[[var]] <- array(NA, dim = c(metGen$settings$ny, metGen$settings$nx, metGen$derived$nOutStepDay))
   }
   
   nInStep <- metGen$derived$nInStepDay
@@ -43,14 +43,16 @@ metGenRun <- function() {
     #   radiation fraction
     # *************************************************/
     if (metGen$output$ndim == 1) {
-    lonlat2d <- F }
-    else {lonlat2d <- T}
+      lonlat2d <- F 
+    } else {
+      lonlat2d <- T
+    }
     if (!is.null(outData$radfrac)) {
-        metGen$radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, 
-                                         metGen$settings$xybox, 
-                                         metGen$output$lats,
-                                         lonlat2d)
-        for(i in 1:maxStep) outData$radfrac[, ,outrecs[i]] <- metGen$radfrac[, , inrecs[i]]
+      metGen$radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, 
+                                              metGen$settings$xybox, 
+                                              metGen$output$lats,
+                                              lonlat2d)
+      for(i in 1:maxStep) outData$radfrac[, ,outrecs[i]] <- metGen$radfrac[, , inrecs[i]]
     }    
     
     # /*************************************************
@@ -60,6 +62,7 @@ metGenRun <- function() {
       if(metGen$metadata$inVars$pr$enabled) { ## if precip is provided
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
           for(i in 1:maxStep) outData$pr[, ,outrecs[i]] <- inData$pr[, , inrecs[i]]
+          # for(i in 1:maxStep) outData$pr[, ,outrecs[i]] <- inData$pr[, , 1]
         } else { ## aggregate to lower number of timesteps
           outData$pr[] <- 0
           for(i in 1:maxStep)  outData$pr[, , outrecs[i]] <- outData$pr[, , outrecs[i]] + ( inData$pr[, , inrecs[i]] / (nInStep/nOutStep) )
@@ -238,17 +241,29 @@ metGenRun <- function() {
     ## ADD OUTPUT TO NETCDF
     # need to switch dimension order first (fix later)
     # outData[[var]]<-aperm(outData[[var]],c(2,1,3))
+    metGen$outData <- outData
+    metGen$inData <- inData
     
+    print(image(outData$pr[,,1]))
     for (var in names(metGen$settings$outVars)) {
       timeIndex <- metGen$derived$nOutStepDay*(iday-1)+1
-      metGen$settings$outVars[[var]]$ncid <- nc_open(metGen$settings$outVars[[var]]$filename, write = TRUE)
-      ncvar_put(metGen$settings$outVars[[var]]$ncid,
-                var,
-                outData[[var]][,,],
-                start = c(1, 1, timeIndex),
-                count = c(metGen$settings$ny, metGen$settings$nx, metGen$derived$nOutStepDay)
+      # metGen$settings$outVars[[var]]$ncid <- nc_open(metGen$settings$outVars[[var]]$filename, write = TRUE)
+      metGen$settings$outVars[[var]]$ncid <- open.nc(metGen$settings$outVars[[var]]$filename, write = TRUE)
+      
+      # ncvar_put(metGen$settings$outVars[[var]]$ncid,
+      #           var,
+      #           outData[[var]][,,],
+      #           start = c(1, 1, timeIndex),
+      #           count = c(metGen$settings$ny, metGen$settings$nx, metGen$derived$nOutStepDay)
+      # )
+      var.put.nc(metGen$settings$outVars[[var]]$ncid,
+                 var,
+                 outData[[var]][,,],
+                 start = c(1, 1, timeIndex),
+                 count = c(metGen$settings$ny, metGen$settings$nx, metGen$derived$nOutStepDay)
       )
-      nc_close(metGen$settings$outVars[[var]]$ncid)
+      # nc_close(metGen$settings$outVars[[var]]$ncid)
+      close.nc(metGen$settings$outVars[[var]]$ncid)
     }
     rm(inData)
   }

@@ -51,7 +51,8 @@ mggetInVarInfo <- function(filename, varname) {
       vals <- var.get.nc(ncid, varnames[[i]])
       var[[i]] <- list(id=id, name=name, ndim=ndim, dimids=dimids, dimnames=dimnames, natts=natts, vals=vals)
     } else {
-      var[[i]] <- list(id=id, name=name, ndim=ndim, dimids=dimids, dimnames=dimnames, natts=natts)
+      vals <- var.get.nc(ncid, varnames[[i]])
+      var[[i]] <- list(id=id, name=name, ndim=ndim, dimids=dimids, dimnames=dimnames, natts=natts, vals=vals)
     }
   }
   
@@ -354,12 +355,19 @@ ncLoad <- function(filename, var, xybox, date = NULL) {
     
     time_index <- which(format(times, "%Y-%m-%d") == format(date, "%Y-%m-%d"))
     
-    dataset <- nc.get.var.subset.by.axes(ncid, var,
-                                         axis.indices = list(X = c(xybox[1]:xybox[2]), 
-                                                             Y = c(xybox[3]:xybox[4]),
-                                                             T = time_index)
-                                         # axes.map = c(3,2,1)
-    )
+    dataset <-  ncvar_get(nc = ncid, 
+                          varid = var, 
+                          start = c(xybox[3],xybox[1],time_index[1]),
+                          count = c(length(c(xybox[3]:xybox[4])),
+                                    length(c(xybox[1]:xybox[2])),length(time_index)),
+                          collapse_degen = F)
+    print(dim(dataset))
+    # dataset <- nc.get.var.subset.by.axes(ncid, var,
+    #                                      axis.indices = list(X = c(xybox[1]:xybox[2]), 
+    #                                                          Y = c(xybox[3]:xybox[4]),
+    #                                                          T = time_index,
+    #                                      axes.map = c(0,1,2))
+    # )
   } else {
     dataset <- nc.get.var.subset.by.axes(ncid, var,
                                          axis.indices = list(X = c(xybox[1]:xybox[2]), 

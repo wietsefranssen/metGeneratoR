@@ -1,5 +1,17 @@
 #' @export
 mggetInVarInfo <- function(filename, varname) {
+  getdimname <- function(id) {
+    result <- NULL
+    i <- 1 
+    for (iid in c(id)) {
+      lijst <- c(dim$t$id,dim$x$id,dim$y$id)
+      resultid<-which(lijst == iid)
+      result[i] <- dim[[resultid]]$name
+      i <- i + 1
+    }
+    return(result)
+  }
+  
   dimnames <- list(t="time", x="lon", y="lat")
   dimvarnames <- list(t="time", x="lon", y="lat")
   datavarname <- varname
@@ -25,19 +37,20 @@ mggetInVarInfo <- function(filename, varname) {
   result$dims <- dim
   
   ## get vars
-  varnames <- c(dimvarnames, "prAdjust")
+  varnames <- c(dimvarnames, varname)
   var <- NULL
   for (i in c(1:length(varnames))) {
     info <- var.inq.nc(ncid, varnames[[i]])
     id <- info$id
     ndim <- info$ndims
     dimids <- info$dimids
+    dimnames <- getdimname(dimids)
     natts <- info$natts
     if (i != length(varnames)) {
       vals <- var.get.nc(ncid, varnames[[i]])
-      var[[i]] <- list(id=id, ndim=ndim, dimids=dimids, natts=natts, vals=vals)
+      var[[i]] <- list(id=id, ndim=ndim, dimids=dimids, dimnames=dimnames, natts=natts, vals=vals)
     } else {
-      var[[i]] <- list(id=id, ndim=ndim, dimids=dimids, natts=natts)
+      var[[i]] <- list(id=id, ndim=ndim, dimids=dimids, dimnames=dimnames, natts=natts)
     }
   }
   
@@ -50,7 +63,6 @@ mggetInVarInfo <- function(filename, varname) {
   close.nc(ncid)
   
   return(result)
-  
 }
 
 

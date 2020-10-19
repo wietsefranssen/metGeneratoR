@@ -1,4 +1,60 @@
 #' @export
+mggetInVarInfo <- function(filename, varname) {
+  dimnames <- list(t="time", x="lon", y="lat")
+  dimvarnames <- list(t="time", x="lon", y="lat")
+  datavarname <- varname
+  
+  ncid <- open.nc(filename)
+  
+  result <- NULL
+  
+  ## Get dims
+  dim <- NULL
+  for (idim in c(1:length(dimnames))) {
+    info <- dim.inq.nc(ncid, dimnames[[idim]])
+    n <- info$length
+    id <- info$id
+    name <- info$name
+    dim[[idim]] <- list(n=n, id=id, name=name)
+  }
+  
+  ## change/add names to list members
+  names(dim) <-  names(dimnames)
+  
+  ## add to result
+  result$dims <- dim
+  
+  ## get vars
+  varnames <- c(dimvarnames, "prAdjust")
+  var <- NULL
+  for (i in c(1:length(varnames))) {
+    info <- var.inq.nc(ncid, varnames[[i]])
+    id <- info$id
+    ndim <- info$ndims
+    dimids <- info$dimids
+    natts <- info$natts
+    if (i != length(varnames)) {
+      vals <- var.get.nc(ncid, varnames[[i]])
+      var[[i]] <- list(id=id, ndim=ndim, dimids=dimids, natts=natts, vals=vals)
+    } else {
+      var[[i]] <- list(id=id, ndim=ndim, dimids=dimids, natts=natts)
+    }
+  }
+  
+  ## change/add names to list members
+  names(var) <-  c(names(dimvarnames), "data")
+  
+  ## add to result
+  result$vars <- var
+  
+  close.nc(ncid)
+  
+  return(result)
+  
+}
+
+
+#' @export
 makeNetcdfOut <- function() {
   
   settings<-metGen$settings

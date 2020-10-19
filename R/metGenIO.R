@@ -4,7 +4,7 @@ mggetInVarInfo <- function(filename, varname) {
     result <- NULL
     i <- 1 
     for (iid in c(id)) {
-      lijst <- c(dim$t$id,dim$x$id,dim$y$id)
+      lijst <- c(dim$y$id, dim$x$id, dim$t$id)
       resultid<-which(lijst == iid)
       result[i] <- dim[[resultid]]$name
       i <- i + 1
@@ -12,8 +12,8 @@ mggetInVarInfo <- function(filename, varname) {
     return(result)
   }
   
-  dimnames <- list(t="time", x="lon", y="lat")
-  dimvarnames <- list(t="time", x="lon", y="lat")
+  dimnames <- list(y="lat", x="lon", t="time")
+  dimvarnames <- list(y="lat", x="lon", t="time")
   datavarname <- varname
   
   ncid <- open.nc(filename)
@@ -44,15 +44,25 @@ mggetInVarInfo <- function(filename, varname) {
     name <- info$name
     id <- info$id
     ndim <- info$ndims
+
+    ## get new order (same as output)
     dimids <- info$dimids
-    dimnames <- getdimname(dimids)
+    dimnamestmp <- getdimname(dimids)
+    aperm_value <- match(dimnames,dimnamestmp)
+    aperm_value <- aperm_value[!is.na(aperm_value)]
+    # print(paste0("dimnames: ", names(dimnames)))
+    # print(paste0("dimnamestmp: ", dimnamestmp))
+    # print(paste0("dimids: ", dimids))
+    # dimnamesnew<-names(dimnames)[aperm_value]
     natts <- info$natts
     if (i != length(varnames)) {
       vals <- var.get.nc(ncid, varnames[[i]])
-      var[[i]] <- list(id=id, name=name, ndim=ndim, dimids=dimids, dimnames=dimnames, natts=natts, vals=vals)
+      vals <- aperm(vals, aperm_value)
+      var[[i]] <- list(id=id, name=name, ndim=ndim, dimids_org=dimids, aperm=aperm_value, natts=natts, vals=vals)
     } else {
       vals <- var.get.nc(ncid, varnames[[i]])
-      var[[i]] <- list(id=id, name=name, ndim=ndim, dimids=dimids, dimnames=dimnames, natts=natts, vals=vals)
+      vals <- aperm(vals, aperm_value)
+      var[[i]] <- list(id=id, name=name, ndim=ndim, dimids=dimids, aperm=aperm_value, natts=natts, vals=vals)
     }
   }
   
@@ -73,14 +83,7 @@ mggetInDims <- function() {
   for (var in names(metGen$settings$inVar)) {
     if (var != "radfrac") {
       printf("Getting input dimensions \"%s\". ", var)
-      metGen$input[[var]] <-mggetInVarInfo(metGen$settings$inVars[[var]]$filename, metGen$settings$inVars[[var]]$ncname)
-      # ncid <- nc_open(filename = metGen$settings$inVars[[var]]$filename)
-      # 
-      # metGen$input[[var]]$lons <- ncvar_get(ncid, "lon")
-      # metGen$input[[var]]$lats <- ncvar_get(ncid, "lat")
-      # metGen$input[[var]]$ndim <- length(dim(metGen$input[[var]]$lons))
-      # nc_close(ncid)
-      # 
+      metGen$input[[var]] <- mggetInVarInfo(metGen$settings$inVars[[var]]$filename, metGen$settings$inVars[[var]]$ncname)
       printf("\n")
     }
   }
@@ -271,7 +274,8 @@ readAllForcing <- function(date) {
   forcing_dataR <- NULL
   for (var in names(metGen$settings$inVars)) {
     forcing_dataR[[var]] <- ncLoad(filename = metGen$settings$inVars[[var]]$filename,
-                                   var = metGen$settings$inVars[[var]]$ncname,
+                                   ncvar = metGen$settings$inVars[[var]]$ncname,
+                                   var = var,
                                    xybox = metGen$settings$xybox,
                                    date = date)
     
@@ -319,29 +323,9 @@ convertUnit <- function(data, unitIn, unitOut, dt = 24, verbose = F, doConversio
 
 ##https://cran.r-project.org/web/packages/futureheatwaves/vignettes/starting_from_netcdf.html
 #' @export
-ncLoad <- function(filename, var, xybox, date = NULL) {
-  
-  # lon_range <- c(xybox[1], xybox[2])
-  # lat_range <- c(xybox[3], xybox[4])
+ncLoad <- function(filename, ncvar, var, xybox, date = NULL) {
   
   ncid <- nc_open(filename = filename)
-  # lons <- ncvar_get(ncid, "lon")
-  # lats <- ncvar_get(ncid, "lat")
-  
-  # # If requested, limit to certain ranges of latitude and/or longitude
-  # if(!is.null(lon_range)){
-  #   lon_range <- sort(lon_range)
-  #   lon_index <- which(lon_range[1] <= lons & lons <= lon_range[2]) 
-  #   # lon <- lons[lon_index]
-  #   # tas <- tas[lon_index, , ]
-  # }
-  # if(!is.null(lat_range)){
-  #   lat_range <- sort(lat_range)
-  #   lat_index <- which(lat_range[1] <= lats &  lats <= lat_range[2]) 
-  #   # lat <- lats[lat_index]
-  #   # tas <- tas[ , lat_index, ]
-  # }
-  
   if (!is.null(date)) {
     ## TODO Move this part to a general part like check input data
     ## mgsetInDt(inDt = 3) this function can then also be filled automatically
@@ -355,25 +339,28 @@ ncLoad <- function(filename, var, xybox, date = NULL) {
     
     time_index <- which(format(times, "%Y-%m-%d") == format(date, "%Y-%m-%d"))
     
-    dataset <-  ncvar_get(nc = ncid, 
-                          varid = var, 
-                          start = c(xybox[3],xybox[1],time_index[1]),
-                          count = c(length(c(xybox[3]:xybox[4])),
-                                    length(c(xybox[1]:xybox[2])),length(time_index)),
-                          collapse_degen = F)
-    print(dim(dataset))
-    # dataset <- nc.get.var.subset.by.axes(ncid, var,
-    #                                      axis.indices = list(X = c(xybox[1]:xybox[2]), 
-    #                                                          Y = c(xybox[3]:xybox[4]),
-    #                                                          T = time_index,
-    #                                      axes.map = c(0,1,2))
-    # )
+    # dataset <-  ncvar_get(nc = ncid, 
+    #                       varid = ncvar, 
+    #                       start = c(xybox[3],xybox[1],time_index[1]),
+    #                       count = c(length(c(xybox[3]:xybox[4])),
+    #                                 length(c(xybox[1]:xybox[2])),length(time_index)),
+    #                       collapse_degen = F)
+    dataset <- nc.get.var.subset.by.axes(ncid, ncvar,
+                                         axis.indices = list(Y = c(xybox[3]:xybox[4]),
+                                                             X = c(xybox[1]:xybox[2]),
+                                                             T = time_index)
+                                         
+                                         # axes.map = metGen$input$pr$vars$data$dimids
+                                         # axes.map = c(1,2,3)
+    )
   } else {
-    dataset <- nc.get.var.subset.by.axes(ncid, var,
+    dataset <- nc.get.var.subset.by.axes(ncid, ncvar,
                                          axis.indices = list(X = c(xybox[1]:xybox[2]), 
                                                              Y = c(xybox[3]:xybox[4]),
                                                              T = 1))
   }
+  dataset <- aperm(dataset, metGen$input[[var]]$vars$data$aperm)
+  
   nc_close(ncid)
   
   # ## Flip if needed

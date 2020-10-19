@@ -244,7 +244,6 @@ metGenRun <- function() {
     metGen$outData <- outData
     metGen$inData <- inData
     
-    print(image(outData$pr[,,1]))
     for (var in names(metGen$settings$outVars)) {
       timeIndex <- metGen$derived$nOutStepDay*(iday-1)+1
       # metGen$settings$outVars[[var]]$ncid <- nc_open(metGen$settings$outVars[[var]]$filename, write = TRUE)

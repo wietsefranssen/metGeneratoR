@@ -42,11 +42,15 @@ metGenRun <- function() {
     # /*************************************************
     #   radiation fraction
     # *************************************************/
+    if (metGen$output$ndim == 1) {
+    lonlat2d <- F }
+    else {lonlat2d <- T}
     if (!is.null(outData$radfrac)) {
         metGen$radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, 
                                          metGen$settings$xybox, 
-                                         metGen$output$lats)
-        
+                                         metGen$output$lats,
+                                         lonlat2d)
+        for(i in 1:maxStep) outData$radfrac[, ,outrecs[i]] <- metGen$radfrac[, , inrecs[i]]
     }    
     
     # /*************************************************

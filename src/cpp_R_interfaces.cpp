@@ -374,7 +374,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
 }
 //' @export
 // [[Rcpp::export]]
-NumericVector rad_map_final_2dll_cr(int nrec, int yday, double gmt_float, NumericVector xybox, NumericVector lats) {
+NumericVector rad_map_final_2dll_cr(int nrec, int yday, double gmt_float, NumericVector xybox, NumericVector lats, bool lonlat2d) {
   // Define and allocate
   int nx, ix;
   int ny, iy;
@@ -433,20 +433,40 @@ NumericVector rad_map_final_2dll_cr(int nrec, int yday, double gmt_float, Numeri
   float lat;
   double *rad_fract = (double*)malloc(timesteps_per_day * sizeof(double));
   
-  int i = 0;
-  for (ix = 0; ix < nx; ix++) {
-    printf("i: %i\n",i);
+  // 1d or 2d lonlats?
+  if (lonlat2d == 0) {
+    printf("1d lonlat\n");
+    int i = 0;
     for (iy = 0; iy < ny; iy++) {
-      // printf("j: %i\n",i);
+      printf("i: %i\n",i);
       lat = lats[i];
       solar_geom_c(rad_fract, lat, yday = yday, timesteps_per_day);
-      for (irec = 0; irec < nrec; irec++) {
-        rad_fract_map[ix][iy][irec] = rad_fract[irec];
+      for (ix = 0; ix < nx; ix++) {
+        // printf("j: %i\n",i);
+        for (irec = 0; irec < nrec; irec++) {
+          rad_fract_map[ix][iy][irec] = rad_fract[irec];
+        }
       }
       i++;
     }
-    
+  } else {
+    printf("2d lonlat\n");
+    int i = 0;
+    for (ix = 0; ix < nx; ix++) {
+      printf("i: %i\n",i);
+      for (iy = 0; iy < ny; iy++) {
+        // printf("j: %i\n",i);
+        lat = lats[i];
+        solar_geom_c(rad_fract, lat, yday = yday, timesteps_per_day);
+        for (irec = 0; irec < nrec; irec++) {
+          rad_fract_map[ix][iy][irec] = rad_fract[irec];
+        }
+        i++;
+      }
+    }
   }
+
+  
   // 
   // // // run the function
   // // rad_fract_lats_c(rad_fract_map_org, nTinyStepsPerDay, yday, slat, elat);

@@ -41,6 +41,7 @@ mggetInVarInfo <- function(filename, varname) {
   var <- NULL
   for (i in c(1:length(varnames))) {
     info <- var.inq.nc(ncid, varnames[[i]])
+    name <- info$name
     id <- info$id
     ndim <- info$ndims
     dimids <- info$dimids
@@ -48,9 +49,9 @@ mggetInVarInfo <- function(filename, varname) {
     natts <- info$natts
     if (i != length(varnames)) {
       vals <- var.get.nc(ncid, varnames[[i]])
-      var[[i]] <- list(id=id, ndim=ndim, dimids=dimids, dimnames=dimnames, natts=natts, vals=vals)
+      var[[i]] <- list(id=id, name=name, ndim=ndim, dimids=dimids, dimnames=dimnames, natts=natts, vals=vals)
     } else {
-      var[[i]] <- list(id=id, ndim=ndim, dimids=dimids, dimnames=dimnames, natts=natts)
+      var[[i]] <- list(id=id, name=name, ndim=ndim, dimids=dimids, dimnames=dimnames, natts=natts)
     }
   }
   
@@ -65,6 +66,24 @@ mggetInVarInfo <- function(filename, varname) {
   return(result)
 }
 
+#' @export
+mggetInDims <- function() {
+  
+  for (var in names(metGen$settings$inVar)) {
+    if (var != "radfrac") {
+      printf("Getting input dimensions \"%s\". ", var)
+      metGen$input[[var]] <-mggetInVarInfo(metGen$settings$inVars[[var]]$filename, metGen$settings$inVars[[var]]$ncname)
+      # ncid <- nc_open(filename = metGen$settings$inVars[[var]]$filename)
+      # 
+      # metGen$input[[var]]$lons <- ncvar_get(ncid, "lon")
+      # metGen$input[[var]]$lats <- ncvar_get(ncid, "lat")
+      # metGen$input[[var]]$ndim <- length(dim(metGen$input[[var]]$lons))
+      # nc_close(ncid)
+      # 
+      printf("\n")
+    }
+  }
+}
 
 #' @export
 makeNetcdfOut <- function() {
@@ -207,23 +226,6 @@ mgcheckOutVars <- function() {
   }
 }
 
-#' @export
-mggetInDims <- function() {
-  for (var in names(metGen$settings$outVar)) {
-    if (var != "radfrac") {
-      printf("Getting input dimensions \"%s\". ", var)
-      
-      ncid <- nc_open(filename = metGen$settings$inVars[[var]]$filename)
-      
-      metGen$input[[var]]$lons <- ncvar_get(ncid, "lon")
-      metGen$input[[var]]$lats <- ncvar_get(ncid, "lat")
-      metGen$input[[var]]$ndim <- length(dim(metGen$input[[var]]$lons))
-      nc_close(ncid)
-      
-      printf("\n")
-    }
-  }
-}
 
 #' @export
 mgsetOutDims <- function() {
@@ -231,26 +233,28 @@ mgsetOutDims <- function() {
   
   if (is.null(metGen$settings$xybox[1])) {
     xybox <- NULL
-    if (metGen$input[[1]]$ndim == 1) {
-      xybox[2] <- length(metGen$input[[1]]$lons)
-      xybox[4] <- length(metGen$input[[1]]$lats)
-    } else if  (metGen$input[[1]]$ndim == 2) {
-      xybox[2] <- dim(metGen$input[[1]]$lons)[2]
-      xybox[4] <- dim(metGen$input[[1]]$lats)[1]
-    }
+    xybox[2] <- metGen$input[[1]]$dims$x$n
+    xybox[4] <- metGen$input[[1]]$dims$y$n
     mgsetXYbox(c(1,xybox[2],1,xybox[4]))
   } 
   xx <- c(metGen$settings$xybox[1]:metGen$settings$xybox[2])
   yy <- c(metGen$settings$xybox[3]:metGen$settings$xybox[4])
   
-  if (metGen$input[[1]]$ndim == 1) {
-    metGen$output$lons <- metGen$input[[1]]$lons[xx]
-    metGen$output$lats <- metGen$input[[1]]$lats[yy] 
-    metGen$output$ndim <- metGen$input[[1]]$ndim
-  } else if (metGen$input[[1]]$ndim == 2) {
-    metGen$output$lons <- metGen$input[[1]]$lons[yy,xx]
-    metGen$output$lats <- metGen$input[[1]]$lats[yy,xx]
-    metGen$output$ndim <- metGen$input[[1]]$ndim
+  if (metGen$input[[1]]$vars$x$ndim == 1) {
+    metGen$output$lons <- metGen$input[[1]]$vars$x$vals[xx]
+    metGen$output$lats <- metGen$input[[1]]$vars$y$vals[yy] 
+    metGen$output$ndim <- metGen$input[[1]]$vars$x$ndim
+  } else if (metGen$input[[1]]$vars$x$ndim == 2) {
+    if (metGen$input[[1]]$dims$x$id == metGen$input[[1]]$vars$x$dimids[1]) {
+      metGen$output$lons <- metGen$input[[1]]$vars$x$vals[xx,yy]
+      metGen$output$lats <- metGen$input[[1]]$vars$y$vals[xx,yy]
+    } else if (metGen$input[[1]]$dims$x$id == metGen$input[[1]]$vars$x$dimids[2]) {
+      metGen$output$lons <- metGen$input[[1]]$vars$x$vals[yy,xx]
+      metGen$output$lats <- metGen$input[[1]]$vars$y$vals[yy,xx]
+    } else {
+      stop("error!")
+    }
+    metGen$output$ndim <- metGen$input[[1]]$vars$x$ndim
   } else {
     stop("too many dimensions!")
   }

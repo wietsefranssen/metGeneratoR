@@ -32,6 +32,7 @@ export(rad_map_final_2dll_cr)
 export(mgcheckInVars)
 export(mgcheckOutVars)
 export(solar_geom_cr)
+export(mggetInVarInfo)
 
 import(Rcpp)
 importFrom(Rcpp,evalCpp)

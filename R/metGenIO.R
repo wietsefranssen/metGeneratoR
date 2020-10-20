@@ -2,7 +2,7 @@
 mggetInVarInfo <- function(filename, varname) {
   getdimname <- function(id) {
     result <- NULL
-    i <- 1 
+    i <- 1
     for (iid in c(id)) {
       lijst <- c(dim$x$id, dim$y$id, dim$t$id)
       resultid<-which(lijst == iid)

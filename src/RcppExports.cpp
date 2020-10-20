@@ -60,8 +60,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rad_map_final_cr
-NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVector xybox);
-RcppExport SEXP _metGeneratoR_rad_map_final_cr(SEXP nrecSEXP, SEXP ydaySEXP, SEXP gmt_floatSEXP, SEXP xyboxSEXP) {
+NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVector xybox, NumericVector lats, NumericVector lons);
+RcppExport SEXP _metGeneratoR_rad_map_final_cr(SEXP nrecSEXP, SEXP ydaySEXP, SEXP gmt_floatSEXP, SEXP xyboxSEXP, SEXP latsSEXP, SEXP lonsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -69,7 +69,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type yday(ydaySEXP);
     Rcpp::traits::input_parameter< double >::type gmt_float(gmt_floatSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type xybox(xyboxSEXP);
-    rcpp_result_gen = Rcpp::wrap(rad_map_final_cr(nrec, yday, gmt_float, xybox));
+    Rcpp::traits::input_parameter< NumericVector >::type lats(latsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type lons(lonsSEXP);
+    rcpp_result_gen = Rcpp::wrap(rad_map_final_cr(nrec, yday, gmt_float, xybox, lats, lons));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -120,7 +122,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_metGeneratoR_sh2vp", (DL_FUNC) &_metGeneratoR_sh2vp, 2},
     {"_metGeneratoR_set_min_max_hour_cr", (DL_FUNC) &_metGeneratoR_set_min_max_hour_cr, 2},
     {"_metGeneratoR_set_max_min_lonlat_cr", (DL_FUNC) &_metGeneratoR_set_max_min_lonlat_cr, 5},
-    {"_metGeneratoR_rad_map_final_cr", (DL_FUNC) &_metGeneratoR_rad_map_final_cr, 4},
+    {"_metGeneratoR_rad_map_final_cr", (DL_FUNC) &_metGeneratoR_rad_map_final_cr, 6},
     {"_metGeneratoR_rad_map_final_2dll_cr", (DL_FUNC) &_metGeneratoR_rad_map_final_2dll_cr, 6},
     {"_metGeneratoR_rad_map_lats_cr", (DL_FUNC) &_metGeneratoR_rad_map_lats_cr, 2},
     {"_metGeneratoR_solar_geom_cr", (DL_FUNC) &_metGeneratoR_solar_geom_cr, 3},

@@ -48,11 +48,12 @@ metGenRun <- function() {
       lonlat2d <- T
     }
     if (!is.null(outData$radfrac)) {
-      metGen$radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, 
+      radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, 
                                               metGen$settings$xybox, 
                                               metGen$output$lats,
                                               lonlat2d)
-      for(i in 1:maxStep) outData$radfrac[, ,outrecs[i]] <- metGen$radfrac[, , inrecs[i]]
+      print(radfrac[1,1 , ])
+      for(i in 1:maxStep) outData$radfrac[, ,outrecs[i]] <- radfrac[, , outrecs[i]]
     }    
     
     # /*************************************************
@@ -83,7 +84,14 @@ metGenRun <- function() {
     if (!is.null(outData$swdown)) {
       if(metGen$metadata$inVars$swdown$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
-          radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox, metGen$output$swdown$lats)
+          radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0,
+                                           metGen$settings$xybox,
+                                           metGen$output$lats,
+                                           lonlat2d)
+          print(dim(radfrac))
+          print(dim(outData$swdown))
+          # for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- radfrac[ , , outrecs[i]]
+          # radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox, metGen$output$swdown$lats)
           swdown_day <- apply(inData$swdown, c(1,2), mean)
           for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- radfrac[ , , outrecs[i]] * swdown_day
         } else { ## aggregate to lower number of timesteps

@@ -243,10 +243,14 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   
   float reslon = 0.5;
   float reslat = 0.5;
-  float slon = xybox[0];
-  float elon = xybox[1];
-  float slat = xybox[2];
-  float elat = xybox[3];
+  // float slon = xybox[0];
+  // float elon = xybox[1];
+  // float slat = xybox[2];
+  // float elat = xybox[3];
+  float slon = -179.75;
+  float elon = 179.75;
+  float slat = -89.75;
+  float elat = 89.75;
   
   nTinyStepsPerDay = 360 / reslon; // 360 degress in lon direction
   dt = nTinyStepsPerDay / nrec;

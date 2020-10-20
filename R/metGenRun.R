@@ -9,7 +9,7 @@ metGenRun <- function() {
   ## DEFINE OUTPUT ARRAY
   outData <- NULL
   for (var in names(metGen$settings$outVars)) {
-    outData[[var]] <- array(NA, dim = c(metGen$settings$ny, metGen$settings$nx, metGen$derived$nOutStepDay))
+    outData[[var]] <- array(NA, dim = c(metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay))
   }
   
   nInStep <- metGen$derived$nInStepDay
@@ -267,7 +267,7 @@ metGenRun <- function() {
                  var,
                  outData[[var]][,,],
                  start = c(1, 1, timeIndex),
-                 count = c(metGen$settings$ny, metGen$settings$nx, metGen$derived$nOutStepDay)
+                 count = c(metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay)
       )
       # nc_close(metGen$settings$outVars[[var]]$ncid)
       close.nc(metGen$settings$outVars[[var]]$ncid)

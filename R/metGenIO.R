@@ -4,7 +4,7 @@ mggetInVarInfo <- function(filename, varname) {
     result <- NULL
     i <- 1 
     for (iid in c(id)) {
-      lijst <- c(dim$y$id, dim$x$id, dim$t$id)
+      lijst <- c(dim$x$id, dim$y$id, dim$t$id)
       resultid<-which(lijst == iid)
       result[i] <- dim[[resultid]]$name
       i <- i + 1
@@ -12,8 +12,8 @@ mggetInVarInfo <- function(filename, varname) {
     return(result)
   }
   
-  dimnames <- list(y="lat", x="lon", t="time")
-  dimvarnames <- list(y="lat", x="lon", t="time")
+  dimnames <- list(x="lon", y="lat", t="time")
+  dimvarnames <- list(x="lon", y="lat", t="time")
   datavarname <- varname
   
   ncid <- open.nc(filename)
@@ -104,8 +104,8 @@ makeNetcdfOut <- function() {
   ################
   for (var in names(settings$outVars)) {
     if (metGen$output$ndim == 2) {
-      dimX <- ncdim_def("lon", units = '', vals = c(1:length(metGen$output$lons[1,])), unlim = F, create_dimvar = F)
-      dimY <- ncdim_def("lat", units = '', vals = c(1:length(metGen$output$lats[,1])), unlim = F, create_dimvar = F)
+      dimX <- ncdim_def("lon", units = '', vals = c(1:length(metGen$output$lons[,1])), unlim = F, create_dimvar = F)
+      dimY <- ncdim_def("lat", units = '', vals = c(1:length(metGen$output$lats[1,])), unlim = F, create_dimvar = F)
     } else {
       dimX <- ncdim_def("lon", units = '', vals = c(1:length(metGen$output$lons)), unlim = F, create_dimvar = F)
       dimY <- ncdim_def("lat", units = '', vals = c(1:length(metGen$output$lats)), unlim = F, create_dimvar = F)
@@ -120,13 +120,13 @@ makeNetcdfOut <- function() {
     
     vars <- NULL
     if (metGen$output$ndim == 2) {
-      vars$lonVar <- ncvar_def(name='lon', units='', compression = 7, dim=list(dimY,dimX), missval=FillValue, prec="float")
-      vars$latVar <- ncvar_def(name='lat', units='', compression = 7, dim=list(dimY,dimX), missval=FillValue, prec="float")
+      vars$lonVar <- ncvar_def(name='lon', units='', compression = 7, dim=list(dimX,dimY), missval=FillValue, prec="float")
+      vars$latVar <- ncvar_def(name='lat', units='', compression = 7, dim=list(dimX,dimY), missval=FillValue, prec="float")
     } else {
       vars$lonVar <- ncvar_def(name='lon', units='', compression = 7, dim=dimX, missval=FillValue, prec="float")
       vars$latVar <- ncvar_def(name='lat', units='', compression = 7, dim=dimY, missval=FillValue, prec="float")
     }      
-    vars$dataVar <- ncvar_def(name=var, units='', compression = 7, dim=list(dimY,dimX,dimT), missval=FillValue, prec="float")
+    vars$dataVar <- ncvar_def(name=var, units='', compression = 7, dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
     
     ## SAVE AS NC-DATA
     cat(sprintf("Create output file: %s\n", settings$outVars[[var]]$filename))
@@ -250,11 +250,11 @@ mgsetOutDims <- function() {
     metGen$output$ndim <- metGen$input[[1]]$vars$x$ndim
   } else if (metGen$input[[1]]$vars$x$ndim == 2) {
     if (metGen$input[[1]]$dims$x$id == metGen$input[[1]]$vars$x$dimids[1]) {
-      metGen$output$lons <- metGen$input[[1]]$vars$x$vals[xx,yy]
-      metGen$output$lats <- metGen$input[[1]]$vars$y$vals[xx,yy]
-    } else if (metGen$input[[1]]$dims$x$id == metGen$input[[1]]$vars$x$dimids[2]) {
       metGen$output$lons <- metGen$input[[1]]$vars$x$vals[yy,xx]
       metGen$output$lats <- metGen$input[[1]]$vars$y$vals[yy,xx]
+    } else if (metGen$input[[1]]$dims$x$id == metGen$input[[1]]$vars$x$dimids[2]) {
+      metGen$output$lons <- metGen$input[[1]]$vars$x$vals[xx,yy]
+      metGen$output$lats <- metGen$input[[1]]$vars$y$vals[xx,yy]
     } else {
       stop("error!")
     }

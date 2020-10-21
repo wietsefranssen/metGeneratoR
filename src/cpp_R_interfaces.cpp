@@ -255,7 +255,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   dims[1] = ny;
   dims[2] = nrec;
   rad_fract_map_r.attr("dim") = dims;
-
+  
   // Define and allocate
   double ***rad_fract_map = (double***)malloc(nx * sizeof(double));
   for (ix = 0; ix < nx; ix++) {
@@ -264,7 +264,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
       rad_fract_map[ix][iy] = (double*)malloc(nrec * sizeof(double));
     }
   }
-
+  
   // Zero
   for (ix = 0; ix < nx; ix++) {
     for (iy = 0; iy < ny; iy++) {
@@ -273,7 +273,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
       }
     }
   }
-
+  
   // run the function
   ///////////////////////////////////////
   // Define and allocate
@@ -304,13 +304,24 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
       // rad_fract_map[ix][iy][1] = rad_fract[it];
       // // }
       // printf("ix: %i, iy: %i, it: %i\n",ix,iy, it);
-      for (irec = 0; irec < nrec; irec++) {
-        int irecit = it + (irec * (nTinyStepsPerDay / nrec));
+      
+      for (int tss = 0; tss < nTinyStepsPerDay; tss++) {
+        int istep = floor(tss / (nTinyStepsPerDay / nrec));
+        // rad_fract_per_timestep[istep] += tiny_rad_fract_1day[tss];
+        int irecit = (it + tss + (istep * (nTinyStepsPerDay / nrec)))/2;
         if (irecit > nTinyStepsPerDay) {
           irecit= irecit - nTinyStepsPerDay;
         }
-        rad_fract_map[ix][iy][irec] = rad_fract[irecit];
+        rad_fract_map[ix][iy][istep] += rad_fract[irecit];
       }
+      
+      // for (irec = 0; irec < nrec; irec++) {
+      //   int irecit = it + (irec * (nTinyStepsPerDay / nrec));
+      //   if (irecit > nTinyStepsPerDay) {
+      //     irecit= irecit - nTinyStepsPerDay;
+      //   }
+      //   rad_fract_map[ix][iy][irec] = rad_fract[irecit];
+      // }
     }
   }
   

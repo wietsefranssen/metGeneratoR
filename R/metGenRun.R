@@ -49,9 +49,9 @@ metGenRun <- function() {
     }
     if (!is.null(outData$radfrac)) {
       radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, 
-                                              metGen$settings$xybox, 
-                                              metGen$output$lats,
-                                              lonlat2d)
+                                       metGen$settings$xybox, 
+                                       metGen$output$lats,
+                                       lonlat2d)
       print(radfrac[1,1 , ])
       for(i in 1:maxStep) outData$radfrac[, ,outrecs[i]] <- radfrac[, , outrecs[i]]
     }    
@@ -84,19 +84,16 @@ metGenRun <- function() {
     if (!is.null(outData$swdown)) {
       if(metGen$metadata$inVars$swdown$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
-          # radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0,
-                                           # metGen$settings$xybox,
-                                           # metGen$output$lats,
-                                           # lonlat2d)
-          # print(dim(radfrac))
-          # print(dim(outData$swdown))
-          # for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- radfrac[ , , outrecs[i]]
-          lats <- aperm(array(metGen$output$lats, dim=c(360,720)),c(2,1))
-          lons <- aperm(array(metGen$output$lons, dim=c(720,360)),c(1,2))
+          if (metGen$input$pr$vars$x$ndim == 1) {
+            lats <- aperm(array(metGen$output$lats, dim=c(metGen$settings$ny,metGen$settings$nx)),c(2,1))
+            lons <- aperm(array(metGen$output$lons, dim=c(metGen$settings$nx,metGen$settings$ny)),c(1,2))
+          } else {
+            lats <- metGen$output$lats
+            lons <- metGen$output$lons
+          }
           radfrac <- rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox, lats, lons)
-          print(dim(radfrac))
-          print(dim(outData$swdown))
-          image(radfrac[,,1])
+          # image(radfrac[,,1])
+          # print(paste("ave: ", ave(radfrac[,,1])))
           swdown_day <- apply(inData$swdown, c(1,2), mean)
           for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- radfrac[ , , outrecs[i]] #* swdown_day
         } else { ## aggregate to lower number of timesteps

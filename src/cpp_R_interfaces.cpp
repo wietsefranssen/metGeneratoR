@@ -232,28 +232,20 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   int nx, ix;
   int ny, iy;
   int it;
-  // int ixx ;
   int irec;
   int idx;
   int iGmtOffset;
   int nTinyStepsPerDay;
-  int dt;
+  double dt = 30;
   double gmt_float_tmp;
   size_t count;
+  double SEC_PER_DAY = 86400;
+  // nTinyStepsPerDay = 360 / reslon; // 360 degress in lon direction
+  nTinyStepsPerDay = 720*1;
+  nTinyStepsPerDay = 360*1;
+  nTinyStepsPerDay = SEC_PER_DAY / dt;
   
-  float reslon = 0.5;
-  float reslat = 0.5;
-  // float slon = xybox[0];
-  // float elon = xybox[1];
-  // float slat = xybox[2];
-  // float elat = xybox[3];
-  // float slon = -179.75;
-  // float elon = 179.75;
-  float slat = -89.75;
-  float elat = 89.75;
-  
-  nTinyStepsPerDay = 360 / reslon; // 360 degress in lon direction
-  dt = nTinyStepsPerDay / nrec;
+  // dt = nTinyStepsPerDay / nrec;
   nx = (xybox[1] - xybox[0]) + 1;
   ny = (xybox[3] - xybox[2]) + 1;
   
@@ -263,7 +255,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   dims[1] = ny;
   dims[2] = nrec;
   rad_fract_map_r.attr("dim") = dims;
-  
+
   // Define and allocate
   double ***rad_fract_map = (double***)malloc(nx * sizeof(double));
   for (ix = 0; ix < nx; ix++) {
@@ -272,20 +264,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
       rad_fract_map[ix][iy] = (double*)malloc(nrec * sizeof(double));
     }
   }
-  
-  // Define and allocate
-  double **rad_fract_map_org = (double**)malloc(ny * sizeof(double));
-  for (iy = 0; iy < ny; iy++) {
-    rad_fract_map_org[iy] = (double*)malloc(nTinyStepsPerDay * sizeof(double));
-  }
-  
-  // Zero
-  for (iy = 0; iy < ny; iy++) {
-    for (it = 0; it < nTinyStepsPerDay; it++) {
-      rad_fract_map_org[iy][it] = 0;
-    }
-  }
-  
+
   // Zero
   for (ix = 0; ix < nx; ix++) {
     for (iy = 0; iy < ny; iy++) {
@@ -294,42 +273,49 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
       }
     }
   }
-  
+
   // run the function
   ///////////////////////////////////////
-  ny = ((elat - slat) / reslat) + 1;
-  
   // Define and allocate
   double *rad_fract = (double*)malloc(nTinyStepsPerDay * sizeof(double));
+  // printf("CHECK1!3!!");
   
   ix = 0;
+  float rad_fract_sum;
   for (ix = 0; ix < nx; ix++) {
-  iy = 0;
-  float lon = lons[nx*iy + ix];
-  float GMT_off;
-  GMT_off = (lon + 180) / 360;
-  printf("%i, %f, gmt: %f\n",ix,lon, GMT_off);
-  for (iy = 0; iy < ny; iy++) {
-    // float lat = slat + ((iy)*0.5);
-    float lat = lats[nx*iy + ix];
-    // printf("lats %i/%i, %f\n",ix,iy,lat);
-    // run the function
-    solar_geom_c(rad_fract, lat, yday, nTinyStepsPerDay);
-    for (it = 0; it < nTinyStepsPerDay; it++) {
-      rad_fract_map_org[iy][it] = rad_fract[it];
-    }
-  }
-  }
-  // rad_fract_lats_c(rad_fract_map_org, nTinyStepsPerDay, yday, slat, elat);
-  //////////////////////////////////////////////
-  
-  for (ix = 0; ix < nx; ix++) {
+    iy = 0;
+    rad_fract_sum = 0;
+    float lon = lons[nx*iy + ix];
+    float GMT_off;
+    GMT_off = ((lon + 180) / 360) * 24;
+    printf("%i, %f, gmt: %f\n",ix,lon, GMT_off);
     for (iy = 0; iy < ny; iy++) {
+      float lat = lats[nx*iy + ix];
+      // printf("lats %i/%i, %f\n",ix,iy,lat);
+      // run the function
+      // solar_geom_c(rad_fract, lat, yday, nTinyStepsPerDay);
+      solar_geom_new_c(rad_fract, lat, yday, dt);
+      // for (it = 0; it < nTinyStepsPerDay; it++) {
+      // rad_fract_sum += rad_fract[ix];
+      // rad_fract_map_org[iy][ix] = rad_fract[ix];
+      it = floor(nTinyStepsPerDay * ( (lon + 180) /360));
+      if (it<0) {it =0;}
+      // irec = floor(GMT_off);
+      // rad_fract_map[ix][iy][1] = rad_fract[it];
+      // // }
+      // printf("ix: %i, iy: %i, it: %i\n",ix,iy, it);
       for (irec = 0; irec < nrec; irec++) {
-        rad_fract_map[ix][iy][irec] += rad_fract_map_org[iy][ix] * nrec;
+        int irecit = it + (irec * (nTinyStepsPerDay / nrec));
+        if (irecit > nTinyStepsPerDay) {
+          irecit= irecit - nTinyStepsPerDay;
+        }
+        rad_fract_map[ix][iy][irec] = rad_fract[irecit];
       }
     }
   }
+  
+  // rad_fract_lats_c(rad_fract_map_org, nTinyStepsPerDay, yday, slat, elat);
+  //////////////////////////////////////////////
   
   count = 0;
   for (irec = 0; irec < nrec; irec++) {
@@ -349,11 +335,6 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
     free(rad_fract_map[ix]);
   }
   free(rad_fract_map);
-  
-  for (iy = 0; iy < ny; iy++) {
-    free(rad_fract_map_org[iy]);
-  }
-  free(rad_fract_map_org);
   return rad_fract_map_r;
 }
 

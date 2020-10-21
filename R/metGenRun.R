@@ -92,7 +92,8 @@ metGenRun <- function() {
             lons <- metGen$output$lons
           }
           radfrac <- rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox, lats, lons)
-          # image(radfrac[,,1])
+          
+          # image(radfrac[,,7])
           # print(paste("ave: ", ave(radfrac[,,1])))
           swdown_day <- apply(inData$swdown, c(1,2), mean)
           for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- radfrac[ , , outrecs[i]] #* swdown_day
@@ -265,6 +266,9 @@ metGenRun <- function() {
       #           start = c(1, 1, timeIndex),
       #           count = c(metGen$settings$ny, metGen$settings$nx, metGen$derived$nOutStepDay)
       # )
+      print(max(outData[[var]][,,]))
+      print(min(outData[[var]][,,]))
+      outData[[var]][outData[[var]] > 10000] = 1000
       var.put.nc(metGen$settings$outVars[[var]]$ncid,
                  var,
                  outData[[var]][,,],

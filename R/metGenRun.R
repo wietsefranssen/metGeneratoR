@@ -250,32 +250,19 @@ metGenRun <- function() {
     }
     
     ## ADD OUTPUT TO NETCDF
-    # need to switch dimension order first (fix later)
-    # outData[[var]]<-aperm(outData[[var]],c(2,1,3))
     metGen$outData <- outData
     metGen$inData <- inData
     
     for (var in names(metGen$settings$outVars)) {
       timeIndex <- metGen$derived$nOutStepDay*(iday-1)+1
-      # metGen$settings$outVars[[var]]$ncid <- nc_open(metGen$settings$outVars[[var]]$filename, write = TRUE)
       metGen$settings$outVars[[var]]$ncid <- open.nc(metGen$settings$outVars[[var]]$filename, write = TRUE)
       
-      # ncvar_put(metGen$settings$outVars[[var]]$ncid,
-      #           var,
-      #           outData[[var]][,,],
-      #           start = c(1, 1, timeIndex),
-      #           count = c(metGen$settings$ny, metGen$settings$nx, metGen$derived$nOutStepDay)
-      # )
-      print(max(outData[[var]][,,]))
-      print(min(outData[[var]][,,]))
-      outData[[var]][outData[[var]] > 10000] = 1000
       var.put.nc(metGen$settings$outVars[[var]]$ncid,
                  var,
                  outData[[var]][,,],
                  start = c(1, 1, timeIndex),
                  count = c(metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay)
       )
-      # nc_close(metGen$settings$outVars[[var]]$ncid)
       close.nc(metGen$settings$outVars[[var]]$ncid)
     }
     rm(inData)

@@ -240,6 +240,12 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   double gmt_float_tmp;
   size_t count;
   double SEC_PER_DAY = 86400;
+  ix = 0;
+  float lon, lat;
+  int irecit;
+  int it_tmp;
+  int tss;
+  
   nTinyStepsPerDay = SEC_PER_DAY / dt;
   
   // dt = nTinyStepsPerDay / nrec;
@@ -271,19 +277,12 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
     }
   }
   
-  // run the function
-  ///////////////////////////////////////
   // Define and allocate
   double *rad_fract = (double*)malloc(nTinyStepsPerDay * sizeof(double));
   for (it = 0; it < nTinyStepsPerDay; it++) {
     rad_fract[it] = 0;
   }
-  // float standard_offset = (nTinyStepsPerDay/24) *((1/nrec)*2);
-  ix = 0;
-  float rad_fract_sum;
-  float lon, lat;
-  int irecit;
-  int it_tmp;
+  
   
   // Calc gmt_offset
   if (gmt_offset < 0) gmt_offset += 24;
@@ -291,39 +290,30 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   if (gmt_offset < 0) gmt_offset += 24;
   if (gmt_offset >= 24) gmt_offset -= 24;
   
+  // run the function
   for (ix = 0; ix < nx; ix++) {
     iy = 0;
-    rad_fract_sum = 0;
     lon = lons[nx*iy + ix];
     for (iy = 0; iy < ny; iy++) {
       lat = lats[nx*iy + ix];
-      // run the function
       solar_geom_new_c(rad_fract, lat, yday, dt);
-      it_tmp = floor(nTinyStepsPerDay * ( (lon + 180) /360));
+      it_tmp = floor(nTinyStepsPerDay * ( (lon + 180) / 360));
       if (it_tmp > nTinyStepsPerDay) it_tmp = it_tmp - nTinyStepsPerDay;
-      it = floor(it_tmp + ( (nTinyStepsPerDay/24) * gmt_offset));
+      it = floor(it_tmp + ( (nTinyStepsPerDay / 24) * gmt_offset));
       if (it > nTinyStepsPerDay) it = it - nTinyStepsPerDay;
       
-      for (int tss = 0; tss < nTinyStepsPerDay; tss++) {
+      for (tss = 0; tss < nTinyStepsPerDay; tss++) {
         irec = floor(tss / (nTinyStepsPerDay / nrec));
+        // irecit = floor(tss + it + (tss / nrec));
         irecit = floor(tss + it + ( (tss / nTinyStepsPerDay) * (nTinyStepsPerDay / nrec)));
         if (irecit >= nTinyStepsPerDay) {
           irecit = irecit - nTinyStepsPerDay;
-        }
-        if (rad_fract[irecit] < 0.0) {
-          printf("TOO LOW!!: %f", rad_fract[irecit]);
-          rad_fract[irecit] = 0.00001;
-        }
-        if (rad_fract[irecit] > 1000000000) {
-          printf("TOO HIGH!!: %f", rad_fract[irecit]);
-          rad_fract[irecit] = 100000000;
         }
         rad_fract_map[ix][iy][irec] += rad_fract[irecit] * nrec;
       }
     }
   }
-  //////////////////////////////////////////////
-  
+
   count = 0;
   for (irec = 0; irec < nrec; irec++) {
     for (iy = 0; iy < ny; iy++) {

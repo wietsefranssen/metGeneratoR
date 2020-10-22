@@ -48,10 +48,10 @@ metGenRun <- function() {
       lonlat2d <- T
     }
     if (!is.null(outData$radfrac)) {
-      radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, 
-                                       metGen$settings$xybox, 
-                                       metGen$output$lats,
-                                       lonlat2d)
+      # radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, 
+      #                                  metGen$settings$xybox, 
+      #                                  metGen$output$lats,
+      #                                  lonlat2d)
       print(radfrac[1,1 , ])
       for(i in 1:maxStep) outData$radfrac[, ,outrecs[i]] <- radfrac[, , outrecs[i]]
     }    
@@ -91,7 +91,7 @@ metGenRun <- function() {
             lats <- metGen$output$lats
             lons <- metGen$output$lons
           }
-          radfrac <- rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox, lats, lons)
+          radfrac <- rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox, lats, lons, metGen$gmt_offset)
           
           # image(radfrac[,,7])
           # print(paste("ave: ", ave(radfrac[,,1])))

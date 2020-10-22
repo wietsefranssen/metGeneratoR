@@ -227,7 +227,7 @@ NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_m
 
 //' @export
 // [[Rcpp::export]]
-NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVector xybox, NumericVector lats, NumericVector lons) {
+NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVector xybox, NumericVector lats, NumericVector lons, float gmt_offset) {
   // Define and allocate
   int nx, ix;
   int ny, iy;
@@ -278,37 +278,47 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   for (it = 0; it < nTinyStepsPerDay; it++) {
     rad_fract[it] = 0;
   }
-  
+  // float standard_offset = (nTinyStepsPerDay/24) *((1/nrec)*2);
   ix = 0;
   float rad_fract_sum;
+  float lon, lat;
+  int irecit;
+  int it_tmp;
+  
+  // Calc gmt_offset
+  if (gmt_offset < 0) gmt_offset += 24;
+  gmt_offset += - (24/nrec) * 0.5;
+  if (gmt_offset < 0) gmt_offset += 24;
+  if (gmt_offset >= 24) gmt_offset -= 24;
+  
   for (ix = 0; ix < nx; ix++) {
     iy = 0;
     rad_fract_sum = 0;
-    float lon = lons[nx*iy + ix];
-    float GMT_off;
-    GMT_off = ((lon + 180) / 360) * 24;
-    // printf("%i, %f, gmt: %f\n",ix,lon, GMT_off);
+    lon = lons[nx*iy + ix];
     for (iy = 0; iy < ny; iy++) {
-      float lat = lats[nx*iy + ix];
-      // printf("lats %i/%i, %f\n",ix,iy,lat);
+      lat = lats[nx*iy + ix];
       // run the function
       solar_geom_new_c(rad_fract, lat, yday, dt);
-      it = floor(nTinyStepsPerDay * ( (lon + 180) /360));
-      if (it<0) {it =0;}
-      // printf("ix: %i, iy: %i, it: %i\n",ix,iy, it);
-      int irec;
-      int irecit;
+      it_tmp = floor(nTinyStepsPerDay * ( (lon + 180) /360));
+      if (it_tmp > nTinyStepsPerDay) it_tmp = it_tmp - nTinyStepsPerDay;
+      it = floor(it_tmp + ( (nTinyStepsPerDay/24) * gmt_offset));
+      if (it > nTinyStepsPerDay) it = it - nTinyStepsPerDay;
+      
       for (int tss = 0; tss < nTinyStepsPerDay; tss++) {
         irec = floor(tss / (nTinyStepsPerDay / nrec));
-        // irecit = (tss) + (it/4) + ( irec * (nTinyStepsPerDay / nrec));
-        irecit = floor(tss + (it) + ( (tss / (nTinyStepsPerDay)) * (nTinyStepsPerDay / nrec)));
-        if (irecit > nTinyStepsPerDay) {
+        irecit = floor(tss + it + ( (tss / nTinyStepsPerDay) * (nTinyStepsPerDay / nrec)));
+        if (irecit >= nTinyStepsPerDay) {
           irecit = irecit - nTinyStepsPerDay;
         }
-        // printf("irec %i\n", irec);
-        if (rad_fract[irecit] < 0.00001) rad_fract[irecit] = 0.00001;
-        if (rad_fract[irecit] > 1000000000) rad_fract[irecit] = 100000000;
-        rad_fract_map[ix][iy][irec] += rad_fract[irecit];
+        if (rad_fract[irecit] < 0.0) {
+          printf("TOO LOW!!: %f", rad_fract[irecit]);
+          rad_fract[irecit] = 0.00001;
+        }
+        if (rad_fract[irecit] > 1000000000) {
+          printf("TOO HIGH!!: %f", rad_fract[irecit]);
+          rad_fract[irecit] = 100000000;
+        }
+        rad_fract_map[ix][iy][irec] += rad_fract[irecit] * nrec;
       }
     }
   }
@@ -333,182 +343,6 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   }
   free(rad_fract_map);
   free(rad_fract);
-  return rad_fract_map_r;
-}
-
-//' @export
-// [[Rcpp::export]]
-NumericVector rad_map_final_2dll_cr(int nrec, int yday, double gmt_float, NumericVector xybox, NumericVector lats, bool lonlat2d) {
-  // Define and allocate
-  int nx, ix;
-  int ny, iy;
-  int it;
-  int irec;
-  int idx;
-  int iGmtOffset;
-  int nTinyStepsPerDay;
-  int dt;
-  double gmt_float_tmp;
-  size_t count;
-  
-  nx = (xybox[1] - xybox[0]) + 1;
-  ny = (xybox[3] - xybox[2]) + 1;
-  
-  NumericVector rad_fract_map_r(nrec * ny * nx);
-  IntegerVector dims(3);
-  dims[0] = nx;
-  dims[1] = ny;
-  dims[2] = nrec;
-  rad_fract_map_r.attr("dim") = dims;
-  
-  // Define and allocate
-  double ***rad_fract_map = (double***)malloc(nx * sizeof(double));
-  for (ix = 0; ix < nx; ix++) {
-    rad_fract_map[ix] = (double**)malloc(ny * sizeof(double));
-    for (iy = 0; iy < ny; iy++) {
-      rad_fract_map[ix][iy] = (double*)malloc(nrec * sizeof(double));
-    }
-  }
-  
-  // // Define and allocate
-  // double **rad_fract_map_org = (double**)malloc(ny * sizeof(double));
-  // for (iy = 0; iy < ny; iy++) {
-  //   rad_fract_map_org[iy] = (double*)malloc(nTinyStepsPerDay * sizeof(double));
-  // }
-  // 
-  // // Zero
-  // for (iy = 0; iy < ny; iy++) {
-  //   for (it = 0; it < nTinyStepsPerDay; it++) {
-  //     rad_fract_map_org[iy][it] = 0;
-  //   }
-  // }
-  
-  // Zero
-  for (ix = 0; ix < nx; ix++) {
-    for (iy = 0; iy < ny; iy++) {
-      for (irec = 0; irec < nrec; irec++) {
-        rad_fract_map[ix][iy][irec] = 0;
-      }
-    }
-  }
-  
-  // run the function new!
-  int timesteps_per_day = 24; // dummy!!
-  float lat;
-  double *rad_fract = (double*)malloc(timesteps_per_day * sizeof(double));
-  
-  // 1d or 2d lonlats?
-  if (lonlat2d == 0) {
-    printf("1d lonlat\n");
-    int i = 0;
-    for (iy = 0; iy < ny; iy++) {
-      printf("i: %i\n",i);
-      lat = lats[i];
-      solar_geom_c(rad_fract, lat, yday = yday, timesteps_per_day);
-      for (ix = 0; ix < nx; ix++) {
-        // printf("j: %i\n",i);
-        for (irec = 0; irec < nrec; irec++) {
-          rad_fract_map[ix][iy][irec] = rad_fract[irec];
-        }
-      }
-      i++;
-    }
-  } else {
-    printf("2d lonlat\n");
-    int i = 0;
-    for (ix = 0; ix < nx; ix++) {
-      printf("i: %i\n",i);
-      for (iy = 0; iy < ny; iy++) {
-        // printf("j: %i\n",i);
-        lat = lats[i];
-        solar_geom_c(rad_fract, lat, yday = yday, timesteps_per_day);
-        for (irec = 0; irec < nrec; irec++) {
-          rad_fract_map[ix][iy][irec] = rad_fract[irec];
-        }
-        i++;
-      }
-    }
-  }
-  
-  
-  // 
-  // // // run the function
-  // // rad_fract_lats_c(rad_fract_map_org, nTinyStepsPerDay, yday, slat, elat);
-  // 
-  // // ## Check and correct gmt_float 
-  // // if(gmt_float < -12 || gmt_float > 12) stop("cannot be lower than -12 and higher than 12")
-  // if (gmt_float < 0) gmt_float = gmt_float + nTinyStepsPerDay;
-  // 
-  // // ## Define the index offset based on the gmt offset
-  // gmt_float_tmp = gmt_float * (nTinyStepsPerDay/24);
-  // iGmtOffset = gmt_float_tmp + ((24/nrec) * -15 + 360);
-  // if (iGmtOffset < 0) iGmtOffset = iGmtOffset + nTinyStepsPerDay;
-  // 
-  // // iXoffset is for a smaller domain...
-  // float iXoffset = (slon - -179.75) / reslon;
-  // for (ix = 0; ix < nx; ix++) {
-  //   idx = floor((float)ix) + iGmtOffset + ((float)1 * (float)iXoffset);
-  //   for (irec = 0; irec < nrec; irec++) {
-  //     for (int id = 0; id < dt; id++) {
-  //       if (idx >= nTinyStepsPerDay) idx -= nTinyStepsPerDay;
-  //       for (iy = 0; iy < ny; iy++) {
-  //         rad_fract_map[ix][iy][irec] += rad_fract_map_org[iy][idx] * nrec;
-  //       }
-  //       idx++;
-  //     }
-  //   }
-  // }
-  
-  // Do everything for rec 0
-  // float iXoffset = (slon - -179.75) / reslon;
-  // printf("iXoffset: %f\n", iXoffset);
-  // // Do everything for rec 0
-  // for (ix = 0; ix < nx; ix++) {
-  //   // idx = (floor((float)ix * ( (float)nTinyStepsPerDay / (float)nx) )) + iGmtOffset;
-  //   idx = floor((float)ix) + iGmtOffset + ((float)1 * (float)iXoffset);
-  //   for (int id = 0; id < dt; id++) {
-  //     if (idx >= nTinyStepsPerDay) idx -= nTinyStepsPerDay;
-  //     for (iy = 0; iy < ny; iy++) {
-  //       rad_fract_map[ix][iy][0] += rad_fract_map_org[iy][idx] * nrec;
-  //     }
-  //     idx++;
-  //   }
-  // }
-  // 
-  // // Copy the map of rec 0 and move it for the other recs
-  // for (irec = 1; irec < nrec; irec++) {
-  //   for (ix = 0; ix < nx; ix++) {
-  //     ixx = ix - ( irec * (nx/nrec));
-  //     if (ixx < 0) ixx += nx;
-  //     for (iy = 0; iy < ny; iy++) {
-  //       rad_fract_map[ixx][iy][irec] = rad_fract_map[ix][iy][0];
-  //     }  
-  //   }
-  // }
-  
-  count = 0;
-  for (irec = 0; irec < nrec; irec++) {
-    for (iy = 0; iy < ny; iy++) {
-      for (ix = 0; ix < nx; ix++) {
-        rad_fract_map_r[count] = rad_fract_map[ix][iy][irec];
-        count++;
-      }
-    }
-  }
-  
-  // Free
-  for (ix = 0; ix < nx; ix++) {
-    for (iy = 0; iy < ny; iy++) {
-      free(rad_fract_map[ix][iy]);
-    }
-    free(rad_fract_map[ix]);
-  }
-  free(rad_fract_map);
-  
-  // for (iy = 0; iy < ny; iy++) {
-  //   free(rad_fract_map_org[iy]);
-  // }
-  // free(rad_fract_map_org);
   return rad_fract_map_r;
 }
 

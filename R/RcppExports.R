@@ -18,13 +18,8 @@ set_max_min_lonlat_cr <- function(tmin_map, tmax_map, yday, nrec, xybox) {
 }
 
 #' @export
-rad_map_final_cr <- function(nrec, yday, gmt_float, xybox, lats, lons) {
-    .Call('_metGeneratoR_rad_map_final_cr', PACKAGE = 'metGeneratoR', nrec, yday, gmt_float, xybox, lats, lons)
-}
-
-#' @export
-rad_map_final_2dll_cr <- function(nrec, yday, gmt_float, xybox, lats, lonlat2d) {
-    .Call('_metGeneratoR_rad_map_final_2dll_cr', PACKAGE = 'metGeneratoR', nrec, yday, gmt_float, xybox, lats, lonlat2d)
+rad_map_final_cr <- function(nrec, yday, gmt_float, xybox, lats, lons, gmt_offset) {
+    .Call('_metGeneratoR_rad_map_final_cr', PACKAGE = 'metGeneratoR', nrec, yday, gmt_float, xybox, lats, lons, gmt_offset)
 }
 
 rad_map_lats_cr <- function(nt, yday) {

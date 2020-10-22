@@ -42,20 +42,21 @@ metGenRun <- function() {
     # /*************************************************
     #   radiation fraction
     # *************************************************/
-    if (metGen$output$ndim == 1) {
-      lonlat2d <- F 
-    } else {
-      lonlat2d <- T
-    }
     if (!is.null(outData$radfrac)) {
-      # radfrac <- rad_map_final_2dll_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, 
-      #                                  metGen$settings$xybox, 
-      #                                  metGen$output$lats,
-      #                                  lonlat2d)
-      print(radfrac[1,1 , ])
-      for(i in 1:maxStep) outData$radfrac[, ,outrecs[i]] <- radfrac[, , outrecs[i]]
+        if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
+          if (metGen$input[[1]]$vars$x$ndim == 1) {
+            lats <- aperm(array(metGen$output$lats, dim=c(metGen$settings$ny,metGen$settings$nx)),c(2,1))
+            lons <- aperm(array(metGen$output$lons, dim=c(metGen$settings$nx,metGen$settings$ny)),c(1,2))
+          } else {
+            lats <- metGen$output$lats
+            lons <- metGen$output$lons
+          }
+          radfrac <- rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox, lats, lons, metGen$gmt_offset)
+          
+          for(i in 1:maxStep) outData$radfrac[, ,outrecs[i]] <- radfrac[, , outrecs[i]]
+        }
     }    
-    
+
     # /*************************************************
     #   Precipitation
     # *************************************************/

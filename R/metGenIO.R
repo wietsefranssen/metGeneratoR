@@ -81,7 +81,7 @@ mggetInVarInfo <- function(filename, varname) {
 mggetInDims <- function() {
   
   for (var in names(metGen$settings$inVar)) {
-    if (var != "radfrac") {
+    if (var != "radfrac" || var != "suntime") {
       printf("Getting input dimensions \"%s\". ", var)
       metGen$input[[var]] <- mggetInVarInfo(metGen$settings$inVars[[var]]$filename, metGen$settings$inVars[[var]]$ncname)
       printf("\n")

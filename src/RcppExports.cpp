@@ -44,18 +44,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// set_max_min_lonlat_cr
-NumericVector set_max_min_lonlat_cr(NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec, NumericVector xybox);
-RcppExport SEXP _metGeneratoR_set_max_min_lonlat_cr(SEXP tmin_mapSEXP, SEXP tmax_mapSEXP, SEXP ydaySEXP, SEXP nrecSEXP, SEXP xyboxSEXP) {
+// calc_tas_cr
+NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec, NumericVector xybox);
+RcppExport SEXP _metGeneratoR_calc_tas_cr(SEXP rad_fract_mapSEXP, SEXP tmin_mapSEXP, SEXP tmax_mapSEXP, SEXP ydaySEXP, SEXP nrecSEXP, SEXP xyboxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type rad_fract_map(rad_fract_mapSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type tmin_map(tmin_mapSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type tmax_map(tmax_mapSEXP);
     Rcpp::traits::input_parameter< int >::type yday(ydaySEXP);
     Rcpp::traits::input_parameter< int >::type nrec(nrecSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type xybox(xyboxSEXP);
-    rcpp_result_gen = Rcpp::wrap(set_max_min_lonlat_cr(tmin_map, tmax_map, yday, nrec, xybox));
+    rcpp_result_gen = Rcpp::wrap(calc_tas_cr(rad_fract_map, tmin_map, tmax_map, yday, nrec, xybox));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -106,7 +107,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_metGeneratoR_set_vp_cr", (DL_FUNC) &_metGeneratoR_set_vp_cr, 5},
     {"_metGeneratoR_sh2vp", (DL_FUNC) &_metGeneratoR_sh2vp, 2},
     {"_metGeneratoR_set_min_max_hour_cr", (DL_FUNC) &_metGeneratoR_set_min_max_hour_cr, 2},
-    {"_metGeneratoR_set_max_min_lonlat_cr", (DL_FUNC) &_metGeneratoR_set_max_min_lonlat_cr, 5},
+    {"_metGeneratoR_calc_tas_cr", (DL_FUNC) &_metGeneratoR_calc_tas_cr, 6},
     {"_metGeneratoR_rad_map_final_cr", (DL_FUNC) &_metGeneratoR_rad_map_final_cr, 7},
     {"_metGeneratoR_rad_map_lats_cr", (DL_FUNC) &_metGeneratoR_rad_map_lats_cr, 2},
     {"_metGeneratoR_solar_geom_cr", (DL_FUNC) &_metGeneratoR_solar_geom_cr, 3},

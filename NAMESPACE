@@ -22,8 +22,7 @@ export(ncLoad)
 export(rad_map_final_cr)
 export(readAllForcing)
 
-export(set_max_min_lonlat_cr)
-
+export(calc_tas_cr)
 export(mgsetInitInput)
 export(mgsetInitOutput)
 export(mggetInDims)

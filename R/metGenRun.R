@@ -154,7 +154,8 @@ metGenRun <- function() {
       if(metGen$metadata$inVars$tasmin$enabled && metGen$metadata$inVars$tasmax$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
           if (nInStep > 1) stop(printf("Dissagregation of \"tasmin\" and \"tasmax\" into \"tas\" is only possible for daily input!"))
-          outData$tas <- set_max_min_lonlat_cr(inData$tasmin[,,1], inData$tasmax[,,1], yday, metGen$derived$nOutStepDay, metGen$settings$xybox)
+          # outData$tas <- set_max_min_lonlat_cr(inData$tasmin[,,1], inData$tasmax[,,1], yday, metGen$derived$nOutStepDay, metGen$settings$xybox)
+          outData$tas <- calc_tas_cr(radfrac, inData$tasmin[,,1], inData$tasmax[,,1], yday, metGen$derived$nOutStepDay, metGen$settings$xybox)
         } else { ## aggregate to lower number of timesteps
           outData$tas[] <- 0
           for(i in 1:maxStep) outData$tas[, , outrecs[i]] <- outData$tas[, , outrecs[i]] + 

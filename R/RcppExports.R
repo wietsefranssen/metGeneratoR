@@ -22,11 +22,3 @@ rad_map_final_cr <- function(nrec, yday, gmt_float, xybox, lats, lons, gmt_offse
     .Call('_metGeneratoR_rad_map_final_cr', PACKAGE = 'metGeneratoR', nrec, yday, gmt_float, xybox, lats, lons, gmt_offset)
 }
 
-rad_map_lats_cr <- function(nt, yday) {
-    .Call('_metGeneratoR_rad_map_lats_cr', PACKAGE = 'metGeneratoR', nt, yday)
-}
-
-solar_geom_cr <- function(lat, yday, timesteps_per_day) {
-    .Call('_metGeneratoR_solar_geom_cr', PACKAGE = 'metGeneratoR', lat, yday, timesteps_per_day)
-}
-

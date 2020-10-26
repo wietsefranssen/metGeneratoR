@@ -98,16 +98,10 @@ NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx) {
 
 // [[Rcpp::export]]
 NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec, NumericVector xybox) {
-  // float reslon = 0.5;
   float lon;
   int nx, ix;
-  // float reslat = 0.5;
-  float lat;
   int ny, iy;
-  // int nt;
-  int nTinyStepsPerDay;
-  
-  
+  float lat;
   int irec;
   
   nx = (xybox[1] - xybox[0]) + 1;
@@ -120,11 +114,6 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
   dims[2] = nrec;
   tair_map_r.attr("dim") = dims;
   
-  // double tmin_hour_ix;
-  // double tmax_hour_ix;
-  // nt = nx;
-  
-  // double *radfrac_c = (double*)malloc(nx * sizeof(double));
   double tmin_hour = -999;
   double tmax_hour = -999;;
   
@@ -137,39 +126,45 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
     }
   }
   
+  // Define and allocate
+  double ***rad_fract_map_c = (double***)malloc(nx * sizeof(double));
+  for (ix = 0; ix < nx; ix++) {
+    rad_fract_map_c[ix] = (double**)malloc(ny * sizeof(double));
+    for (iy = 0; iy < ny; iy++) {
+      rad_fract_map_c[ix][iy] = (double*)malloc(nrec * sizeof(double));
+    }
+  }
+  
+  
   double *Tair = (double*)malloc(nrec * sizeof(double));
   double *rad_fract_point = (double*)malloc(24 * sizeof(double));
-
   
-  int ix_offset;
-  float tmin_hour_new;
-  float tmax_hour_new;
-  for (iy = 0; iy < ny; iy++) {
+  int counter = 0;
+  for (int i = 0; i < 24; i++) {
     for (ix = 0; ix < nx; ix++) {
-      // rad_fract_map[ix] =5;
-      // rad_fract_map[ix]
-      set_min_max_hour_c(&rad_fract_map[ix], &tmin_hour, &tmax_hour, 24);
-      // set_min_max_hour_c(&rad_fract_map[ix], &tmin_hour, &tmax_hour, nTinyStepsPerDay);
-      
-      // lat = lats[nx*iy + ix];
-      // if (lat < 0 && tmin_hour == 99) {
-      // } 
-      // if (lat >= 0 && tmin_hour == 99) {
-      //   tmin_hour = 11 - (24/(360/reslat));
-      //   tmax_hour = 12 + (24/(360/reslat));
-      // }
-      tmin_hour = 0;
-      tmax_hour = 16;
-      HourlyT_c(nrec, tmin_hour, tmin_map[iy*nx+ix], tmax_hour, tmax_map[iy*nx+ix], Tair);
-      
-      // Copy back to R array
-      for (irec = 0; irec < nrec; irec++) {
-        tair_map[ix][iy][irec] = Tair[irec];
-        // tair_map[ix][iy][irec] = tmin_map[iy*nx+ix];
+      for (iy = 0; iy < ny; iy++) {
+        rad_fract_map_c[iy][ix][i] = rad_fract_map[counter];
+        counter++;
       }
     }
   }
   
+  double sunrise, noon, sunset;
+  for (iy = 0; iy < ny; iy++) {
+    for (ix = 0; ix < nx; ix++) {
+      set_sunrise_sunset_hour_c(rad_fract_map_c[iy][ix], &sunrise, &noon, &sunset, nrec);
+      if (ix == 1 && iy == 1) printf("iy: %i, ix: %i, sunrise: %f, noon: %f, sunset: %f\n",iy, ix,sunrise, noon,sunset);
+
+      set_tmin_tmax_hour_c(sunrise, noon, sunset, &tmin_hour, &tmax_hour, nrec);
+      if (ix == 1 && iy == 1) printf("iy: %i, ix: %i, tmin_hour: %f, tmax_hour: %f\n",iy, ix,tmin_hour,tmax_hour);
+      
+      HourlyT_c(nrec, tmin_hour, tmin_map[iy*nx+ix], tmax_hour, tmax_map[iy*nx+ix], Tair);
+      for (irec = 0; irec < nrec; irec++) {
+        tair_map[ix][iy][irec] = Tair[irec];
+      }
+    }
+  }
+
   // Copy back to R array
   size_t count = 0;
   for (irec = 0; irec < nrec; irec++) {
@@ -181,7 +176,6 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
     }
   }
   
-  
   // Free
   for (ix = 0; ix < nx; ix++) {
     for (iy = 0; iy < ny; iy++) {
@@ -192,6 +186,15 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
   free(tair_map);
   
   free(Tair);
+  
+  // Free
+  for (ix = 0; ix < nx; ix++) {
+    for (iy = 0; iy < ny; iy++) {
+      free(rad_fract_map_c[ix][iy]);
+    }
+    free(rad_fract_map_c[ix]);
+  }
+  free(rad_fract_map_c);
   
   return tair_map_r;
 }
@@ -267,7 +270,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
     lon = lons[nx*iy + ix];
     for (iy = 0; iy < ny; iy++) {
       lat = lats[nx*iy + ix];
-      solar_geom_new_c(rad_fract, lat, yday, dt);
+      solar_geom_c(rad_fract, lat, yday, dt);
       it_tmp = floor(nTinyStepsPerDay * ( (lon + 180) / 360));
       if (it_tmp > nTinyStepsPerDay) it_tmp = it_tmp - nTinyStepsPerDay;
       it = floor(it_tmp + ( (nTinyStepsPerDay / 24) * gmt_offset));
@@ -305,64 +308,4 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   free(rad_fract_map);
   free(rad_fract);
   return rad_fract_map_r;
-}
-
-// [[Rcpp::export]]
-NumericVector rad_map_lats_cr(int nt, int yday) {
-  // Define and allocate
-  float slat = -89.75;
-  float elat = 89.75;
-  float reslat = 0.5;
-  int ny, iy;
-  int it;
-  
-  ny = ((elat - slat) / reslat) + 1;
-  
-  NumericVector rad_fract_map_r(nt * ny);
-  IntegerVector dims(2);
-  dims[0] = nt;
-  dims[1] = ny;
-  rad_fract_map_r.attr("dim") = dims;
-  
-  // Define and allocate
-  double **rad_fract_map = (double**)malloc(ny * sizeof(double));
-  for (iy = 0; iy < ny; iy++) {
-    rad_fract_map[iy] = (double*)malloc(nt * sizeof(double));
-  }
-  
-  // run the function
-  rad_fract_lats_c(rad_fract_map, nt, yday, slat, elat);
-  
-  // Pass array back to R NumericVector
-  for (iy = 0; iy < ny; iy++) {
-    for (it = 0; it < nt; it++) {
-      rad_fract_map_r[iy*nt + it] = rad_fract_map[iy][it];
-    }
-  }
-  
-  // Free
-  for (iy = 0; iy < ny; iy++) {
-    free(rad_fract_map[iy]);
-  }
-  free(rad_fract_map);
-  
-  return rad_fract_map_r;
-}
-
-// [[Rcpp::export]]
-NumericVector solar_geom_cr(float lat, int yday, int timesteps_per_day) {
-  
-  // Define and allocate
-  NumericVector result(timesteps_per_day);
-  double *result_c = (double*)malloc(timesteps_per_day * sizeof(double));
-  
-  // run the function
-  solar_geom_c(result_c, lat, yday, timesteps_per_day);
-  
-  // Pass array back to R NumericVector 
-  for (int i = 0; i < timesteps_per_day; i++) result[i] = result_c[i];
-  
-  // Free
-  free(result_c);
-  return result;
 }

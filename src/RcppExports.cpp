@@ -77,31 +77,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rad_map_lats_cr
-NumericVector rad_map_lats_cr(int nt, int yday);
-RcppExport SEXP _metGeneratoR_rad_map_lats_cr(SEXP ntSEXP, SEXP ydaySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type nt(ntSEXP);
-    Rcpp::traits::input_parameter< int >::type yday(ydaySEXP);
-    rcpp_result_gen = Rcpp::wrap(rad_map_lats_cr(nt, yday));
-    return rcpp_result_gen;
-END_RCPP
-}
-// solar_geom_cr
-NumericVector solar_geom_cr(float lat, int yday, int timesteps_per_day);
-RcppExport SEXP _metGeneratoR_solar_geom_cr(SEXP latSEXP, SEXP ydaySEXP, SEXP timesteps_per_daySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< float >::type lat(latSEXP);
-    Rcpp::traits::input_parameter< int >::type yday(ydaySEXP);
-    Rcpp::traits::input_parameter< int >::type timesteps_per_day(timesteps_per_daySEXP);
-    rcpp_result_gen = Rcpp::wrap(solar_geom_cr(lat, yday, timesteps_per_day));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_metGeneratoR_set_vp_cr", (DL_FUNC) &_metGeneratoR_set_vp_cr, 5},
@@ -109,8 +84,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_metGeneratoR_set_min_max_hour_cr", (DL_FUNC) &_metGeneratoR_set_min_max_hour_cr, 2},
     {"_metGeneratoR_calc_tas_cr", (DL_FUNC) &_metGeneratoR_calc_tas_cr, 6},
     {"_metGeneratoR_rad_map_final_cr", (DL_FUNC) &_metGeneratoR_rad_map_final_cr, 7},
-    {"_metGeneratoR_rad_map_lats_cr", (DL_FUNC) &_metGeneratoR_rad_map_lats_cr, 2},
-    {"_metGeneratoR_solar_geom_cr", (DL_FUNC) &_metGeneratoR_solar_geom_cr, 3},
     {NULL, NULL, 0}
 };
 

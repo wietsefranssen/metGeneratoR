@@ -104,10 +104,10 @@ void HourlyT_c(int nrec,
     Tyc1[2]  = Tmax;
   }
   else {
-    x[2]       = TmaxHour + hour;
-    Tyc1[2]  = Tmax;
-    x[3]       = TminHour + hour;
-    Tyc1[3]  = Tmin;
+    x[1]       = TmaxHour + hour;
+    Tyc1[1]  = Tmax;
+    x[2]       = TminHour + hour;
+    Tyc1[2]  = Tmin;
   } 
   
   /* To "tie" down the first and last values, repeat those */

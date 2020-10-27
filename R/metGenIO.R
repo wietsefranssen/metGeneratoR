@@ -44,7 +44,7 @@ mggetInVarInfo <- function(filename, varname) {
     name <- info$name
     id <- info$id
     ndim <- info$ndims
-
+    
     ## get new order (same as output)
     dimids <- info$dimids
     dimnamestmp <- getdimname(dimids)
@@ -60,9 +60,9 @@ mggetInVarInfo <- function(filename, varname) {
       vals <- aperm(vals, aperm_value)
       var[[i]] <- list(id=id, name=name, ndim=ndim, dimids_org=dimids, aperm=aperm_value, natts=natts, vals=vals)
     } else {
-      vals <- var.get.nc(ncid, varnames[[i]])
-      vals <- aperm(vals, aperm_value)
-      var[[i]] <- list(id=id, name=name, ndim=ndim, dimids=dimids, aperm=aperm_value, natts=natts, vals=vals)
+      # vals <- var.get.nc(ncid, varnames[[i]])
+      # vals <- aperm(vals, aperm_value)
+      var[[i]] <- list(id=id, name=name, ndim=ndim, dimids=dimids, aperm=aperm_value, natts=natts)
     }
   }
   
@@ -110,7 +110,9 @@ makeNetcdfOut <- function() {
       dimX <- ncdim_def("lon", units = '', vals = c(1:length(metGen$output$lons)), unlim = F, create_dimvar = F)
       dimY <- ncdim_def("lat", units = '', vals = c(1:length(metGen$output$lats)), unlim = F, create_dimvar = F)
     }
-    timeString <-format(strptime(settings$startDate, format = "%Y-%m-%d", tz = "GMT"),format="%Y-%m-%d %T")
+    timetmp<-strptime(settings$startDate, format = "%Y-%m-%d", tz = "GMT")
+    if (var == "radfrac") year(timetmp) <- 0
+    timeString <-format(timetmp, format="%Y-%m-%d %T")
     timeArray <-c(0:(metGen$derived$nrec_out-1)) * (24 / (24/metGen$derived$outDt))
     dimT <- ncdim_def("time", paste0("hours since ",timeString), timeArray, unlim = TRUE, calendar = "standard")
     
@@ -326,6 +328,7 @@ convertUnit <- function(data, unitIn, unitOut, dt = 24, verbose = F, doConversio
 ncLoad <- function(filename, ncvar, var, xybox, date = NULL) {
   
   ncid <- nc_open(filename = filename)
+  if(var=="radfrac") year(date) <- 0000
   if (!is.null(date)) {
     ## TODO Move this part to a general part like check input data
     ## mgsetInDt(inDt = 3) this function can then also be filled automatically
@@ -336,36 +339,15 @@ ncLoad <- function(filename, ncvar, var, xybox, date = NULL) {
     } else {
       times <- nc.get.time.series(ncid)
     }
-    
     time_index <- which(format(times, "%Y-%m-%d") == format(date, "%Y-%m-%d"))
-    
-    # dataset <-  ncvar_get(nc = ncid, 
-    #                       varid = ncvar, 
-    #                       start = c(xybox[3],xybox[1],time_index[1]),
-    #                       count = c(length(c(xybox[3]:xybox[4])),
-    #                                 length(c(xybox[1]:xybox[2])),length(time_index)),
-    #                       collapse_degen = F)
     dataset <- nc.get.var.subset.by.axes(ncid, ncvar,
                                          axis.indices = list(Y = c(xybox[3]:xybox[4]),
                                                              X = c(xybox[1]:xybox[2]),
-                                                             T = time_index)
-                                         
-                                         # axes.map = metGen$input$pr$vars$data$dimids
-                                         # axes.map = c(1,2,3)
-    )
-  } else {
-    dataset <- nc.get.var.subset.by.axes(ncid, ncvar,
-                                         axis.indices = list(X = c(xybox[1]:xybox[2]), 
-                                                             Y = c(xybox[3]:xybox[4]),
-                                                             T = 1))
+                                                             T = time_index))
   }
   dataset <- aperm(dataset, metGen$input[[var]]$vars$data$aperm)
   
   nc_close(ncid)
-  
-  # ## Flip if needed
-  # if (lats[2] < lats[1])
-  #   dataset[]<-dataset[,c(dim(dataset)[2]:1),]
-  
+   
   return(dataset)
 }

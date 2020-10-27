@@ -90,7 +90,7 @@ NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx) {
   }
   
   set_min_max_hour_c(radfrac_c, &tmin_hour, &tmax_hour, nx);
-  
+  free(radfrac_c);
   result[0] = tmin_hour;
   result[1] = tmax_hour;
   return result;
@@ -141,9 +141,9 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
   
   int counter = 0;
   for (int i = 0; i < 24; i++) {
-    for (ix = 0; ix < nx; ix++) {
       for (iy = 0; iy < ny; iy++) {
-        rad_fract_map_c[iy][ix][i] = rad_fract_map[counter];
+        for (ix = 0; ix < nx; ix++) {
+          rad_fract_map_c[ix][iy][i] = rad_fract_map[counter];
         counter++;
       }
     }
@@ -152,7 +152,7 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
   double sunrise, noon, sunset;
   for (iy = 0; iy < ny; iy++) {
     for (ix = 0; ix < nx; ix++) {
-      set_sunrise_sunset_hour_c(rad_fract_map_c[iy][ix], &sunrise, &noon, &sunset, nrec);
+      set_sunrise_sunset_hour_c(rad_fract_map_c[ix][iy], &sunrise, &noon, &sunset, nrec);
       if (ix == 1 && iy == 1) printf("iy: %i, ix: %i, sunrise: %f, noon: %f, sunset: %f\n",iy, ix,sunrise, noon,sunset);
 
       set_tmin_tmax_hour_c(sunrise, noon, sunset, &tmin_hour, &tmax_hour, nrec);
@@ -185,6 +185,7 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
   }
   free(tair_map);
   
+  free(rad_fract_point);
   free(Tair);
   
   // Free

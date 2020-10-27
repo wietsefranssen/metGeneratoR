@@ -4,33 +4,37 @@
 #include "header.h"
 
 int set_sunrise_sunset_hour_c(double *radfract, double *sunrise, double *noon, double *sunset, int nx) {
+  bool first;
   // sunrise
+  first = 1;
   for (int i = 0; i < 24; i++) {
     if (i == 0) {
       if (radfract[i] > radfract[23]) {
-        *sunrise = (double)i;
-        break;
+        if (first) *sunrise = (double)i;
+        first = 0;
+      } else {
+        if (first == 0) first = 1;
       }
     } else {
       if (radfract[i] > radfract[i-1]) {
-        *sunrise = (double)i;
-        break;
+        if (first) {
+          *sunrise = (double)i;
+          break;
+        }
+      } else {
+        if (first == 0) first = 1;
       }
     }
   }
   
   // Noon
+  int imax = 0;
   for (int i = 0; i < 24; i++) {
-    if (i == 0) {
-      if (radfract[i] > radfract[23]) {
-        *noon = (double)i;
-      }
-    } else {
-      if (radfract[i] > radfract[i-1]) {
-        *noon = (double)i;
-      }
+    if (radfract[imax] < radfract[i]) {
+      imax = i;
     }
   }
+  *noon = (double)imax;
   
   // sunset
   for (int i = 23; i >= 0; i--) {

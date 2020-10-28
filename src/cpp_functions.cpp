@@ -12,8 +12,6 @@ int set_sunrise_sunset_hour_c(double *radfract, double *sunrise, double *noon, d
       if (radfract[i] > radfract[23]) {
         if (first) *sunrise = (double)i;
         first = 0;
-      } else {
-        if (first == 0) first = 1;
       }
     } else {
       if (radfract[i] > radfract[i-1]) {

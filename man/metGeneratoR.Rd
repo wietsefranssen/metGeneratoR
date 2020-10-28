@@ -12,7 +12,7 @@ If needed it converts data to the proper output unit.
 \examples{
 
 ## Set the XYbox
-mgsetXYbox(c(92.25, 110.25, 7.25, 36.25))
+mgsetXYbox(c(330, 450, 30, 130))
 
 ## Set the period to run
 mgsetPeriod(startdate = "1950-1-1", enddate = "1950-1-31")
@@ -38,6 +38,12 @@ mgsetOutVars(c("tas", "pr", "wind", "vp", "psurf", "swdown", "lwdown"))
 
 ## Set the output filename(s) structure and path(s) 
 mgsetOutName("output/<VAR>/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = TRUE)
+
+mggetInDims()
+mgsetOutDims()
+
+mgcheckInVars()
+mgcheckOutVars()
 
 ## Run the metGeneratoR based on the settings above
 metGenRun()

@@ -18,7 +18,7 @@ calc_tas_cr <- function(rad_fract_map, tmin_map, tmax_map, yday, nrec, xybox) {
 }
 
 #' @export
-rad_map_final_cr <- function(nrec, yday, gmt_float, xybox, lats, lons, gmt_offset) {
-    .Call('_metGeneratoR_rad_map_final_cr', PACKAGE = 'metGeneratoR', nrec, yday, gmt_float, xybox, lats, lons, gmt_offset)
+rad_map_final_cr <- function(nrec, yday, xybox, lats, lons, gmt_offset) {
+    .Call('_metGeneratoR_rad_map_final_cr', PACKAGE = 'metGeneratoR', nrec, yday, xybox, lats, lons, gmt_offset)
 }
 

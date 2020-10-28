@@ -202,7 +202,7 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
 
 //' @export
 // [[Rcpp::export]]
-NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVector xybox, NumericVector lats, NumericVector lons, float gmt_offset) {
+NumericVector rad_map_final_cr(int nrec, int yday, NumericVector xybox, NumericVector lats, NumericVector lons, float gmt_offset) {
   // Define and allocate
   int nx, ix;
   int ny, iy;
@@ -260,11 +260,10 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
   
   
   // Calc gmt_offset
-  if (gmt_offset < 0) gmt_offset += 24;
   gmt_offset += - (24/nrec) * 0.5;
-  if (gmt_offset < 0) gmt_offset += 24;
-  if (gmt_offset >= 24) gmt_offset -= 24;
-  
+  gmt_offset += 12;
+  gmt_offset -= (floor(gmt_offset/24)*24);
+
   // run the function
   for (ix = 0; ix < nx; ix++) {
     iy = 0;
@@ -274,16 +273,16 @@ NumericVector rad_map_final_cr(int nrec, int yday, double gmt_float, NumericVect
       solar_geom_c(rad_fract, lat, yday, dt);
       it_tmp = floor(nTinyStepsPerDay * ( (lon + 180) / 360));
       if (it_tmp > nTinyStepsPerDay) it_tmp = it_tmp - nTinyStepsPerDay;
-      it = floor(it_tmp + ( (nTinyStepsPerDay / 24) * gmt_offset));
+      it = floor(it_tmp + ( (nTinyStepsPerDay / 24) * (gmt_offset)));
       if (it > nTinyStepsPerDay) it = it - nTinyStepsPerDay;
+      if (it > nTinyStepsPerDay) it = it - nTinyStepsPerDay;
+      it -= (floor(it/ nTinyStepsPerDay)* nTinyStepsPerDay);
       
       for (tss = 0; tss < nTinyStepsPerDay; tss++) {
         irec = floor(tss / (nTinyStepsPerDay / nrec));
-        // irecit = floor(tss + it + (tss / nrec));
         irecit = floor(tss + it + ( (tss / nTinyStepsPerDay) * (nTinyStepsPerDay / nrec)));
-        if (irecit >= nTinyStepsPerDay) {
-          irecit = irecit - nTinyStepsPerDay;
-        }
+        irecit -= (floor(irecit/ nTinyStepsPerDay)* nTinyStepsPerDay);
+        
         rad_fract_map[ix][iy][irec] += rad_fract[irecit] * nrec;
       }
     }

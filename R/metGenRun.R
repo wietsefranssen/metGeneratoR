@@ -42,7 +42,9 @@ metGenRun <- function() {
     # /*************************************************
     #   radiation fraction
     # *************************************************/
-    if (!is.null(outData$radfrac)) {
+    if (!is.null(outData$radfrac) || !
+        (!is.null(outData$swdown) && !metGen$metadata$inVars$radfrac$enabled) ||
+        (!is.null(outData$tas) && !metGen$metadata$inVars$radfrac$enabled)) {
       if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
         if (metGen$input[[1]]$vars$x$ndim == 1) {
           lats <- aperm(array(metGen$output$lats, dim=c(metGen$settings$ny,metGen$settings$nx)),c(2,1))
@@ -51,8 +53,11 @@ metGenRun <- function() {
           lats <- metGen$output$lats
           lons <- metGen$output$lons
         }
-        radfrac <- rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox, lats, lons, metGen$gmt_offset)
-        for(i in 1:maxStep) outData$radfrac[, ,outrecs[i]] <- radfrac[, , outrecs[i]]
+        if (is.null(metGen$gmt_offset)) metGen$gmt_offset <- 0
+        radfrac <- rad_map_final_cr(24, yday, metGen$settings$xybox, lats, lons, metGen$gmt_offset)
+        if (!is.null(outData$radfrac)) {
+          for(i in 1:maxStep) outData$radfrac[, ,outrecs[i]] <- radfrac[, , outrecs[i]]
+        }
       }
     }    
     
@@ -84,24 +89,21 @@ metGenRun <- function() {
     if (!is.null(outData$swdown)) {
       if(metGen$metadata$inVars$swdown$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
-          if (metGen$input$pr$vars$x$ndim == 1) {
-            lats <- aperm(array(metGen$output$lats, dim=c(metGen$settings$ny,metGen$settings$nx)),c(2,1))
-            lons <- aperm(array(metGen$output$lons, dim=c(metGen$settings$nx,metGen$settings$ny)),c(1,2))
-          } else {
-            lats <- metGen$output$lats
-            lons <- metGen$output$lons
-          }
           if (metGen$metadata$inVars$radfrac$enabled) {
-            # print("Copy radfrac")
             radfrac <- inData$radfrac
           }
+          # tas_24h <- calc_tas_cr(radfrac, inData$tasmin[,,1],
+                                 # inData$tasmax[,,1], yday, 24, metGen$settings$xybox)
           
-          # radfrac <- rad_map_final_cr(metGen$derived$nOutStepDay, yday, gmt_float = 0, metGen$settings$xybox, lats, lons, metGen$gmt_offset)
-          
+          # aggregate from 24h to metGen$derived$nOutStepDay/maxStep
           # image(radfrac[,,7])
           # print(paste("ave: ", ave(radfrac[,,1])))
           swdown_day <- apply(inData$swdown, c(1,2), mean)
-          for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- radfrac[ , , outrecs[i]] #* swdown_day
+          outData$swdown[] <- 0
+          for(i in 1:24) {
+            outData$swdown[, , radfractrecs[i]] <- outData$swdown[, , radfractrecs[i]] + (radfrac[, , i] * swdown_day / (24/nOutStep))
+          }
+          # for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- radfrac[ , , outrecs[i]] #* swdown_day
         } else { ## aggregate to lower number of timesteps
           outData$swdown[]<-0
           for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- outData$swdown[, , outrecs[i]] + ( inData$swdown[, , inrecs[i]] /  (nInStep/nOutStep) )
@@ -158,24 +160,15 @@ metGenRun <- function() {
       if(metGen$metadata$inVars$tasmin$enabled && metGen$metadata$inVars$tasmax$enabled) {
         if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
           if (nInStep > 1) stop(printf("Dissagregation of \"tasmin\" and \"tasmax\" into \"tas\" is only possible for daily input!"))
-          # outData$tas <- set_max_min_lonlat_cr(inData$tasmin[,,1], inData$tasmax[,,1], yday, metGen$derived$nOutStepDay, metGen$settings$xybox)
           if (metGen$metadata$inVars$radfrac$enabled) {
-            # print("Copy radfrac")
             radfrac <- inData$radfrac
           }
-          # print(paste("radfrac: " , dim(radfrac)))
-          
-          # outData$tas <- calc_tas_cr(radfrac, inData$tasmin[,,1], 
-          #                            inData$tasmax[,,1], yday, metGen$derived$nOutStepDay, metGen$settings$xybox)
-          tas_24h <- calc_tas_cr(radfrac, inData$tasmin[,,1],
-                                     inData$tasmax[,,1], yday, 24, metGen$settings$xybox)
-          
+          tas_24h <- calc_tas_cr(radfrac, inData$tasmin[,,1], inData$tasmax[,,1], yday, 24, metGen$settings$xybox)
           # aggregate from 24h to metGen$derived$nOutStepDay/maxStep
           outData$tas[] <- 0
           for(i in 1:24) {
             outData$tas[, , radfractrecs[i]] <- outData$tas[, , radfractrecs[i]] + (tas_24h[, , i] / (24/nOutStep))
           }
-          # outData$tas <-
         } else { ## aggregate to lower number of timesteps
           outData$tas[] <- 0
           for(i in 1:maxStep) outData$tas[, , outrecs[i]] <- outData$tas[, , outrecs[i]] + 

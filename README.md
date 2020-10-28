@@ -9,9 +9,8 @@ In Ubuntu/Debian you need to install some prerequisites first (testen on 18.04 L
 
 Start R and run the following commands:
 
-    library(devtools)
-    install_git("https://github.com/wietsefranssen/metGeneratoR")
-    
+    devtools::install_git("https://github.com/wietsefranssen/metGeneratoR", ref="waterSIS_2dimlonlat")
+
 ## Loading
 
     library(metGeneratoR)

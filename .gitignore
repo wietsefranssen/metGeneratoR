@@ -7,3 +7,5 @@ output/
 .Ruserdata
 *.o
 *.so
+*.pdf
+no_git/

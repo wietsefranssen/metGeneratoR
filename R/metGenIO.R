@@ -111,7 +111,7 @@ makeNetcdfOut <- function() {
       dimY <- ncdim_def("lat", units = '', vals = c(1:length(metGen$output$lats)), unlim = F, create_dimvar = F)
     }
     timetmp<-strptime(settings$startDate, format = "%Y-%m-%d", tz = "GMT")
-    if (var == "radfrac") year(timetmp) <- 0
+    if (var == "radfrac") year(timetmp) <- 0001
     timeString <-format(timetmp, format="%Y-%m-%d %T")
     timeArray <-c(0:(metGen$derived$nrec_out-1)) * (24 / (24/metGen$derived$outDt))
     dimT <- ncdim_def("time", paste0("hours since ",timeString), timeArray, unlim = TRUE, calendar = "standard")
@@ -328,7 +328,7 @@ convertUnit <- function(data, unitIn, unitOut, dt = 24, verbose = F, doConversio
 ncLoad <- function(filename, ncvar, var, xybox, date = NULL) {
   
   ncid <- nc_open(filename = filename)
-  if(var=="radfrac") year(date) <- 0000
+  if(var=="radfrac") year(date) <- 0001
   if (!is.null(date)) {
     ## TODO Move this part to a general part like check input data
     ## mgsetInDt(inDt = 3) this function can then also be filled automatically

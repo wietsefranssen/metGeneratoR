@@ -34,7 +34,7 @@ mgsetInVars(list(
 ))
 
 ## Set the output variables
-mgsetOutVars(c("tas", "pr", "wind", "vp", "psurf", "swdown", "lwdown"))
+mgsetOutVars(c("tas", "pr", "wind", "vp", "psurf", "swdown", "lwdown", "radfrac"))
 
 ## Set the output filename(s) structure and path(s) 
 mgsetOutName("output/<VAR>/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = TRUE)

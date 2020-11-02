@@ -3,24 +3,24 @@
 
 // "Clausius-Clapeyron"
 //// [[Rcpp::export]]
-double SVP_ClaCla(double t) // input in Celsius
+float SVP_ClaCla(float t) // input in Celsius
 {
-  double T0 = 273.15;
-  double Es_T0 = 6.11;
-  double L = 2500000;
-  double Rw = 461.52;
+  float T0 = 273.15;
+  float Es_T0 = 6.11;
+  float L = 2500000;
+  float Rw = 461.52;
   
-  double Es;
+  float Es;
   Es = Es_T0 * exp((L/Rw) * (1/T0 - 1/(t + T0)));
   return(Es); 
 }
 
 // "Murray"
 //// [[Rcpp::export]]
-double SVP_Murray(double t) // input in Celsius
+float SVP_Murray(float t) // input in Celsius
 {
-  double T0 = 273.15;
-  double a, b;
+  float T0 = 273.15;
+  float a, b;
 
   if (t < 0) {
     a = 21.8745584;
@@ -32,16 +32,16 @@ double SVP_Murray(double t) // input in Celsius
   }
   
     
-  double Es;
+  float Es;
   Es = 6.1078 * exp(a * t/((t + T0) - b));
   return(Es); 
 }
 
 
 //// [[Rcpp::export]]
-double SH2RH(double q, double t, double p)
+float SH2RH(float q, float t, float p)
 {
-  double e, Es, psi;
+  float e, Es, psi;
   
   e = q * p/(0.622 + 0.378 * q);
   Es = SVP_ClaCla(t);
@@ -51,27 +51,27 @@ double SH2RH(double q, double t, double p)
 }
 
 
-double WVP2(double psi, double Es)
+float WVP2(float psi, float Es)
 {
-  double e = psi * Es;
+  float e = psi * Es;
   
   return(e);
 }
 
 //// [[Rcpp::export]]
-double WVP(double psi, double t)
+float WVP(float psi, float t)
 {
-  double Es = SVP_ClaCla(t);
-  double e = psi * Es;
+  float Es = SVP_ClaCla(t);
+  float e = psi * Es;
   
   return(e);
 }
 
 //// [[Rcpp::export]]
-double sh2vp_c(double q, double t, double p)
+float sh2vp_c(float q, float t, float p)
 {
-  double rh = SH2RH(q, t, p);
-  double vp = WVP(rh, t);
+  float rh = SH2RH(q, t, p);
+  float vp = WVP(rh, t);
   
   return(vp);
 }

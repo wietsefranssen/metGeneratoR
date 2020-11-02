@@ -77,46 +77,26 @@ NumericVector sh2vp(NumericVector q, NumericVector p) {
 }  
 
 // [[Rcpp::export]]
-NumericVector set_min_max_hour_cr(NumericVector radfrac, int nx) {
-  NumericVector result(2);
-  int ix;
-  
-  double *radfrac_c = (double*)malloc(nx * sizeof(double));
-  double tmin_hour = -999;
-  double tmax_hour = -999;;
-  
-  for (ix = 0; ix < nx; ix++) {
-    radfrac_c[ix] = radfrac[ix];
-  }
-  
-  set_min_max_hour_c(radfrac_c, &tmin_hour, &tmax_hour, nx);
-  free(radfrac_c);
-  result[0] = tmin_hour;
-  result[1] = tmax_hour;
-  return result;
-}
-
-// [[Rcpp::export]]
 NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, NumericVector tmax_map, int yday, int nrec, NumericVector xybox) {
   float lon;
   int nx, ix;
   int ny, iy;
   float lat;
   int irec;
-  
+
   nx = (xybox[1] - xybox[0]) + 1;
   ny = (xybox[3] - xybox[2]) + 1;
-  
+
   NumericVector tair_map_r(nrec * ny * nx);
   IntegerVector dims(3);
   dims[0] = nx;
   dims[1] = ny;
   dims[2] = nrec;
   tair_map_r.attr("dim") = dims;
-  
-  double tmin_hour = -999;
-  double tmax_hour = -999;;
-  
+
+  float tmin_hour = -999;
+  float tmax_hour = -999;;
+
   // Define and allocate
   double ***tair_map = (double***)malloc(nx * sizeof(double));
   for (ix = 0; ix < nx; ix++) {
@@ -125,7 +105,7 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
       tair_map[ix][iy] = (double*)malloc(nrec * sizeof(double));
     }
   }
-  
+
   // Define and allocate
   double ***rad_fract_map_c = (double***)malloc(nx * sizeof(double));
   for (ix = 0; ix < nx; ix++) {
@@ -134,11 +114,11 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
       rad_fract_map_c[ix][iy] = (double*)malloc(nrec * sizeof(double));
     }
   }
-  
-  
-  double *Tair = (double*)malloc(nrec * sizeof(double));
-  double *rad_fract_point = (double*)malloc(24 * sizeof(double));
-  
+
+
+  float *Tair = (float*)malloc(nrec * sizeof(float));
+  float *rad_fract_point = (float*)malloc(24 * sizeof(float));
+
   int counter = 0;
   for (int i = 0; i < 24; i++) {
       for (iy = 0; iy < ny; iy++) {
@@ -148,8 +128,8 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
       }
     }
   }
-  
-  double sunrise, noon, sunset;
+
+  float sunrise, noon, sunset;
   for (iy = 0; iy < ny; iy++) {
     for (ix = 0; ix < nx; ix++) {
       set_sunrise_sunset_hour_c(rad_fract_map_c[ix][iy], &sunrise, &noon, &sunset, nrec);
@@ -157,7 +137,7 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
 
       set_tmin_tmax_hour_c(sunrise, noon, sunset, &tmin_hour, &tmax_hour, nrec);
       if (ix == 1 && iy == 1) printf("iy: %i, ix: %i, tmin_hour: %f, tmax_hour: %f\n",iy, ix,tmin_hour,tmax_hour);
-      
+
       HourlyT_c(nrec, tmin_hour, tmin_map[iy*nx+ix], tmax_hour, tmax_map[iy*nx+ix], Tair);
       for (irec = 0; irec < nrec; irec++) {
         tair_map[ix][iy][irec] = Tair[irec];
@@ -175,7 +155,7 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
       }
     }
   }
-  
+
   // Free
   for (ix = 0; ix < nx; ix++) {
     for (iy = 0; iy < ny; iy++) {
@@ -184,10 +164,10 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
     free(tair_map[ix]);
   }
   free(tair_map);
-  
+
   free(rad_fract_point);
   free(Tair);
-  
+
   // Free
   for (ix = 0; ix < nx; ix++) {
     for (iy = 0; iy < ny; iy++) {
@@ -196,7 +176,7 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
     free(rad_fract_map_c[ix]);
   }
   free(rad_fract_map_c);
-  
+
   return tair_map_r;
 }
 
@@ -211,10 +191,9 @@ NumericVector rad_map_final_cr(int nrec, int yday, NumericVector xybox, NumericV
   int idx;
   int iGmtOffset;
   int nTinyStepsPerDay;
-  double dt = 30;
-  double gmt_float_tmp;
+  float dt = 30;
   size_t count;
-  double SEC_PER_DAY = 86400;
+  int SEC_PER_DAY = 86400;
   ix = 0;
   float lon, lat;
   int irecit;
@@ -253,7 +232,7 @@ NumericVector rad_map_final_cr(int nrec, int yday, NumericVector xybox, NumericV
   }
   
   // Define and allocate
-  double *rad_fract = (double*)malloc(nTinyStepsPerDay * sizeof(double));
+  float *rad_fract = (float*)malloc(nTinyStepsPerDay * sizeof(float));
   for (it = 0; it < nTinyStepsPerDay; it++) {
     rad_fract[it] = 0;
   }

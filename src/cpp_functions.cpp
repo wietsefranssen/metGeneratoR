@@ -3,20 +3,20 @@
 #include <stdio.h>
 #include "header.h"
 
-int set_sunrise_sunset_hour_c(double *radfract, double *sunrise, double *noon, double *sunset, int nx) {
+int set_sunrise_sunset_hour_c(double *radfract, float *sunrise, float *noon, float *sunset, int nx) {
   bool first;
   // sunrise
   first = 1;
   for (int i = 0; i < 24; i++) {
     if (i == 0) {
       if (radfract[i] > radfract[23]) {
-        if (first) *sunrise = (double)i;
+        if (first) *sunrise = (float)i;
         first = 0;
       }
     } else {
       if (radfract[i] > radfract[i-1]) {
         if (first) {
-          *sunrise = (double)i;
+          *sunrise = (float)i;
           break;
         }
       } else {
@@ -32,18 +32,18 @@ int set_sunrise_sunset_hour_c(double *radfract, double *sunrise, double *noon, d
       imax = i;
     }
   }
-  *noon = (double)imax;
+  *noon = (float)imax;
   
   // sunset
   for (int i = 23; i >= 0; i--) {
     if (i > 0) {
       if (radfract[i-1] > radfract[i]) {
-        *sunset = (double)i;
+        *sunset = (float)i;
         break;
       }
     } else {
       if (radfract[23] > radfract[i]) {
-        *sunset = (double)i;
+        *sunset = (float)i;
         break;
       }
     }
@@ -51,7 +51,7 @@ int set_sunrise_sunset_hour_c(double *radfract, double *sunrise, double *noon, d
   
   return 0;
 }
-int set_tmin_tmax_hour_c(double sunrise, double noon, double sunset, double *tmin_hour, double *tmax_hour, int nx) {
+int set_tmin_tmax_hour_c(float sunrise, float noon, float sunset, float *tmin_hour, float *tmax_hour, int nx) {
   *tmin_hour = sunrise;
   *tmax_hour = (sunset - noon);
   if (*tmax_hour < 0) {
@@ -70,76 +70,24 @@ int set_tmin_tmax_hour_c(double sunrise, double noon, double sunset, double *tmi
   return 0;
 }
 
-int set_min_max_hour_c(double *radfrac, double *tmin_hour, double *tmax_hour, int nx) {
-  int ix;
-  // int iy;
-  int ix_prev;
-  int tmin_ix = -999;
-  int tmax_ix = -999;
+int solar_geom_c(float *tiny_rad_fract_1day, float lat, int yday, float dt = 30) {
   
-  for (ix = 0; ix < (nx/2); ix++) {
-    ix_prev = ix - 1;
-    if (ix_prev < 0) { ix_prev = nx - 1;}
-    if (radfrac[ix] > 0 && radfrac[ix_prev] <= 0)
-    {
-      tmin_ix = ix_prev;
-      break;
-    }
-  }
-  for (ix = (nx/2); ix < nx; ix++) {
-    ix_prev = ix - 1;
-    if (ix_prev < 0) { ix_prev = nx - 1;}
-    if (radfrac[ix] <= 0 && radfrac[ix_prev] > 0)
-    {
-      tmax_ix = ix + 1;
-      break;
-    }
-  }
-  
-  // convert ix to hour
-  double partsPerHour = nx/24;
-  *tmin_hour = -999;
-  *tmax_hour = -999;
-  
-  if (tmin_ix >= 1 && tmax_ix >= 1) {
-    *tmin_hour = tmin_ix / partsPerHour;
-    *tmax_hour = tmax_ix / partsPerHour;
-  }
-  if (*tmin_hour >= 0 && *tmax_hour >= 0) {
-    *tmax_hour = 0.67 * (*tmax_hour - *tmin_hour) + *tmin_hour;
-    // *tmax_hour = 1 * (*tmax_hour - *tmin_hour) + *tmin_hour;
-  } else {
-    /* arbitrarily set the min and max times to 2am and 2pm */
-    // * TODO: Depends on longitude the gmt offset?!
-    // */
-    *tmin_hour = 2;
-    *tmax_hour = 14;
-    // *tmin_hour = 99;
-    // *tmax_hour = 99;
-  }
-  
-  // printf("tmin_hour: %f tmax_hour: %f\n", *tmin_hour, *tmax_hour);
-  return 0;
-}
-
-int solar_geom_c(double *tiny_rad_fract_1day, float lat, int yday, double dt = 30) {
-  
-  // double dt = 30;
-  double PII = 3.141593;
-  double MIN_DECL = -0.4092797;
-  double RAD_PER_DEG = 0.01745329;
-  double SEC_PER_RAD = 13750.99;
-  double SEC_PER_DAY = 86400;
-  double DAYS_OFF = 11.25;
-  double RAD_PER_DAY = 0.017214;
-  double cosegeom, sinegeom, coshss, hss, daylength;
-  double dir_beam_topa;
+  // float dt = 30;
+  float PII = 3.141593;
+  float MIN_DECL = -0.4092797;
+  float RAD_PER_DEG = 0.01745329;
+  float SEC_PER_RAD = 13750.99;
+  float SEC_PER_DAY = 86400;
+  float DAYS_OFF = 11.25;
+  float RAD_PER_DAY = 0.017214;
+  float cosegeom, sinegeom, coshss, hss, daylength;
+  float dir_beam_topa;
   
   int tinystepsperday, i, j, tss;
-  double coslat, sinlat, dh, decl, cosdecl, sindecl;
-  // double sum_trans = 0;
-  double sum_flat_potrad = 0;
-  double cosh, h, am, cza, dir_flat_topa;
+  float coslat, sinlat, dh, decl, cosdecl, sindecl;
+  // float sum_trans = 0;
+  float sum_flat_potrad = 0;
+  float cosh, h, am, cza, dir_flat_topa;
   int tinystep;
   int istep;
   int ami;
@@ -149,7 +97,7 @@ int solar_geom_c(double *tiny_rad_fract_1day, float lat, int yday, double dt = 3
   for (i = 0; i < tinystepsperday; i++) tiny_rad_fract_1day[i] = 0;
   
   /* optical airmass by degrees */
-  double optam[21] = {2.90, 3.05, 3.21, 3.39, 3.69, 3.82, 4.07, 4.37, 4.72, 5.12, 5.60,
+  float optam[21] = {2.90, 3.05, 3.21, 3.39, 3.69, 3.82, 4.07, 4.37, 4.72, 5.12, 5.60,
                       6.18, 6.88, 7.77, 8.90, 10.39, 12.44, 15.36, 19.79, 26.96, 30.00};
   
   /* precalculate the transcendentals */
@@ -185,7 +133,7 @@ int solar_geom_c(double *tiny_rad_fract_1day, float lat, int yday, double dt = 3
   
   /* extraterrestrial radiation perpendicular to beam, total over
    the timestep (J) */
-  dir_beam_topa = (1368.0 + 45.5 * sin((2.0 * PII * (double) (yday - 1) / 365.25) + 1.7)) * dt;
+  dir_beam_topa = (1368.0 + 45.5 * sin((2.0 * PII * (float) (yday - 1) / 365.25) + 1.7)) * dt;
   
   /* Set up angular calculations */
   for (h = -hss; h < hss; h += dh) {

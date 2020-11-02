@@ -15,16 +15,16 @@
 /****************************************************************************/
 /* calculate the coefficients for the Hermite polynomials */
 void hermite(int n, 
-             double *x, 
-             double *yc1, 
-             double *yc2, 
-             double *yc3, 
-             double *yc4)
+             float *x, 
+             float *yc1, 
+             float *yc2, 
+             float *yc3, 
+             float *yc4)
 {
   int i;
-  double dx;
-  double divdf1;
-  double divdf3;
+  float dx;
+  float divdf1;
+  float divdf3;
   
   for (i = 0; i < n-1; i++) {
     dx = x[i+1] - x[i];
@@ -40,12 +40,12 @@ void hermite(int n,
 /**************************************************************************/
 /* use the Hermite polynomials, to find the interpolation function value at 
  xbar */
-double hermint(double xbar, int n, double *x, double *yc1, double *yc2, 
-               double *yc3, double *yc4)
+float hermint(float xbar, int n, float *x, float *yc1, float *yc2, 
+               float *yc3, float *yc4)
 {
   int klo,khi,k;
-  double dx;
-  double result;
+  float dx;
+  float result;
   
   klo=0;
   khi=n-1;
@@ -64,17 +64,17 @@ double hermint(double xbar, int n, double *x, double *yc1, double *yc2,
 /*				    HourlyT                                 */
 /****************************************************************************/
 void HourlyT_c(int nrec,
-               double TminHour,
-               double Tmin, 
-               double TmaxHour, 
-               double Tmax, 
-               double *Tair) 
+               float TminHour,
+               float Tmin, 
+               float TmaxHour, 
+               float Tmax, 
+               float *Tair) 
 {
-  double *x;
-  double *Tyc1;
-  double *yc2;
-  double *yc3;
-  double *yc4;
+  float *x;
+  float *Tyc1;
+  float *yc2;
+  float *yc3;
+  float *yc4;
   int i;
   int n;
   int hour;
@@ -88,11 +88,11 @@ void HourlyT_c(int nrec,
   nsteps = nrec;
   
   n     = 2+2;
-  x     = (double *) calloc(n, sizeof(double));
-  Tyc1  = (double *) calloc(n, sizeof(double));
-  yc2   = (double *) calloc(n, sizeof(double));
-  yc3   = (double *) calloc(n, sizeof(double));
-  yc4   = (double *) calloc(n, sizeof(double));
+  x     = (float *) calloc(n, sizeof(float));
+  Tyc1  = (float *) calloc(n, sizeof(float));
+  yc2   = (float *) calloc(n, sizeof(float));
+  yc3   = (float *) calloc(n, sizeof(float));
+  yc4   = (float *) calloc(n, sizeof(float));
 
   /* First fill the x vector with the times for Tmin and Tmax, and fill the 
    Tyc1 with the corresponding temperature and humidity values */
@@ -172,61 +172,3 @@ void HourlyT_c(int nrec,
   return;
 }
 
-void set_max_min_hour(double *hourlyrad, 
-                      int tmaxhour,
-                      int tminhour)
-  /****************************************************************************
-   set_max_min_hour
-   
-   This function estimates the times of minimum and maximum temperature for
-   each day of the simulation, based on the hourly cycle of incoming solar
-   radiation.
-   
-   Modifications
-   
-   1999-Aug-19 Modified to function in polar regions where daylight or
-   darkness may last for 24 hours.				BN
-   2006-Oct-26 Shift tminhour and tmaxhour if necessary to remain within
-   the current day.						TJB
-   2011-Nov-04 Changed algorithm because previous algorithm had bugs in
-   identifying the times of sunrise and sunset in some cases.
-   The new algorithm relies on the assumption that the
-   hourlyrad array is referenced to local time, i.e. hour 0 is
-   halfway between the previous day's sunset and the current
-   day's sunrise.  Another assumption is that the hourlyrad
-   array begins on hour 0 of the first day.			TJB
-   2012-Jan-28 Added logic to prevent overstepping bounds of hourlyrad
-   array.							TJB
-   ****************************************************************************/
-{
-  int risehour;
-  int sethour;
-  int hour;
-  
-  risehour = -999;
-  sethour = -999;
-  for (hour = 0; hour < 12; hour++) {
-    printf("rad: %f\n", hourlyrad[hour]);
-    if (hourlyrad[hour] > 0 && (hour == 0 || hourlyrad[hour-1] <= 0))
-      risehour = hour;
-  }
-  for (hour = 12; hour < 24; hour++) {
-    printf("rad: %f\n", hourlyrad[hour]);
-    if (hourlyrad[hour] <= 0 && hourlyrad[hour-1] > 0)
-      sethour = hour;
-  }
-  if (sethour == -999) sethour = 23;
-  if (risehour >= 0 && sethour >= 0) {
-    tmaxhour = 0.67 * (sethour - risehour) + risehour;
-    tminhour = risehour - 1;
-  }
-  else {
-    /* arbitrarily set the min and max times to 2am and 2pm */
-    tminhour = 2;
-    tmaxhour = 14;
-  }
-  
-  printf("min: %d, max: %d\n", tminhour, tmaxhour);
-  
-  
-}

@@ -16,9 +16,9 @@ NumericVector set_vp_cr(NumericVector tair_r, NumericVector relhum_r, int nx, in
   vp_r.attr("dim") = dims;
   
   // Define and allocate
-  double **relhum_c = (double**)malloc(nx * sizeof(double));
+  float **relhum_c = (float**)malloc(nx * sizeof(float*));
   for (ix = 0; ix < nx; ix++) {
-    relhum_c[ix] = (double*)malloc(ny * sizeof(double));
+    relhum_c[ix] = (float*)malloc(ny * sizeof(float));
   }
   
   // Copy from R array
@@ -98,20 +98,20 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
   float tmax_hour = -999;;
 
   // Define and allocate
-  double ***tair_map = (double***)malloc(nx * sizeof(double));
+  float ***tair_map = (float***)malloc(nx * sizeof(float**));
   for (ix = 0; ix < nx; ix++) {
-    tair_map[ix] = (double**)malloc(ny * sizeof(double));
+    tair_map[ix] = (float**)malloc(ny * sizeof(float*));
     for (iy = 0; iy < ny; iy++) {
-      tair_map[ix][iy] = (double*)malloc(nrec * sizeof(double));
+      tair_map[ix][iy] = (float*)malloc(nrec * sizeof(float));
     }
   }
 
   // Define and allocate
-  double ***rad_fract_map_c = (double***)malloc(nx * sizeof(double));
+  float ***rad_fract_map_c = (float***)malloc(nx * sizeof(float**));
   for (ix = 0; ix < nx; ix++) {
-    rad_fract_map_c[ix] = (double**)malloc(ny * sizeof(double));
+    rad_fract_map_c[ix] = (float**)malloc(ny * sizeof(float*));
     for (iy = 0; iy < ny; iy++) {
-      rad_fract_map_c[ix][iy] = (double*)malloc(nrec * sizeof(double));
+      rad_fract_map_c[ix][iy] = (float*)malloc(nrec * sizeof(float));
     }
   }
 
@@ -214,11 +214,11 @@ NumericVector rad_map_final_cr(int nrec, int yday, NumericVector xybox, NumericV
   rad_fract_map_r.attr("dim") = dims;
   
   // Define and allocate
-  double ***rad_fract_map = (double***)malloc(nx * sizeof(double));
+  float ***rad_fract_map = (float***)malloc(nx * sizeof(float**));
   for (ix = 0; ix < nx; ix++) {
-    rad_fract_map[ix] = (double**)malloc(ny * sizeof(double));
+    rad_fract_map[ix] = (float**)malloc(ny * sizeof(float*));
     for (iy = 0; iy < ny; iy++) {
-      rad_fract_map[ix][iy] = (double*)malloc(nrec * sizeof(double));
+      rad_fract_map[ix][iy] = (float*)malloc(nrec * sizeof(float));
     }
   }
   

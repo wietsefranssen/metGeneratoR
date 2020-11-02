@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "header.h"
 
-int set_sunrise_sunset_hour_c(double *radfract, float *sunrise, float *noon, float *sunset, int nx) {
+int set_sunrise_sunset_hour_c(float *radfract, float *sunrise, float *noon, float *sunset, int nx) {
   bool first;
   // sunrise
   first = 1;

@@ -12,11 +12,28 @@
 #' @name metGeneratoR
 #' @examples
 #' 
+#' 
+#' 
+#' ########################
+#' ## preprocessing
+#' ########################
+#' 
+#' ########################
+#' ## do the job (END)  
+#' ## 
+#' ## The example below 
+#' ########################
+#' 
 #' ## (re-)Initialize the metGen environment with basic settings
+#' ##
+#' ## Please always rerun this function before making adjustments in the metGeneratoR setup
 #' mgsetInit()
 #' 
-#' ## Set the XYbox
-#' mgsetXYbox(c(330, 450, 30, 130))
+#' ## Set the XYbox (optional)
+#' ## 
+#' ## Use this function in case you want to select a subset of the original input
+#' ## usage: mgsetXYbox(startX, endX, startY, endY)
+#' mgsetXYbox(330, 450, 30, 130)
 #' 
 #' ## Set the period to run
 #' mgsetPeriod(startdate = "1950-1-1", enddate = "1950-1-31")
@@ -43,10 +60,16 @@
 #' ## Set the output filename(s) structure and path(s) 
 #' mgsetOutName("output/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = TRUE)
 #' 
+#' ## Retreive dimension info from the input files
 #' mggetInDims()
+#'
+#' ## Set dimension info for the output files
 #' mgsetOutDims()
 #' 
+#' ## Check the input variables
 #' mgcheckInVars()
+#'
+#' ## Check the output variables
 #' mgcheckOutVars()
 #' 
 #' ## Run the metGeneratoR based on the settings above

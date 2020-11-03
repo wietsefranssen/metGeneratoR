@@ -16,10 +16,10 @@ mgcheckVariables <- function() {
 }
 
 #' @export
-mgsetXYbox <- function(xybox) {
-  metGen$settings$xybox <- xybox
-  metGen$settings$x <- seq(xybox[1],xybox[2], 1)
-  metGen$settings$y <- seq(xybox[3],xybox[4], 1)
+mgsetXYbox <- function(startX, endX, startY, endY) {
+  metGen$settings$xybox <- c(startX, endX, startY, endY)
+  metGen$settings$x <- seq(startX,endX, 1)
+  metGen$settings$y <- seq(startY,endY, 1)
   metGen$settings$nx <- length(metGen$settings$x)
   metGen$settings$ny <- length(metGen$settings$y)
 }

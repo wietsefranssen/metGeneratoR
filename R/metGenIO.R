@@ -241,7 +241,7 @@ mgsetOutDims <- function() {
     xybox <- NULL
     xybox[2] <- metGen$input[[1]]$dims$x$n
     xybox[4] <- metGen$input[[1]]$dims$y$n
-    mgsetXYbox(c(1,xybox[2],1,xybox[4]))
+    mgsetXYbox(1,xybox[2],1,xybox[4])
   } 
   xx <- c(metGen$settings$xybox[1]:metGen$settings$xybox[2])
   yy <- c(metGen$settings$xybox[3]:metGen$settings$xybox[4])

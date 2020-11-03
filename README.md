@@ -35,7 +35,7 @@ Try to install the git2r package first:
 
 Run the following command to test if the package is working properly.
 
-    example("metGeneratoR", echo = F)
+    example("metGeneratoR")
 
 ## LICENSE
 

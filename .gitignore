@@ -1,10 +1,11 @@
 Rdata/
 hpc/
-output/
+output*/
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+*.nc
 *.o
 *.so
 *.pdf

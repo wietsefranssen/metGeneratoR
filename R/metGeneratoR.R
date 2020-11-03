@@ -1,8 +1,8 @@
 #' metGeneratoR package
 #' 
 #' The metGeneratoR package disaggregates daily NetCDF data to subdaily data.
-#' This can be hourly, 3hourly, 6hourly, etc.
-#' If needed it converts data to the proper output unit.
+#' This can be 1hourly, 2hourly, 3hourly, 4hourly, 6hourly or 8hourly.
+#' If needed it converts data to the output unit needed for VIC.
 #' 
 #' @docType package
 #' @keywords internal
@@ -11,11 +11,9 @@
 #' @useDynLib metGeneratoR
 #' @name metGeneratoR
 #' @examples
-#' 
-#' 
-#' 
 #' ########################
 #' ## preprocessing
+#' ## TODO
 #' ########################
 #' 
 #' ########################
@@ -29,17 +27,10 @@
 #' ## Please always rerun this function before making adjustments in the metGeneratoR setup
 #' mgsetInit()
 #' 
-#' ## Set the XYbox (optional)
-#' ## 
-#' ## Use this function in case you want to select a subset of the original input
-#' ## usage: mgsetXYbox(startX, endX, startY, endY)
-#' mgsetXYbox(330, 450, 30, 130)
-#' 
 #' ## Set the period to run
-#' mgsetPeriod(startdate = "1950-1-1", enddate = "1950-1-31")
+#' mgsetPeriod(startdate = "1950-1-1", enddate = "1950-1-05")
 #' 
 #' ## Set the output timesteps in hours
-#' mgsetInDt(24)  # 24 hourly input
 #' mgsetOutDt(6)  # 6 hourly output
 #' 
 #' ## Set the input variables
@@ -57,21 +48,7 @@
 #' ## Set the output variables
 #' mgsetOutVars(c("tas", "pr", "wind", "vp", "psurf", "swdown", "lwdown", "radfrac"))
 #' 
-#' ## Set the output filename(s) structure and path(s) 
-#' mgsetOutName("output/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = TRUE)
-#' 
-#' ## Retreive dimension info from the input files
-#' mggetInDims()
-#'
-#' ## Set dimension info for the output files
-#' mgsetOutDims()
-#' 
-#' ## Check the input variables
-#' mgcheckInVars()
-#'
-#' ## Check the output variables
-#' mgcheckOutVars()
-#' 
 #' ## Run the metGeneratoR based on the settings above
+#' ## The output files will be written to (a subfolder of) the current working directory of R
 #' metGenRun()
 mgsetStart()

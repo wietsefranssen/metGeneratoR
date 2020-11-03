@@ -14,7 +14,12 @@ mgcheckVariables <- function() {
     }
   }
 }
-
+#' Set the XYbox
+#' 
+#' Use this function in case you want to select a subset of the original input
+#' @examples 
+#' mgsetXYbox(startX = 330, endX = 450, startY = 30, endY = 130)
+#' 
 #' @export
 mgsetXYbox <- function(startX, endX, startY, endY) {
   metGen$settings$xybox <- c(startX, endX, startY, endY)
@@ -24,6 +29,16 @@ mgsetXYbox <- function(startX, endX, startY, endY) {
   metGen$settings$ny <- length(metGen$settings$y)
 }
 
+#' Set the input timesteps in n-hours per day
+#' 
+#' This function is optional. If not given metGen assumes daily input
+#' 
+#' @examples
+#' ## 24 hourly (daily) input
+#' mgsetInDt(24)
+#' 
+#' ## 6 hourly input
+#' mgsetInDt(6)
 #' @export
 mgsetInDt <- function(inDt) {
   metGen$derived$inDt <- metGen$settings$inDt <- inDt
@@ -134,9 +149,26 @@ mgsetOutVars <- function(varnames) {
       }
     }
   }
-  mgsetOutName(nameString = "output/<VAR>/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = F)
+  mgsetOutName(nameString = "<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = F)
 }
 
+#' Set the output filename(s) structure and path(s)
+#' 
+#' if not given, the output filename will have the following structure 
+#' "<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc"
+#' #and will be written to the current working directory
+#' #eg: lwdown_19500101_19501231.nc
+#' 
+#' #subsitutions/wildcards/aliases
+#' @examples
+#' mgsetOutName("forcing_<VAR>_<SYEAR>.nc", message = TRUE)
+#' 
+#' mgsetOutName("<VAR>_<SYEAR><SMONTH><SDAY>.nc", message = TRUE)
+#' 
+#' mgsetOutName("<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = TRUE)
+#' 
+#' mgsetOutName("output/<VAR>/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = TRUE)
+#' 
 #' @export
 mgsetOutName <- function(nameString, message = F) {
   # nameString <- "output/<VAR>/<VAR>_day_HadGEM2-ES_historical_r1i1p1_EWEMBI_landonly_<SYEAR>.nc"

@@ -1,6 +1,18 @@
 #' @export
 metGenRun <- function() {
   
+  ## Retreive dimension info from the input files
+  mggetInDims()
+
+  ## Set dimension info for the output files
+  mgsetOutDims()
+  
+  ## Check the input variables
+  mgcheckInVars()
+
+  ## Check the output variables
+  mgcheckOutVars()
+  
   mgcheckVariables()
   
   ## makeOutputNetCDF

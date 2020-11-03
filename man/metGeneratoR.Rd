@@ -3,7 +3,6 @@
 \docType{package}
 \name{metGeneratoR}
 \alias{metGeneratoR}
-\alias{metGeneratoR-package}
 \title{metGeneratoR package}
 \description{
 The metGeneratoR package disaggregates daily NetCDF data to subdaily data.

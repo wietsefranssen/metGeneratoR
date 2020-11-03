@@ -12,6 +12,9 @@
 #' @name metGeneratoR
 #' @examples
 #' 
+#' ## (re-)Initialize the metGen environment with basic settings
+#' mgsetInit()
+#' 
 #' ## Set the XYbox
 #' mgsetXYbox(c(330, 450, 30, 130))
 #' 
@@ -48,5 +51,4 @@
 #' 
 #' ## Run the metGeneratoR based on the settings above
 #' metGenRun()
-
-mgsetInit()
+mgsetStart()

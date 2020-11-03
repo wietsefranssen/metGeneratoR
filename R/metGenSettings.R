@@ -165,6 +165,8 @@ mgsetOutName <- function(nameString, message = F) {
   }
 }
 
+mgsetStart <- function() {
+}
 
 #'Initialize and set some settings required for the metGen package to run
 #'

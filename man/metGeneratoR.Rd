@@ -11,6 +11,9 @@ If needed it converts data to the proper output unit.
 }
 \examples{
 
+## (re-)Initialize the metGen environment with basic settings
+mgsetInit()
+
 ## Set the XYbox
 mgsetXYbox(c(330, 450, 30, 130))
 
@@ -37,7 +40,7 @@ mgsetInVars(list(
 mgsetOutVars(c("tas", "pr", "wind", "vp", "psurf", "swdown", "lwdown", "radfrac"))
 
 ## Set the output filename(s) structure and path(s) 
-mgsetOutName("output/<VAR>/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = TRUE)
+mgsetOutName("output/<VAR>_<SYEAR><SMONTH><SDAY>_<EYEAR><EMONTH><EDAY>.nc", message = TRUE)
 
 mggetInDims()
 mgsetOutDims()

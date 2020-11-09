@@ -241,26 +241,23 @@ NumericVector rad_map_final_cr(int nrec, int yday, NumericVector xybox, NumericV
   // Calc gmt_offset
   gmt_offset += - (24/nrec) * 0.5;
   gmt_offset += 12;
-  gmt_offset -= (floor(gmt_offset/24)*24);
+  gmt_offset -= floor(gmt_offset / 24) * 24;
 
   // run the function
   for (ix = 0; ix < nx; ix++) {
     iy = 0;
-    lon = lons[nx*iy + ix];
     for (iy = 0; iy < ny; iy++) {
+      lon = lons[nx*iy + ix];
       lat = lats[nx*iy + ix];
       solar_geom_c(rad_fract, lat, yday, dt);
       it_tmp = floor(nTinyStepsPerDay * ( (lon + 180) / 360));
-      if (it_tmp > nTinyStepsPerDay) it_tmp = it_tmp - nTinyStepsPerDay;
       it = floor(it_tmp + ( (nTinyStepsPerDay / 24) * (gmt_offset)));
-      if (it > nTinyStepsPerDay) it = it - nTinyStepsPerDay;
-      if (it > nTinyStepsPerDay) it = it - nTinyStepsPerDay;
-      it -= (floor(it/ nTinyStepsPerDay)* nTinyStepsPerDay);
+      it -= floor(it / nTinyStepsPerDay) * nTinyStepsPerDay;
       
       for (tss = 0; tss < nTinyStepsPerDay; tss++) {
         irec = floor(tss / (nTinyStepsPerDay / nrec));
         irecit = floor(tss + it + ( (tss / nTinyStepsPerDay) * (nTinyStepsPerDay / nrec)));
-        irecit -= (floor(irecit/ nTinyStepsPerDay)* nTinyStepsPerDay);
+        irecit -= floor(irecit / nTinyStepsPerDay) * nTinyStepsPerDay;
         
         rad_fract_map[ix][iy][irec] += rad_fract[irecit] * nrec;
       }

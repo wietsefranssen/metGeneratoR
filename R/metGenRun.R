@@ -66,9 +66,18 @@ metGenRun <- function() {
           lons <- metGen$output$lons
         }
         if (is.null(metGen$gmt_offset)) metGen$gmt_offset <- 0
+        
+        ## adapt gmt_offset according to outDt this needs to improved (although the results should be okay)
+        metGen$gmt_offset <- metGen$gmt_offset - ( (metGen$settings$outDt / 2) - 0.5 )
+        
         radfrac <- rad_map_final_cr(24, yday, metGen$settings$xybox, lats, lons, metGen$gmt_offset)
         if (!is.null(outData$radfrac)) {
-          for(i in 1:maxStep) outData$radfrac[, ,outrecs[i]] <- radfrac[, , outrecs[i]]
+          # init to zero and add mask from first input file
+          maskTmp <- inData[[1]][,,1]
+          maskTmp[!is.na(maskTmp)] <- 0
+          for(i in 1:nOutStep) outData$radfrac[, , i] <-  maskTmp
+          # for(i in 1:nOutStep) outData$radfrac[, , i] <- 0
+          for(i in 1:24) outData$radfrac[, , radfractrecs[i]] <- outData$radfrac[, , radfractrecs[i]] + (radfrac[, , i])
         }
       }
     }    

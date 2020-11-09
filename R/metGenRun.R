@@ -113,18 +113,11 @@ metGenRun <- function() {
           if (metGen$metadata$inVars$radfrac$enabled) {
             radfrac <- inData$radfrac
           }
-          # tas_24h <- calc_tas_cr(radfrac, inData$tasmin[,,1],
-                                 # inData$tasmax[,,1], yday, 24, metGen$settings$xybox)
-          
-          # aggregate from 24h to metGen$derived$nOutStepDay/maxStep
-          # image(radfrac[,,7])
-          # print(paste("ave: ", ave(radfrac[,,1])))
           swdown_day <- apply(inData$swdown, c(1,2), mean)
           outData$swdown[] <- 0
-          for(i in 1:24) {
-            outData$swdown[, , radfractrecs[i]] <- outData$swdown[, , radfractrecs[i]] + (radfrac[, , i] * swdown_day / (24/nOutStep))
+          for(i in 1:nOutStep) {
+            outData$swdown[, , outrecs[i]] <- outData$swdown[, , outrecs[i]] + (radfrac[, , outrecs[i]] * swdown_day / (24/nOutStep))
           }
-          # for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- radfrac[ , , outrecs[i]] #* swdown_day
         } else { ## aggregate to lower number of timesteps
           outData$swdown[]<-0
           for(i in 1:maxStep) outData$swdown[, , outrecs[i]] <- outData$swdown[, , outrecs[i]] + ( inData$swdown[, , inrecs[i]] /  (nInStep/nOutStep) )

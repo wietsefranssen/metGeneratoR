@@ -57,7 +57,7 @@ mggetInVarInfo <- function(filename, varname) {
     natts <- info$natts
     if (i != length(varnames)) {
       vals <- var.get.nc(ncid, varnames[[i]])
-      vals <- aperm(vals, aperm_value)
+      if (length(vals) > 1) vals <- aperm(vals, aperm_value)
       var[[i]] <- list(id=id, name=name, ndim=ndim, dimids_org=dimids, aperm=aperm_value, natts=natts, vals=vals)
     } else {
       # vals <- var.get.nc(ncid, varnames[[i]])
@@ -79,13 +79,10 @@ mggetInVarInfo <- function(filename, varname) {
 
 #' @export
 mggetInDims <- function() {
-  
   for (var in names(metGen$settings$inVar)) {
-    if (var != "radfrac" || var != "thour") {
-      printf("Getting input dimensions \"%s\". ", var)
-      metGen$input[[var]] <- mggetInVarInfo(metGen$settings$inVars[[var]]$filename, metGen$settings$inVars[[var]]$ncname)
-      printf("\n")
-    }
+    printf("Getting input dimensions \"%s\". ", var)
+    metGen$input[[var]] <- mggetInVarInfo(metGen$settings$inVars[[var]]$filename, metGen$settings$inVars[[var]]$ncname)
+    printf("\n")
   }
 }
 
@@ -111,14 +108,15 @@ makeNetcdfOut <- function() {
       dimY <- ncdim_def("lat", units = '', vals = c(1:length(metGen$output$lats)), unlim = F, create_dimvar = F)
     }
     timetmp<-strptime(settings$startDate, format = "%Y-%m-%d", tz = "GMT")
-
-    if (var == "radfrac") year(timetmp) <- 0001
+    
+    if (var == "radfrac" || var == "tminhour" || var == "tmaxhour") year(timetmp) <- 0001
     
     timeString <-format(timetmp, format="%Y-%m-%d %T")
-    timeArray <-c(0:(metGen$derived$nrec_out-1)) * (24 / (24/metGen$derived$outDt))
-    if (var == "thour") {
-      dimT <- ncdim_def("time", paste0("hours since 0001-01-01"), c(0:1), unlim = FALSE, calendar = "standard")
+    if (var == "tminhour" || var == "tmaxhour") {
+      timeArray <- c(0:(metGen$derived$nday-1))
+      dimT <- ncdim_def("time", paste0("days since ",timeString), timeArray, unlim = TRUE, calendar = "standard")
     } else {
+      timeArray <- c(0:(metGen$derived$nrec_out-1)) * (24 / (24/metGen$derived$outDt))
       dimT <- ncdim_def("time", paste0("hours since ",timeString), timeArray, unlim = TRUE, calendar = "standard")
     }
     dimsizes<-c(metGen$settings$nx,metGen$settings$ny,metGen$derived$nrec_out)
@@ -333,7 +331,8 @@ convertUnit <- function(data, unitIn, unitOut, dt = 24, verbose = F, doConversio
 ncLoad <- function(filename, ncvar, var, xybox, date = NULL) {
   
   ncid <- nc_open(filename = filename)
-  if(var=="radfrac") year(date) <- 0001
+  if (var == "radfrac" || var == "tminhour" || var == "tmaxhour") year(date) <- 0001
+  
   if (!is.null(date)) {
     ## TODO Move this part to a general part like check input data
     ## mgsetInDt(inDt = 3) this function can then also be filled automatically
@@ -353,6 +352,6 @@ ncLoad <- function(filename, ncvar, var, xybox, date = NULL) {
   dataset <- aperm(dataset, metGen$input[[var]]$vars$data$aperm)
   
   nc_close(ncid)
-   
+  
   return(dataset)
 }

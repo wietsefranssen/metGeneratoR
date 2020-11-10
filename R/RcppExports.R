@@ -9,8 +9,9 @@ sh2vp <- function(q, p) {
     .Call('_metGeneratoR_sh2vp', PACKAGE = 'metGeneratoR', q, p)
 }
 
-calc_tas_cr <- function(rad_fract_map, tmin_map, tmax_map, yday, nrec, xybox) {
-    .Call('_metGeneratoR_calc_tas_cr', PACKAGE = 'metGeneratoR', rad_fract_map, tmin_map, tmax_map, yday, nrec, xybox)
+#' @export
+calc_tas_cr <- function(tmin_hour_map, tmax_hour_map, tmin_map, tmax_map, yday, nrec, xybox) {
+    .Call('_metGeneratoR_calc_tas_cr', PACKAGE = 'metGeneratoR', tmin_hour_map, tmax_hour_map, tmin_map, tmax_map, yday, nrec, xybox)
 }
 
 #' @export

@@ -47,18 +47,19 @@ int set_sunrise_sunset_hour_c(float *radfract, float *sunrise, float *noon, floa
         break;
       }
     }
-  }    
-  
+  }   
+
   return 0;
 }
 int set_tmin_tmax_hour_c(float sunrise, float noon, float sunset, float *tmin_hour, float *tmax_hour, int nx) {
   *tmin_hour = sunrise;
   *tmax_hour = (sunset - noon);
-  if (*tmax_hour < 0) {
-    *tmax_hour = *tmax_hour + 24;
-  }
-  *tmax_hour = *tmax_hour * 0.33;
+   if (*tmax_hour < 0) *tmax_hour += 24;
   
+  *tmax_hour = noon + (*tmax_hour * 0.33);
+  *tmax_hour -= floor(*tmax_hour / 24) * 24;
+  if (*tmax_hour < 0) printf("tmax_hour: %f (%f, %f)\n", *tmax_hour, sunset, noon);
+  // *tmax_hour = sunset;
   // } else {
   //   /* arbitrarily set the min and max times to 2am and 2pm */
   //   // */
@@ -98,7 +99,7 @@ int solar_geom_c(float *tiny_rad_fract_1day, float lat, int yday, float dt = 30)
   
   /* optical airmass by degrees */
   float optam[21] = {2.90, 3.05, 3.21, 3.39, 3.69, 3.82, 4.07, 4.37, 4.72, 5.12, 5.60,
-                      6.18, 6.88, 7.77, 8.90, 10.39, 12.44, 15.36, 19.79, 26.96, 30.00};
+                     6.18, 6.88, 7.77, 8.90, 10.39, 12.44, 15.36, 19.79, 26.96, 30.00};
   
   /* precalculate the transcendentals */
   /* check for (+/-) 90 degrees latitude, throws off daylength calc */

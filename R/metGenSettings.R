@@ -248,6 +248,8 @@ mgsetInitMetadata <- function() {
     tasmin     = list(input_units = "", internal_units  = "Celsius"),  # minimum air temperature 
     tasmax     = list(input_units = "", internal_units  = "Celsius"),  # maximum air temperature 
     radfrac    = list(input_units = "", internal_units  = "fraction"),  # minimum air temperature 
+    tminhour      = list(input_units = "", internal_units  = "hour"),  # tminhour
+    tmaxhour      = list(input_units = "", internal_units  = "hour"),  # tmaxhour
     swdown     = list(input_units = "", internal_units  = "W m-2"),    # shortwave radiation 
     vp         = list(input_units = "", internal_units  = "kPa"),      # near surface vapor pressure 
     relhum     = list(input_units = "", internal_units  = "% / 0.01"), # relative humidity  ## relhum needs to be fraction. Because fraction does not extist in udunits  we call it "% / 0.01"
@@ -274,7 +276,8 @@ mgsetInitMetadata <- function() {
     density    = list(filename = "", enable = FALSE, internal_units = "kg m-3",    output_units = "kg m-3",    longName = "near-surface atmospheric density"),
     wind       = list(filename = "", enable = FALSE, internal_units = "m s-1",     output_units = "m s-1",     longName = "near surface wind speed"),
     radfrac    = list(filename = "", enable = FALSE, internal_units = "fraction",     output_units = "fraction",     longName = "radiation fraction"),
-    thour      = list(filename = "", enable = FALSE, internal_units = "hour",     output_units = "hour",     longName = "tminhour and tmaxhour")
+    tminhour      = list(filename = "", enable = FALSE, internal_units = "hour",     output_units = "hour",     longName = "tminhour"),
+    tmaxhour      = list(filename = "", enable = FALSE, internal_units = "hour",     output_units = "hour",     longName = "tmaxhour")
   )
   
   metGen$metadata$elevation <- list(ncName = "elevation")

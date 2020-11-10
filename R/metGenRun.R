@@ -21,8 +21,8 @@ metGenRun <- function() {
   ## DEFINE OUTPUT ARRAY
   outData <- NULL
   for (var in names(metGen$settings$outVars)) {
-    if (var == "thour") {
-      outData[[var]] <- array(NA, dim = c(metGen$settings$nx, metGen$settings$ny, 2))
+    if (var == "tminhour" || var == "tmaxhour") {
+      outData[[var]] <- array(NA, dim = c(metGen$settings$nx, metGen$settings$ny, 1))
     } else {
       outData[[var]] <- array(NA, dim = c(metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay))
     }
@@ -58,9 +58,7 @@ metGenRun <- function() {
     # /*************************************************
     #   radiation fraction
     # *************************************************/
-    if (!is.null(outData$radfrac) || !
-        (!is.null(outData$swdown) && !metGen$metadata$inVars$radfrac$enabled) ||
-        (!is.null(outData$tas) && !metGen$metadata$inVars$radfrac$enabled)) {
+    if (!is.null(outData$radfrac) || !is.null(outData$tminhour) || !is.null(outData$tmaxhour)) {
       if (nInStep < nOutStep) { ## disaggregate to higher number of timesteps
         if (metGen$input[[1]]$vars$x$ndim == 1) {
           lats <- aperm(array(metGen$output$lats, dim=c(metGen$settings$ny,metGen$settings$nx)),c(2,1))
@@ -81,8 +79,8 @@ metGenRun <- function() {
           for(i in 1:nOutStep) outData$radfrac[, , i] <-  maskTmp
           # for(i in 1:nOutStep) outData$radfrac[, , i] <- 0
           for(i in 1:24) outData$radfrac[, , radfractrecs[i]] <- outData$radfrac[, , radfractrecs[i]] + (radfrac[, , i])
-          outData$thour[, , 1] <- radfrac[, , 25] + maskTmp
-          outData$thour[, , 2] <- radfrac[, , 26] + maskTmp
+          outData$tminhour[, , 1] <- radfrac[, , 25] + maskTmp
+          outData$tmaxhour[, , 1] <- radfrac[, , 26] + maskTmp
         }
       }
     }    
@@ -183,11 +181,15 @@ metGenRun <- function() {
           if (metGen$metadata$inVars$radfrac$enabled) {
             radfrac <- inData$radfrac
           }
-          tas_24h <- calc_tas_cr(radfrac, inData$tasmin[,,1], inData$tasmax[,,1], yday, 24, metGen$settings$xybox)
+          tas_24h <- calc_tas_cr(inData$tminhour[,,1], inData$tmaxhour[,,1], inData$tasmin[,,1], inData$tasmax[,,1], yday, 24, metGen$settings$xybox)
           # aggregate from 24h to metGen$derived$nOutStepDay/maxStep
           outData$tas[] <- 0
+          maskTmp <- inData[[1]][,,1]
+          maskTmp[!is.na(maskTmp)] <- 0
+          for(i in 1:nOutStep) outData$tas[, , i] <-  maskTmp
+          
           for(i in 1:24) {
-            outData$tas[, , outrecs[i]] <- outData$tas[, , outrecs[i]] + (tas_24h[, , i] / (24/nOutStep))
+            outData$tas[, , radfractrecs[i]] <- outData$tas[, , radfractrecs[i]] + (tas_24h[, , i] / (24/nOutStep))
           }
         } else { ## aggregate to lower number of timesteps
           outData$tas[] <- 0
@@ -289,13 +291,14 @@ metGenRun <- function() {
     metGen$inData <- inData
     
     for (var in names(metGen$settings$outVars)) {
-      timeIndex <- metGen$derived$nOutStepDay*(iday-1)+1
       metGen$settings$outVars[[var]]$ncid <- open.nc(metGen$settings$outVars[[var]]$filename, write = TRUE)
       
-      if (var == "thour") {
-        nz <- 2
+      if (var == "tminhour" || var == "tmaxhour") {
+        nz <- 1
+        timeIndex <- 1*(iday-1)+1
       } else {
         nz <- metGen$derived$nOutStepDay
+        timeIndex <- metGen$derived$nOutStepDay*(iday-1)+1
       }
       var.put.nc(metGen$settings$outVars[[var]]$ncid,
                  var,

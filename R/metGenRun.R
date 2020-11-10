@@ -3,13 +3,13 @@ metGenRun <- function() {
   
   ## Retreive dimension info from the input files
   mggetInDims()
-
+  
   ## Set dimension info for the output files
   mgsetOutDims()
   
   ## Check the input variables
   mgcheckInVars()
-
+  
   ## Check the output variables
   mgcheckOutVars()
   
@@ -21,7 +21,11 @@ metGenRun <- function() {
   ## DEFINE OUTPUT ARRAY
   outData <- NULL
   for (var in names(metGen$settings$outVars)) {
-    outData[[var]] <- array(NA, dim = c(metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay))
+    if (var == "thour") {
+      outData[[var]] <- array(NA, dim = c(metGen$settings$nx, metGen$settings$ny, 2))
+    } else {
+      outData[[var]] <- array(NA, dim = c(metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay))
+    }
   }
   
   nInStep <- metGen$derived$nInStepDay
@@ -66,7 +70,6 @@ metGenRun <- function() {
           lons <- metGen$output$lons
         }
         if (is.null(metGen$gmt_offset)) metGen$gmt_offset <- 0
-        
         ## adapt gmt_offset according to outDt this needs to improved (although the results should be okay)
         metGen$gmt_offset <- metGen$gmt_offset - ( (metGen$settings$outDt / 2) - 0.5 )
         
@@ -78,10 +81,13 @@ metGenRun <- function() {
           for(i in 1:nOutStep) outData$radfrac[, , i] <-  maskTmp
           # for(i in 1:nOutStep) outData$radfrac[, , i] <- 0
           for(i in 1:24) outData$radfrac[, , radfractrecs[i]] <- outData$radfrac[, , radfractrecs[i]] + (radfrac[, , i])
+          outData$thour[, , 1] <- radfrac[, , 25] + maskTmp
+          outData$thour[, , 2] <- radfrac[, , 26] + maskTmp
         }
       }
     }    
     
+
     # /*************************************************
     #   Precipitation
     # *************************************************/
@@ -181,7 +187,7 @@ metGenRun <- function() {
           # aggregate from 24h to metGen$derived$nOutStepDay/maxStep
           outData$tas[] <- 0
           for(i in 1:24) {
-            outData$tas[, , radfractrecs[i]] <- outData$tas[, , radfractrecs[i]] + (tas_24h[, , i] / (24/nOutStep))
+            outData$tas[, , outrecs[i]] <- outData$tas[, , outrecs[i]] + (tas_24h[, , i] / (24/nOutStep))
           }
         } else { ## aggregate to lower number of timesteps
           outData$tas[] <- 0
@@ -272,10 +278,10 @@ metGenRun <- function() {
     
     ## Convert to desired output unit
     for (var in names(metGen$settings$outVars)) {
-      outData[[var]] <- convertUnit(outData[[var]], 
-                                    metGen$metadata$outVars[[var]]$internal_units, 
-                                    metGen$metadata$outVars[[var]]$output_units,
-                                    metGen$settings$outDt)
+        outData[[var]] <- convertUnit(outData[[var]], 
+                                      metGen$metadata$outVars[[var]]$internal_units, 
+                                      metGen$metadata$outVars[[var]]$output_units,
+                                      metGen$settings$outDt)
     }
     
     ## ADD OUTPUT TO NETCDF
@@ -286,11 +292,16 @@ metGenRun <- function() {
       timeIndex <- metGen$derived$nOutStepDay*(iday-1)+1
       metGen$settings$outVars[[var]]$ncid <- open.nc(metGen$settings$outVars[[var]]$filename, write = TRUE)
       
+      if (var == "thour") {
+        nz <- 2
+      } else {
+        nz <- metGen$derived$nOutStepDay
+      }
       var.put.nc(metGen$settings$outVars[[var]]$ncid,
                  var,
                  outData[[var]][,,],
                  start = c(1, 1, timeIndex),
-                 count = c(metGen$settings$nx, metGen$settings$ny, metGen$derived$nOutStepDay)
+                 count = c(metGen$settings$nx, metGen$settings$ny, nz)
       )
       close.nc(metGen$settings$outVars[[var]]$ncid)
     }

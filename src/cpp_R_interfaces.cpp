@@ -83,20 +83,20 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
   int ny, iy;
   float lat;
   int irec;
-
+  
   nx = (xybox[1] - xybox[0]) + 1;
   ny = (xybox[3] - xybox[2]) + 1;
-
+  
   NumericVector tair_map_r(nrec * ny * nx);
   IntegerVector dims(3);
   dims[0] = nx;
   dims[1] = ny;
   dims[2] = nrec;
   tair_map_r.attr("dim") = dims;
-
+  
   float tmin_hour = -999;
   float tmax_hour = -999;;
-
+  
   // Define and allocate
   float ***tair_map = (float***)malloc(nx * sizeof(float**));
   for (ix = 0; ix < nx; ix++) {
@@ -105,7 +105,7 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
       tair_map[ix][iy] = (float*)malloc(nrec * sizeof(float));
     }
   }
-
+  
   // Define and allocate
   float ***rad_fract_map_c = (float***)malloc(nx * sizeof(float**));
   for (ix = 0; ix < nx; ix++) {
@@ -114,37 +114,37 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
       rad_fract_map_c[ix][iy] = (float*)malloc(nrec * sizeof(float));
     }
   }
-
-
+  
+  
   float *Tair = (float*)malloc(nrec * sizeof(float));
   float *rad_fract_point = (float*)malloc(24 * sizeof(float));
-
+  
   int counter = 0;
   for (int i = 0; i < 24; i++) {
-      for (iy = 0; iy < ny; iy++) {
-        for (ix = 0; ix < nx; ix++) {
-          rad_fract_map_c[ix][iy][i] = rad_fract_map[counter];
+    for (iy = 0; iy < ny; iy++) {
+      for (ix = 0; ix < nx; ix++) {
+        rad_fract_map_c[ix][iy][i] = rad_fract_map[counter];
         counter++;
       }
     }
   }
-
+  
   float sunrise, noon, sunset;
   for (iy = 0; iy < ny; iy++) {
     for (ix = 0; ix < nx; ix++) {
       set_sunrise_sunset_hour_c(rad_fract_map_c[ix][iy], &sunrise, &noon, &sunset, nrec);
       if (ix == 1 && iy == 1) printf("iy: %i, ix: %i, sunrise: %f, noon: %f, sunset: %f\n",iy, ix,sunrise, noon,sunset);
-
+      
       set_tmin_tmax_hour_c(sunrise, noon, sunset, &tmin_hour, &tmax_hour, nrec);
       if (ix == 1 && iy == 1) printf("iy: %i, ix: %i, tmin_hour: %f, tmax_hour: %f\n",iy, ix,tmin_hour,tmax_hour);
-
+      
       HourlyT_c(nrec, tmin_hour, tmin_map[iy*nx+ix], tmax_hour, tmax_map[iy*nx+ix], Tair);
       for (irec = 0; irec < nrec; irec++) {
         tair_map[ix][iy][irec] = Tair[irec];
       }
     }
   }
-
+  
   // Copy back to R array
   size_t count = 0;
   for (irec = 0; irec < nrec; irec++) {
@@ -155,7 +155,7 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
       }
     }
   }
-
+  
   // Free
   for (ix = 0; ix < nx; ix++) {
     for (iy = 0; iy < ny; iy++) {
@@ -164,10 +164,10 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
     free(tair_map[ix]);
   }
   free(tair_map);
-
+  
   free(rad_fract_point);
   free(Tair);
-
+  
   // Free
   for (ix = 0; ix < nx; ix++) {
     for (iy = 0; iy < ny; iy++) {
@@ -176,7 +176,7 @@ NumericVector calc_tas_cr(NumericVector rad_fract_map, NumericVector tmin_map, N
     free(rad_fract_map_c[ix]);
   }
   free(rad_fract_map_c);
-
+  
   return tair_map_r;
 }
 
@@ -206,11 +206,11 @@ NumericVector rad_map_final_cr(int nrec, int yday, NumericVector xybox, NumericV
   nx = (xybox[1] - xybox[0]) + 1;
   ny = (xybox[3] - xybox[2]) + 1;
   
-  NumericVector rad_fract_map_r(nrec * ny * nx);
+  NumericVector rad_fract_map_r((nrec+2) * ny * nx);
   IntegerVector dims(3);
   dims[0] = nx;
   dims[1] = ny;
-  dims[2] = nrec;
+  dims[2] = nrec+2;
   rad_fract_map_r.attr("dim") = dims;
   
   // Define and allocate
@@ -221,10 +221,20 @@ NumericVector rad_map_final_cr(int nrec, int yday, NumericVector xybox, NumericV
       rad_fract_map[ix][iy] = (float*)malloc(nrec * sizeof(float));
     }
   }
-  
+  float **t_min_hour_map = (float**)malloc(nx * sizeof(float*));
+  for (ix = 0; ix < nx; ix++) {
+    t_min_hour_map[ix] = (float*)malloc(ny * sizeof(float));
+  }
+  float **t_max_hour_map = (float**)malloc(nx * sizeof(float*));
+  for (ix = 0; ix < nx; ix++) {
+    t_max_hour_map[ix] = (float*)malloc(ny * sizeof(float));
+  }
+
   // Zero
   for (ix = 0; ix < nx; ix++) {
     for (iy = 0; iy < ny; iy++) {
+      t_min_hour_map[ix][iy] = 0;
+      t_max_hour_map[ix][iy] = 0;
       for (irec = 0; irec < nrec; irec++) {
         rad_fract_map[ix][iy][irec] = 0;
       }
@@ -237,12 +247,11 @@ NumericVector rad_map_final_cr(int nrec, int yday, NumericVector xybox, NumericV
     rad_fract[it] = 0;
   }
   
-  
   // Calc gmt_offset
   gmt_offset += - (24/nrec) * 0.5;
   gmt_offset += 12;
   gmt_offset -= floor(gmt_offset / 24) * 24;
-
+  
   // run the function
   for (ix = 0; ix < nx; ix++) {
     iy = 0;
@@ -261,6 +270,19 @@ NumericVector rad_map_final_cr(int nrec, int yday, NumericVector xybox, NumericV
         
         rad_fract_map[ix][iy][irec] += rad_fract[irecit] * nrec;
       }
+      
+      float sunrise, noon, sunset;
+      float tmin_hour = -999;
+      float tmax_hour = -999;
+      
+      set_sunrise_sunset_hour_c(rad_fract_map[ix][iy], &sunrise, &noon, &sunset, nrec);
+      if (ix == 1 && iy == 1) printf("iy: %i, ix: %i, sunrise: %f, noon: %f, sunset: %f\n",iy, ix,sunrise, noon,sunset);
+      
+      set_tmin_tmax_hour_c(sunrise, noon, sunset, &t_min_hour_map[ix][iy], &t_max_hour_map[ix][iy], nrec);
+      // set_tmin_tmax_hour_c(sunrise, noon, sunset, &tmin_hour, &tmax_hour, nrec);
+      // if (ix == 1 && iy == 1) printf("iy: %i, ix: %i, tmin_hour: %f, tmax_hour: %f\n",iy, ix,tmin_hour,tmax_hour);
+      if (ix == 1 && iy == 1) printf("iy: %i, ix: %i, tmin_hour: %f, tmax_hour: %f\n",iy, ix,t_min_hour_map[ix][iy],t_max_hour_map[ix][iy]);
+      
     }
   }
   
@@ -273,6 +295,20 @@ NumericVector rad_map_final_cr(int nrec, int yday, NumericVector xybox, NumericV
       }
     }
   }
+  // TminHour
+  for (iy = 0; iy < ny; iy++) {
+    for (ix = 0; ix < nx; ix++) {
+      rad_fract_map_r[count] = t_min_hour_map[ix][iy];
+      count++;
+    }
+  }
+  // TmaxHour
+  for (iy = 0; iy < ny; iy++) {
+    for (ix = 0; ix < nx; ix++) {
+      rad_fract_map_r[count] = t_max_hour_map[ix][iy];
+      count++;
+    }
+  }
   
   // Free
   for (ix = 0; ix < nx; ix++) {
@@ -280,8 +316,16 @@ NumericVector rad_map_final_cr(int nrec, int yday, NumericVector xybox, NumericV
       free(rad_fract_map[ix][iy]);
     }
     free(rad_fract_map[ix]);
-  }
+  }  
   free(rad_fract_map);
+  
+  for (ix = 0; ix < nx; ix++) {
+    free(t_min_hour_map[ix]);
+    free(t_max_hour_map[ix]);
+  }
+  free(t_min_hour_map);
+  free(t_max_hour_map);
+  
   free(rad_fract);
   return rad_fract_map_r;
 }

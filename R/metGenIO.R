@@ -81,7 +81,7 @@ mggetInVarInfo <- function(filename, varname) {
 mggetInDims <- function() {
   
   for (var in names(metGen$settings$inVar)) {
-    if (var != "radfrac" || var != "suntime") {
+    if (var != "radfrac" || var != "thour") {
       printf("Getting input dimensions \"%s\". ", var)
       metGen$input[[var]] <- mggetInVarInfo(metGen$settings$inVars[[var]]$filename, metGen$settings$inVars[[var]]$ncname)
       printf("\n")
@@ -111,11 +111,16 @@ makeNetcdfOut <- function() {
       dimY <- ncdim_def("lat", units = '', vals = c(1:length(metGen$output$lats)), unlim = F, create_dimvar = F)
     }
     timetmp<-strptime(settings$startDate, format = "%Y-%m-%d", tz = "GMT")
+
     if (var == "radfrac") year(timetmp) <- 0001
+    
     timeString <-format(timetmp, format="%Y-%m-%d %T")
     timeArray <-c(0:(metGen$derived$nrec_out-1)) * (24 / (24/metGen$derived$outDt))
-    dimT <- ncdim_def("time", paste0("hours since ",timeString), timeArray, unlim = TRUE, calendar = "standard")
-    
+    if (var == "thour") {
+      dimT <- ncdim_def("time", paste0("hours since 0001-01-01"), c(0:1), unlim = FALSE, calendar = "standard")
+    } else {
+      dimT <- ncdim_def("time", paste0("hours since ",timeString), timeArray, unlim = TRUE, calendar = "standard")
+    }
     dimsizes<-c(metGen$settings$nx,metGen$settings$ny,metGen$derived$nrec_out)
     ## Create folder
     dir.create(file.path(getwd(), dirname(settings$outVars[[var]]$filename)), showWarnings = FALSE, recursive = T)

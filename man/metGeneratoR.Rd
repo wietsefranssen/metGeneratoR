@@ -15,6 +15,29 @@ If needed it converts data to the output unit needed for VIC.
 ## TODO
 ########################
 
+## (re-)Initialize the metGen environment with basic settings
+##
+## Please always rerun this function before making adjustments in the metGeneratoR setup
+mgsetInit()
+
+## Set the period to run
+mgsetPeriod(startdate = "1950-1-1", enddate = "1950-1-05")
+
+## Set the output timesteps in hours
+mgsetOutDt(6)  # 6 hourly output
+
+## Set the input variables
+mgsetInVars(list(
+  pr         = list(ncname = "pr",      filename = metGen$internal$ncFileNamePr)
+))
+
+## Set the output variables
+mgsetOutVars(c("radfrac", "tminhour", "tmaxhour"))
+
+## Run the metGeneratoR based on the settings above
+## The output files will be written to (a subfolder of) the current working directory of R
+metGenRun()
+
 ########################
 ## do the job (END)  
 ## 
@@ -41,11 +64,14 @@ mgsetInVars(list(
   swdown     = list(ncname = "rsds",    filename = metGen$internal$ncFileNameswdown),
   lwdown     = list(ncname = "rlds",    filename = metGen$internal$ncFileNamelwdown),
   relhum     = list(ncname = "hurs",    filename = metGen$internal$ncFileNameRelhum),
-  psurf      = list(ncname = "ps",      filename = metGen$internal$ncFileNamePs)
+  psurf      = list(ncname = "ps",      filename = metGen$internal$ncFileNamePs),
+  radfrac    = list(ncname = "radfrac",  filename = "./radfrac_19500101_19500105.nc"),
+  tminhour   = list(ncname = "tminhour", filename = "./tminhour_19500101_19500105.nc"),
+  tmaxhour   = list(ncname = "tmaxhour", filename = "./tmaxhour_19500101_19500105.nc")
 ))
 
 ## Set the output variables
-mgsetOutVars(c("tas", "pr", "wind", "vp", "psurf", "swdown", "lwdown", "radfrac"))
+mgsetOutVars(c("tas", "pr", "wind", "vp", "psurf", "swdown", "lwdown"))
 
 ## Run the metGeneratoR based on the settings above
 ## The output files will be written to (a subfolder of) the current working directory of R

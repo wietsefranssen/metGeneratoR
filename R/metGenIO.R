@@ -255,11 +255,11 @@ mgsetOutDims <- function() {
     metGen$output$ndim <- metGen$input[[1]]$vars$x$ndim
   } else if (metGen$input[[1]]$vars$x$ndim == 2) {
     if (metGen$input[[1]]$dims$x$id == metGen$input[[1]]$vars$x$dimids[1]) {
-      metGen$output$lons <- metGen$input[[1]]$vars$x$vals[yy,xx]
-      metGen$output$lats <- metGen$input[[1]]$vars$y$vals[yy,xx]
-    } else if (metGen$input[[1]]$dims$x$id == metGen$input[[1]]$vars$x$dimids[2]) {
       metGen$output$lons <- metGen$input[[1]]$vars$x$vals[xx,yy]
       metGen$output$lats <- metGen$input[[1]]$vars$y$vals[xx,yy]
+    } else if (metGen$input[[1]]$dims$x$id == metGen$input[[1]]$vars$x$dimids[2]) {
+      metGen$output$lons <- metGen$input[[1]]$vars$x$vals[yy,xx]
+      metGen$output$lats <- metGen$input[[1]]$vars$y$vals[yy,xx]
     } else {
       stop("error!")
     }
@@ -345,8 +345,9 @@ ncLoad <- function(filename, ncvar, var, xybox, date = NULL) {
     }
     time_index <- which(format(times, "%Y-%m-%d") == format(date, "%Y-%m-%d"))
     dataset <- nc.get.var.subset.by.axes(ncid, ncvar,
-                                         axis.indices = list(Y = c(xybox[3]:xybox[4]),
-                                                             X = c(xybox[1]:xybox[2]),
+                                         axis.indices = list(X = c(xybox[1]:xybox[2]),
+                                                             Y = c(xybox[3]:xybox[4]),
+                                                             
                                                              T = time_index))
   }
   dataset <- aperm(dataset, metGen$input[[var]]$vars$data$aperm)

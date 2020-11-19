@@ -69,7 +69,6 @@ metGenRun <- function() {
         }
         if (is.null(metGen$gmt_offset)) metGen$gmt_offset <- 0
         ## adapt gmt_offset according to outDt this needs to improved (although the results should be okay)
-        metGen$gmt_offset <- metGen$gmt_offset - ( (metGen$settings$outDt / 2) - 0.5 )
         
         radfrac <- rad_map_final_cr(24, yday, metGen$settings$xybox, lats, lons, metGen$gmt_offset)
         if (!is.null(outData$radfrac)) {

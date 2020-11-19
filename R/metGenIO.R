@@ -345,9 +345,8 @@ ncLoad <- function(filename, ncvar, var, xybox, date = NULL) {
     }
     time_index <- which(format(times, "%Y-%m-%d") == format(date, "%Y-%m-%d"))
     dataset <- nc.get.var.subset.by.axes(ncid, ncvar,
-                                         axis.indices = list(
+                                         axis.indices = list(X = c(xybox[1]:xybox[2]),
                                                              Y = c(xybox[3]:xybox[4]),
-                                                             X = c(xybox[1]:xybox[2]),
                                                              T = time_index))
   }
   # dataset <- aperm(dataset, metGen$input[[var]]$vars$data$aperm)

@@ -64,8 +64,6 @@ metGenRun <- function() {
           lats <- aperm(array(metGen$output$lats, dim=c(metGen$settings$ny,metGen$settings$nx)),c(2,1))
           lons <- aperm(array(metGen$output$lons, dim=c(metGen$settings$nx,metGen$settings$ny)),c(1,2))
         } else {
-          # lats <- t(apply(metGen$output$lats,1,rev))
-          # lons <- t(apply(metGen$output$lons,1,rev))
           lats <- metGen$output$lats
           lons <- metGen$output$lons
         }

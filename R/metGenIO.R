@@ -109,7 +109,7 @@ makeNetcdfOut <- function() {
     }
     timetmp<-strptime(settings$startDate, format = "%Y-%m-%d", tz = "GMT")
     
-    if (var == "radfrac" || var == "tminhour" || var == "tmaxhour") year(timetmp) <- 0001
+    # if (var == "radfrac" || var == "tminhour" || var == "tmaxhour") year(timetmp) <- 0001
     
     timeString <-format(timetmp, format="%Y-%m-%d %T")
     if (var == "tminhour" || var == "tmaxhour") {
@@ -331,7 +331,7 @@ convertUnit <- function(data, unitIn, unitOut, dt = 24, verbose = F, doConversio
 ncLoad <- function(filename, ncvar, var, xybox, date = NULL) {
   
   ncid <- nc_open(filename = filename)
-  if (var == "radfrac" || var == "tminhour" || var == "tmaxhour") year(date) <- 0001
+  # if (var == "radfrac" || var == "tminhour" || var == "tmaxhour") year(date) <- 0001
   
   if (!is.null(date)) {
     ## TODO Move this part to a general part like check input data
